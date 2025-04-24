@@ -533,3 +533,432 @@ def integrate_infrastructure_with_tco(tco_data, infrastructure_costs, apply_ince
     updated_tco['infrastructure_costs'] = infrastructure_costs
     
     return updated_tco
+
+def perform_sensitivity_analysis(
+    parameter_name,
+    parameter_range,
+    bev_vehicle_data,
+    diesel_vehicle_data,
+    bev_fees,
+    diesel_fees,
+    charging_options,
+    infrastructure_options,
+    financial_params,
+    battery_params,
+    emission_factors,
+    incentives,
+    selected_charging,
+    selected_infrastructure,
+    annual_kms,
+    truck_life_years,
+    discount_rate,
+    fleet_size,
+    charging_mix=None,
+    apply_incentives=True
+):
+    """
+    Perform sensitivity analysis by recalculating TCO metrics for different parameter values
+    
+    Args:
+        parameter_name: Name of the parameter to analyze
+        parameter_range: Range of values to test for the parameter
+        bev_vehicle_data: BEV vehicle data
+        diesel_vehicle_data: Diesel vehicle data
+        (other parameters): All other parameters needed for TCO calculations
+        
+    Returns:
+        A list of dictionaries containing TCO metrics for each parameter value
+    """
+    results = []
+    
+    # Make copies of original parameters that might be modified
+    financial_params_copy = financial_params.copy()
+    battery_params_copy = battery_params.copy()
+    
+    # Cycle through each value in the parameter range
+    for param_value in parameter_range:
+        # Update parameters based on which parameter is being analyzed
+        if parameter_name == "Annual Distance (km)":
+            current_annual_kms = param_value
+            current_diesel_price = financial_params[
+                financial_params['finance_description'] == 'diesel_price'
+            ].iloc[0]['default_value']
+            current_discount_rate = discount_rate
+            current_truck_life_years = truck_life_years
+            current_charging_mix = charging_mix
+            
+        elif parameter_name == "Diesel Price ($/L)":
+            current_annual_kms = annual_kms
+            current_diesel_price = param_value
+            current_discount_rate = discount_rate
+            current_truck_life_years = truck_life_years
+            current_charging_mix = charging_mix
+            
+            # Update diesel price in financial params copy
+            financial_params_copy.loc[
+                financial_params_copy['finance_description'] == 'diesel_price', 'default_value'
+            ] = param_value
+            
+        elif parameter_name == "Vehicle Lifetime (years)":
+            current_annual_kms = annual_kms
+            current_diesel_price = financial_params[
+                financial_params['finance_description'] == 'diesel_price'
+            ].iloc[0]['default_value']
+            current_discount_rate = discount_rate
+            current_truck_life_years = param_value
+            current_charging_mix = charging_mix
+            
+        elif parameter_name == "Discount Rate (%)":
+            current_annual_kms = annual_kms
+            current_diesel_price = financial_params[
+                financial_params['finance_description'] == 'diesel_price'
+            ].iloc[0]['default_value']
+            current_discount_rate = param_value / 100  # Convert percentage to decimal
+            current_truck_life_years = truck_life_years
+            current_charging_mix = charging_mix
+            
+        elif parameter_name == "Electricity Price ($/kWh)":
+            current_annual_kms = annual_kms
+            current_diesel_price = financial_params[
+                financial_params['finance_description'] == 'diesel_price'
+            ].iloc[0]['default_value']
+            current_discount_rate = discount_rate
+            current_truck_life_years = truck_life_years
+            
+            # For electricity price, we'll need to create a modified charging options table with adjusted prices
+            modified_charging_options = charging_options.copy()
+            # Apply the same percentage change to all charging options
+            base_price = charging_options[charging_options['charging_id'] == selected_charging].iloc[0]['per_kwh_price']
+            for idx in modified_charging_options.index:
+                original_price = charging_options.loc[idx, 'per_kwh_price']
+                modified_charging_options.loc[idx, 'per_kwh_price'] = param_value * (original_price / base_price)
+            
+            # Use the original charging mix but with modified prices
+            current_charging_mix = charging_mix
+            
+        else:
+            # Unsupported parameter
+            continue
+        
+        # Calculate energy costs for BEV and diesel
+        if parameter_name == "Electricity Price ($/kWh)":
+            # Use modified charging options
+            bev_energy_cost_per_km = calculate_energy_costs(
+                bev_vehicle_data,
+                bev_fees,
+                modified_charging_options,  # Use modified prices
+                financial_params_copy,
+                selected_charging,
+                current_charging_mix
+            )
+        else:
+            # Use original charging options
+            bev_energy_cost_per_km = calculate_energy_costs(
+                bev_vehicle_data,
+                bev_fees,
+                charging_options,
+                financial_params_copy,
+                selected_charging,
+                current_charging_mix
+            )
+        
+        diesel_energy_cost_per_km = calculate_energy_costs(
+            diesel_vehicle_data,
+            diesel_fees,
+            charging_options,
+            financial_params_copy,
+            selected_charging
+        )
+        
+        # Calculate annual costs
+        bev_annual_costs = calculate_annual_costs(
+            bev_vehicle_data,
+            bev_fees,
+            bev_energy_cost_per_km,
+            current_annual_kms,
+            incentives,
+            apply_incentives
+        )
+        
+        diesel_annual_costs = calculate_annual_costs(
+            diesel_vehicle_data,
+            diesel_fees,
+            diesel_energy_cost_per_km,
+            current_annual_kms,
+            incentives,
+            apply_incentives
+        )
+        
+        # Calculate emissions
+        bev_emissions = calculate_emissions(
+            bev_vehicle_data,
+            emission_factors,
+            current_annual_kms,
+            current_truck_life_years
+        )
+        
+        diesel_emissions = calculate_emissions(
+            diesel_vehicle_data,
+            emission_factors,
+            current_annual_kms,
+            current_truck_life_years
+        )
+        
+        # Calculate acquisition costs 
+        bev_acquisition = calculate_acquisition_cost(
+            bev_vehicle_data,
+            bev_fees,
+            incentives,
+            apply_incentives
+        )
+        
+        diesel_acquisition = calculate_acquisition_cost(
+            diesel_vehicle_data,
+            diesel_fees,
+            incentives,
+            apply_incentives
+        )
+        
+        # Extract financial parameters for residual value calculation
+        initial_depreciation = financial_params[
+            financial_params['finance_description'] == 'initial_depreciation_percent'
+        ].iloc[0]['default_value']
+        
+        annual_depreciation = financial_params[
+            financial_params['finance_description'] == 'annual_depreciation_percent'
+        ].iloc[0]['default_value']
+        
+        # Calculate residual values
+        bev_residual = calculate_residual_value(
+            bev_vehicle_data,
+            current_truck_life_years,
+            initial_depreciation,
+            annual_depreciation
+        )
+        
+        diesel_residual = calculate_residual_value(
+            diesel_vehicle_data,
+            current_truck_life_years,
+            initial_depreciation,
+            annual_depreciation
+        )
+        
+        # Calculate battery replacement
+        bev_battery_replacement = calculate_battery_replacement(
+            bev_vehicle_data,
+            battery_params_copy,
+            current_truck_life_years,
+            current_discount_rate
+        )
+        
+        # Calculate NPV of annual costs
+        bev_npv_annual = calculate_npv(
+            bev_annual_costs['annual_operating_cost'],
+            current_discount_rate,
+            current_truck_life_years
+        )
+        
+        diesel_npv_annual = calculate_npv(
+            diesel_annual_costs['annual_operating_cost'],
+            current_discount_rate,
+            current_truck_life_years
+        )
+        
+        # Calculate TCO metrics
+        bev_tco = calculate_tco(
+            bev_vehicle_data,
+            bev_fees,
+            bev_annual_costs,
+            bev_acquisition,
+            bev_residual,
+            bev_battery_replacement,
+            bev_npv_annual,
+            current_annual_kms,
+            current_truck_life_years
+        )
+        
+        diesel_tco = calculate_tco(
+            diesel_vehicle_data,
+            diesel_fees,
+            diesel_annual_costs,
+            diesel_acquisition,
+            diesel_residual,
+            0,  # No battery replacement for diesel
+            diesel_npv_annual,
+            current_annual_kms,
+            current_truck_life_years
+        )
+        
+        # Get selected infrastructure option
+        selected_infrastructure_data = infrastructure_options[
+            infrastructure_options['infrastructure_id'] == selected_infrastructure
+        ].iloc[0]
+        
+        # Calculate charging requirements
+        bev_charging_requirements = calculate_charging_requirements(
+            bev_vehicle_data,
+            current_annual_kms,
+            selected_infrastructure_data
+        )
+        
+        # Calculate infrastructure costs
+        infrastructure_costs = calculate_infrastructure_costs(
+            selected_infrastructure_data,
+            current_truck_life_years,
+            current_discount_rate,
+            fleet_size
+        )
+        
+        # Apply infrastructure incentives
+        infrastructure_costs_with_incentives = apply_infrastructure_incentives(
+            infrastructure_costs,
+            incentives,
+            apply_incentives
+        )
+        
+        # Integrate infrastructure costs with BEV TCO
+        bev_tco_with_infrastructure = integrate_infrastructure_with_tco(
+            bev_tco,
+            infrastructure_costs_with_incentives,
+            apply_incentives
+        )
+        
+        # Store results for this parameter value
+        result = {
+            'parameter_value': param_value,
+            'bev': {
+                'tco_per_km': bev_tco_with_infrastructure['tco_per_km'],
+                'tco_lifetime': bev_tco_with_infrastructure['tco_lifetime'],
+                'annual_operating_cost': bev_annual_costs['annual_operating_cost'],
+            },
+            'diesel': {
+                'tco_per_km': diesel_tco['tco_per_km'],
+                'tco_lifetime': diesel_tco['tco_lifetime'],
+                'annual_operating_cost': diesel_annual_costs['annual_operating_cost'],
+            }
+        }
+        
+        results.append(result)
+    
+    return results
+
+def calculate_tornado_data(
+    bev_results,
+    diesel_results,
+    financial_params,
+    battery_params,
+    charging_options,
+    infrastructure_options,
+    emission_factors,
+    incentives,
+    selected_charging,
+    selected_infrastructure,
+    annual_kms,
+    truck_life_years,
+    discount_rate,
+    fleet_size,
+    charging_mix=None,
+    apply_incentives=True
+):
+    """
+    Calculate sensitivity data for multiple parameters to create a tornado chart
+    
+    Args:
+        bev_results: Base BEV results
+        diesel_results: Base Diesel results
+        (other parameters): All parameters needed for sensitivity calculations
+        
+    Returns:
+        Dictionary containing base TCO and impact of each parameter
+    """
+    # Extract vehicle data
+    bev_vehicle_data = bev_results['vehicle_data']
+    diesel_vehicle_data = diesel_results['vehicle_data']
+    
+    # Extract fees - get them from the results instead of setting to None
+    bev_fees = bev_results.get('fees', None)
+    diesel_fees = diesel_results.get('fees', None)
+    
+    # Base TCO per km
+    base_tco = bev_results['tco']['tco_per_km']
+    
+    # Define parameter variations (typically ±20% or meaningful ranges)
+    sensitivity_data = {
+        "Annual Distance (km)": {
+            "range": [annual_kms * 0.5, annual_kms * 1.5],
+            "variation": 0.5  # ±50%
+        },
+        "Diesel Price ($/L)": {
+            "range": [
+                financial_params[financial_params['finance_description'] == 'diesel_price'].iloc[0]['default_value'] * 0.8,
+                financial_params[financial_params['finance_description'] == 'diesel_price'].iloc[0]['default_value'] * 1.2
+            ],
+            "variation": 0.2  # ±20%
+        },
+        "Vehicle Lifetime (years)": {
+            "range": [max(1, truck_life_years - 3), truck_life_years + 3],
+            "variation": 3  # ±3 years
+        },
+        "Discount Rate (%)": {
+            "range": [max(0.5, discount_rate * 100 - 3), discount_rate * 100 + 3],
+            "variation": 3  # ±3 percentage points
+        }
+    }
+    
+    # For electricity price, we need to handle it differently
+    base_electricity_price = charging_options[charging_options['charging_id'] == selected_charging].iloc[0]['per_kwh_price']
+    if 'weighted_electricity_price' in bev_results:
+        base_electricity_price = bev_results['weighted_electricity_price']
+        
+    sensitivity_data["Electricity Price ($/kWh)"] = {
+        "range": [base_electricity_price * 0.8, base_electricity_price * 1.2],
+        "variation": 0.2  # ±20%
+    }
+    
+    # Calculate impacts for each parameter
+    impacts = {}
+    
+    # If fees are not available, we can't run the tornado analysis
+    if bev_fees is None or diesel_fees is None:
+        raise ValueError("Vehicle fees data is required for tornado chart analysis")
+    
+    for param_name, param_info in sensitivity_data.items():
+        param_range = param_info["range"]
+        
+        # Calculate TCO for min and max values
+        results = perform_sensitivity_analysis(
+            param_name,
+            param_range,
+            bev_vehicle_data,
+            diesel_vehicle_data,
+            bev_fees,
+            diesel_fees,
+            charging_options,
+            infrastructure_options,
+            financial_params,
+            battery_params,
+            emission_factors,
+            incentives,
+            selected_charging,
+            selected_infrastructure,
+            annual_kms,
+            truck_life_years,
+            discount_rate,
+            fleet_size,
+            charging_mix,
+            apply_incentives
+        )
+        
+        # Calculate impact on TCO
+        min_impact = results[0]['bev']['tco_per_km'] - base_tco
+        max_impact = results[1]['bev']['tco_per_km'] - base_tco
+        
+        impacts[param_name] = {
+            "min_impact": min_impact,
+            "max_impact": max_impact,
+        }
+    
+    return {
+        "base_tco": base_tco,
+        "impacts": impacts
+    }
