@@ -1,0 +1,32 @@
+scenario_id,parameter_table,parameter_name,vehicle_type,vehicle_drivetrain,parameter_value
+S000,financial_params,diesel_default_price,All,All,2.03
+S000,financial_params,carbon_price,All,All,0.0
+S000,battery_params,replacement_per_kwh_price,All,All,150.0
+S000,battery_params,degradation_annual_percent,All,All,0.025
+S001,financial_params,diesel_default_price,All,All,3.5
+S001,financial_params,inflation_rate,All,All,0.04
+S002,financial_params,carbon_price,All,All,100.0
+S003,vehicle_models,msrp_price_modifier,All,BEV,0.8
+S004,battery_params,replacement_per_kwh_price,All,BEV,90.0
+S004,vehicle_models,msrp_price_modifier,All,BEV,0.9
+S005,incentives,stamp_duty_exemption.incentive_flag,All,BEV,1.0
+S005,incentives,registration_discount.incentive_flag,All,BEV,1.0
+S005,incentives,registration_discount.incentive_rate,All,BEV,0.8
+S005,incentives,purchase_subsidy.incentive_flag,Light Rigid,BEV,1.0
+S005,incentives,purchase_subsidy.incentive_rate,Light Rigid,BEV,30000.0
+S005,incentives,purchase_subsidy.incentive_flag,Medium Rigid,BEV,1.0
+S005,incentives,purchase_subsidy.incentive_rate,Medium Rigid,BEV,45000.0
+S005,incentives,purchase_subsidy.incentive_flag,Articulated,BEV,1.0
+S005,incentives,purchase_subsidy.incentive_rate,Articulated,BEV,60000.0
+S005,financial_params,annual_depreciation_percent,All,BEV,0.2
+S006,vehicle_models,kwh_per100km_modifier,All,BEV,0.8
+S006,vehicle_models,range_km_modifier,All,BEV,1.2
+S006,battery_params,degradation_annual_percent,All,BEV,0.015
+S007,financial_params,diesel_default_price,All,All,2.75
+S007,financial_params,carbon_price,All,All,75.0
+S007,vehicle_models,msrp_price_modifier,All,BEV,0.85
+S007,battery_params,replacement_per_kwh_price,All,BEV,100.0
+S007,battery_params,degradation_annual_percent,All,BEV,0.02
+S007,incentives,stamp_duty_exemption.incentive_flag,All,BEV,1.0
+S007,incentives,registration_discount.incentive_flag,All,BEV,1.0
+S007,incentives,registration_discount.incentive_rate,All,BEV,0.5

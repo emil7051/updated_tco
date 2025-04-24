@@ -1,0 +1,6 @@
+emissions_id,fuel_type,emission_standard,co2_per_unit,emissions_unit
+EF001,diesel,Euro IV+,3.384,kg_per_litre
+EF002,diesel,Euro III,3.385,kg_per_litre
+EF003,diesel,Euro I,3.393,kg_per_litre
+EF004,electricity,Grid,0.7,kg_per_kwh
+EF005,electricity,Renwable,0.04,kg_per_kwh

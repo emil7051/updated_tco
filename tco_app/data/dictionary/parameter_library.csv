@@ -1,0 +1,65 @@
+parameter_id,category,name,default_value,data_type,description,units,source_table,is_scenario_variable,calculation_dependencies
+FP001,Financial,discount_rate_percent,0.05,number,Discount rate for NPV calculations,%,financial_params.csv,False,"npv_annual_cost, npv_externality_cost"
+FP002,Financial,financing_term_years,5.0,number,Term length for vehicle financing,years,financial_params.csv,False,"max_range_with_degradation, monthly_finance_payment, total_financing_cost"
+FP003,Financial,interest_rate_percent,0.055,number,Interest rate for vehicle financing,%,financial_params.csv,False,monthly_finance_payment
+FP004,Financial,down_payment_percent,0.2,number,Initial payment percentage for vehicle financing,%,financial_params.csv,False,monthly_finance_payment
+FP005,Financial,initial_depreciation_percent,0.2,number,Initial depreciation rate for new vehicles,%,financial_params.csv,False,residual_value
+FP006,Financial,annual_depreciation_percent,0.1,number,Annual depreciation rate for vehicles,%,financial_params.csv,True,residual_value
+FP007,Financial,insurance_percent,0.03,number,Insurance cost as percentage of vehicle value,%,financial_params.csv,False,
+FP008,Financial,diesel_price,2.03,number,Base price per litre of diesel fuel,AUD,financial_params.csv,True,energy_cost_per_km
+FP009,Financial,inflation_rate,0.025,number,Annual inflation rate,ratio,financial_params.csv,True,
+FP010,Financial,carbon_price,0.0,number,Carbon price per tonne of CO2 emissions,AUD,financial_params.csv,True,tco_with_carbon_price
+BP001,Battery,replacement_per_kwh_price,150.0,number,Cost to replace battery per kWh capacity,AUD,battery_params.csv,True,"battery_replacement_cost, battery_residual"
+BP002,Battery,degradation_annual_percent,0.025,number,Annual battery capacity degradation rate,%,battery_params.csv,True,"battery_replacement_year, max_range_with_degradation"
+BP003,Battery,minimum_capacity_percent,0.7,number,Minimum acceptable battery capacity before replacement,%,battery_params.csv,False,battery_replacement_year
+BP004,Battery,recycling_value_percent,0.1,number,Residual value of battery for recycling,%,battery_params.csv,False,battery_residual
+OP001_kms,Operating,annual_kms,23000.0,number,Annual distance travelled for Light Rigid trucks,km/year,operating_params.csv,False,"annual_maintenance_cost, annual_energy_cost, annual_emissions"
+OP001_life,Operating,truck_life_years,15.0,number,Expected operational life for Light Rigid trucks,years,operating_params.csv,False,"lifetime_emissions, residual_value, npv_annual_cost"
+OP002_kms,Operating,annual_kms,23000.0,number,Annual distance travelled for Medium Rigid trucks,km/year,operating_params.csv,False,"annual_maintenance_cost, annual_energy_cost, annual_emissions"
+OP002_life,Operating,truck_life_years,15.0,number,Expected operational life for Medium Rigid trucks,years,operating_params.csv,False,"lifetime_emissions, residual_value, npv_annual_cost"
+OP003_kms,Operating,annual_kms,84000.0,number,Annual distance travelled for Articulated trucks,km/year,operating_params.csv,False,"annual_maintenance_cost, annual_energy_cost, annual_emissions"
+OP003_life,Operating,truck_life_years,15.0,number,Expected operational life for Articulated trucks,years,operating_params.csv,False,"lifetime_emissions, residual_value, npv_annual_cost"
+C001,Charging,retail_electricity_price,0.3,number,Electricity price for retail charging,AUD/kWh,charging_options.csv,False,energy_cost_per_km
+C002,Charging,retail_off-peak_electricity_price,0.15,number,Electricity price for off-peak charging,AUD/kWh,charging_options.csv,False,energy_cost_per_km
+C003,Charging,solar_and_storage_electricity_price,0.04,number,Electricity price with solar & storage,AUD/kWh,charging_options.csv,False,energy_cost_per_km
+C004,Charging,public_electricity_price,0.6,number,Electricity price at public charging stations,AUD/kWh,charging_options.csv,False,energy_cost_per_km
+I001,Infrastructure,solar_panels_cost,20000.0,number,Capital cost for solar panels,AUD,infrastructure_options.csv,False,
+I001_life,Infrastructure,solar_panels_service_life,15.0,number,Expected life of solar panels,years,infrastructure_options.csv,False,
+I001_maint,Infrastructure,solar_panels_maintenance,0.03,number,Annual maintenance for solar panels,% of capital cost,infrastructure_options.csv,False,infrastructure_annual_cost
+I002,Infrastructure,solar_battery_cost,20000.0,number,Capital cost for solar battery storage,AUD,infrastructure_options.csv,False,
+I002_life,Infrastructure,solar_battery_service_life,15.0,number,Expected life of battery storage,years,infrastructure_options.csv,False,
+I002_maint,Infrastructure,solar_battery_maintenance,0.03,number,Annual maintenance for battery storage,% of capital cost,infrastructure_options.csv,False,infrastructure_annual_cost
+I003,Infrastructure,dc_fast_charger_80kw_cost,55000.0,number,Capital cost for 80kW DC charger,AUD,infrastructure_options.csv,False,
+I003_life,Infrastructure,dc_fast_charger_80kw_service_life,15.0,number,Expected life of 80kW charger,years,infrastructure_options.csv,False,
+I003_maint,Infrastructure,dc_fast_charger_80kw_maintenance,0.03,number,Annual maintenance for 80kW charger,% of capital cost,infrastructure_options.csv,False,infrastructure_annual_cost
+I004,Infrastructure,dc_fast_charger_160kw_cost,90000.0,number,Capital cost for 160kW DC charger,AUD,infrastructure_options.csv,False,
+I004_life,Infrastructure,dc_fast_charger_160kw_service_life,15.0,number,Expected life of 160kW charger,years,infrastructure_options.csv,False,
+I004_maint,Infrastructure,dc_fast_charger_160kw_maintenance,0.03,number,Annual maintenance for 160kW charger,% of capital cost,infrastructure_options.csv,False,infrastructure_annual_cost
+I005,Infrastructure,dc_fast_charger_200kw_cost,80000.0,number,Capital cost for 200kW DC charger,AUD,infrastructure_options.csv,False,
+I005_life,Infrastructure,dc_fast_charger_200kw_service_life,15.0,number,Expected life of 200kW charger,years,infrastructure_options.csv,False,
+I005_maint,Infrastructure,dc_fast_charger_200kw_maintenance,0.03,number,Annual maintenance for 200kW charger,% of capital cost,infrastructure_options.csv,False,infrastructure_annual_cost
+EF001,Emissions,diesel_co2_per_unit,3.384,number,CO2 emissions per litre of diesel (Euro IV+),kg_per_litre,emission_factors.csv,False,co2_per_km
+EF004,Emissions,electricity_co2_per_unit_grid,0.7,number,CO2 emissions per kWh of grid electricity,kg_per_kwh,emission_factors.csv,False,co2_per_km
+EF005,Emissions,electricity_co2_per_unit_renewable,0.04,number,CO2 emissions per kWh of renewable electricity,kg_per_kwh,emission_factors.csv,False,co2_per_km
+EC001,Externalities,noise_pollution_cost_per_km_diesel_light,0.01,number,Noise pollution cost for Light Rigid Diesel trucks,AUD/km,externalities.csv,False,
+EC002,Externalities,noise_pollution_cost_per_km_bev_light,0.004,number,Noise pollution cost for Light Rigid BEV trucks,AUD/km,externalities.csv,False,
+EC003,Externalities,noise_pollution_cost_per_km_diesel_medium,0.017,number,Noise pollution cost for Medium Rigid Diesel trucks,AUD/km,externalities.csv,False,
+EC004,Externalities,noise_pollution_cost_per_km_bev_medium,0.006,number,Noise pollution cost for Medium Rigid BEV trucks,AUD/km,externalities.csv,False,
+EC005,Externalities,noise_pollution_cost_per_km_diesel_articulated,0.025,number,Noise pollution cost for Articulated Diesel trucks,AUD/km,externalities.csv,False,
+EC006,Externalities,noise_pollution_cost_per_km_bev_articulated,0.009,number,Noise pollution cost for Articulated BEV trucks,AUD/km,externalities.csv,False,
+EC019,Externalities,air_pollution_total_cost_per_km_diesel_light,0.057,number,Air pollution cost for Light Rigid Diesel trucks,AUD/km,externalities.csv,False,
+EC021,Externalities,air_pollution_total_cost_per_km_diesel_medium,0.098,number,Air pollution cost for Medium Rigid Diesel trucks,AUD/km,externalities.csv,False,
+EC023,Externalities,air_pollution_total_cost_per_km_diesel_articulated,0.142,number,Air pollution cost for Articulated Diesel trucks,AUD/km,externalities.csv,False,
+EC025,Externalities,externalities_total_cost_per_km_diesel_light,0.067,number,Total externality cost for Light Rigid Diesel trucks,AUD/km,externalities.csv,False,
+EC026,Externalities,externalities_total_cost_per_km_bev_light,0.004,number,Total externality cost for Light Rigid BEV trucks,AUD/km,externalities.csv,False,
+EC027,Externalities,externalities_total_cost_per_km_diesel_medium,0.115,number,Total externality cost for Medium Rigid Diesel trucks,AUD/km,externalities.csv,False,
+EC028,Externalities,externalities_total_cost_per_km_bev_medium,0.006,number,Total externality cost for Medium Rigid BEV trucks,AUD/km,externalities.csv,False,
+EC029,Externalities,externalities_total_cost_per_km_diesel_articulated,0.167,number,Total externality cost for Articulated Diesel trucks,AUD/km,externalities.csv,False,
+EC030,Externalities,externalities_total_cost_per_km_bev_articulated,0.009,number,Total externality cost for Articulated BEV trucks,AUD/km,externalities.csv,False,
+IN001,Incentives,stamp_duty_exemption,1.0,number,Removes stamp duty fee entirely for BEV vehicles,,incentives.csv,False,acquisition_cost
+IN002,Incentives,registration_exemption,1.0,number,Exemption from registration fees for BEV vehicles,,incentives.csv,False,acquisition_cost
+IN003,Incentives,accelerated_depreciation,0.25,number,Accelerated depreciation rate for BEV vehicles,,incentives.csv,False,acquisition_cost
+IN006,Incentives,diesel_fuel_tax_credit,0.203,number,Rebate on diesel fuel excise for Diesel vehicles,,incentives.csv,False,acquisition_cost
+IN010,Incentives,purchase_rebate_aud,25000.0,number,Direct purchase rebate for BEV vehicles,,incentives.csv,False,acquisition_cost
+IN011,Incentives,charging_infrastructure_subsidy,0.5,number,Subsidy for charging infrastructure for BEV vehicles,,incentives.csv,False,acquisition_cost
+IN012,Incentives,carbon_price_redemption,25.0,number,Carbon credit value per tonne for BEV vehicles,,incentives.csv,False,acquisition_cost

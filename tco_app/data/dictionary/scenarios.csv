@@ -1,0 +1,4 @@
+Column Name,Data Type,Description,Units,Valid Range,Notes
+scenario_id,string,Unique identifier for the scenario,-,Format: S###,Primary key
+scenario_name,string,Short descriptive name for the scenario,-,-,Should be concise yet informative
+scenario_description,string,Detailed description of what the scenario represents,-,-,Should explain the rationale and key parameter adjustments

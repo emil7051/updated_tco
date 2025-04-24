@@ -1,0 +1,4 @@
+Column Name,Data Type,Description,Units,Valid Range,Notes
+charging_id,string,Unique identifier for charging approach,-,Format: C###,Primary key
+charging_approach,string,Description of the charging method,-,"e.g., Retail, Public, Solar & Storage",-
+per_kwh_price,number,Cost of electricity,AUD/kWh,0.04-0.60,-

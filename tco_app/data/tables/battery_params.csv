@@ -1,0 +1,5 @@
+battery_id,battery_description,default_value
+BP001,replacement_per_kwh_price,150.0
+BP002,degradation_annual_percent,0.025
+BP003,minimum_capacity_percent,0.7
+BP004,recycling_value_percent,0.1

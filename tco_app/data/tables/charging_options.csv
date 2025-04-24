@@ -1,0 +1,5 @@
+charging_id,charging_approach,per_kwh_price,charging_proportion
+C001,Retail,0.3,0
+C002,Retail off-peak,0.15,1
+C003,Solar & Storage,0.04,0
+C004,Public,0.6,0

@@ -1,0 +1,5 @@
+Column Name,Data Type,Description,Units,Valid Range,Notes
+operating_id,string,Unique identifier for parameter set,-,Format: OP###,Primary key
+vehicle_type,string,Category of vehicle,-,"Light Rigid, Medium Rigid, Articulated",-
+annual_kms,number,Expected annual driving distance,km/year,"23,000-84,000",Important for TCO calculations
+truck_life_years,number,Expected operational life of vehicle,years,15,Used for TCO timeframe

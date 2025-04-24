@@ -1,0 +1,12 @@
+Column Name,Data Type,Description,Units,Valid Range,Notes
+vehicle_id,string,Unique identifier for the vehicle,-,Format: BEV### or DSL###,Primary key
+vehicle_type,string,Category of vehicle by size/class,-,"Light Rigid, Medium Rigid, Articulated",-
+vehicle_drivetrain,string,Propulsion system type,-,"BEV, Diesel",-
+vehicle_model,string,Manufacturer and model name,-,"e.g., Jac N55, Volvo FM",-
+payload_t,number,Maximum payload capacity,tonnes,2.5-50,-
+msrp_price,number,Manufacturer's suggested retail price,AUD,"75,000-700,000",Before incentives
+range_km,number,Operational range on a full charge/tank,kilometers,180-2000,-
+battery_capacity_kwh,number,Battery size for BEVs,kilowatt-hours,"80-624 for BEVs, -1 for diesel",null indicated N/A for diesel
+kwh_per100km,number,Energy consumption rate for BEVs,kWh/100km,"45-188 for BEVs, -1 for diesel",null indicated N/A for diesel
+litres_per100km,number,Fuel consumption rate for diesel vehicles,litres/100km,"20-50 for diesel, -1 for BEVs",null indicated N/A for BEV's
+comparison_pair_id,string,References the paired vehicle ID for comparative analysis,-,Must match another vehicle_id in the vehicle_models table,"For BEVs, this references the equivalent diesel vehicle; for diesel vehicles, this may be null"

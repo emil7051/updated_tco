@@ -1,0 +1,11 @@
+Column Name,Data Type,Description,Units,Valid Range,Notes
+battery_id,string,Unique identifier for parameter,-,Format: BP###,Primary key
+description,string,Description of the battery parameter,-,-,-
+default_value,number,Default value for the parameter,varies,-,See descriptions below
+,,,,,
+Key Battery Parameters:,,,,,
+,,,,,
+replacement_per_kwh_price: 150 - Battery replacement cost (AUD/kWh),,,,,
+degradation_annual_percent: 0.025 (2.5%) - Annual capacity loss,,,,,
+minimum_capacity_percent: 0.7 (70%) - Threshold for replacement,,,,,
+recycling_value_percent: 0.1 (10%) - Residual value of spent battery,,,,,

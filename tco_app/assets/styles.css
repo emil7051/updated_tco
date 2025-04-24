@@ -1,0 +1,273 @@
+/* 
+ * TCO Model - Clean Stylesheet
+ * Electric vs. Diesel Truck Total Cost of Ownership comparison
+ */
+
+/* ======= VARIABLES ======= */
+:root {
+  /* Primary colors */
+  --primary: #0B3954;
+  --secondary: #087E8B;
+  --accent: #FF5A5F;
+  
+  /* Background colors */
+  --bg-main: #15202B;
+  --bg-sidebar: #0B3954;
+  --bg-card: #FFFFFF;
+  
+  /* Text colors */
+  --text-light: #FFFFFF;
+  --text-dark: #333333;
+  
+  /* Accent colors */
+  --success: #28a745;
+  --warning: #ffc107;
+  --info: #17a2b8;
+  
+  /* Border colors */
+  --border: #E0E0E0;
+  
+  /* Spacing */
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  /* Border radius */
+  --radius-md: 0.5rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-lg: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* ======= GLOBAL STYLES ======= */
+body {
+  background-color: var(--bg-main);
+  color: var(--text-light);
+}
+
+.main .block-container {
+  padding-top: var(--spacing-xl);
+  padding-bottom: var(--spacing-xl);
+  background-color: var(--bg-main);
+  color: var(--text-light);
+}
+
+/* Hide Tailwind branding */
+[data-testid="stAppViewContainer"] > div:first-child {
+  display: none !important;
+}
+
+/* ======= TYPOGRAPHY ======= */
+/* Text in main content area */
+.main h1, 
+.main h2, 
+.main h3, 
+.main h4, 
+.main h5, 
+.main h6 {
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+/* Text in main content */
+.main p, 
+.main span, 
+.main div,
+.main label,
+.main .caption,
+[data-testid="stText"],
+[data-testid="stMarkdown"] p {
+  color: var(--text-light);
+}
+
+/* ======= SIDEBAR STYLES ======= */
+.sidebar {
+  background-color: var(--bg-sidebar);
+}
+
+.sidebar .sidebar-content {
+  background-color: var(--bg-sidebar);
+}
+
+/* Sidebar headers and general text */
+.sidebar h1, 
+.sidebar h2, 
+.sidebar h3, 
+.sidebar h4,
+.sidebar p,
+.sidebar .caption,
+.sidebar div:not(.stSelectbox div):not([data-baseweb="select"] div):not(.stNumberInput div):not([role="listbox"] div) {
+  color: var(--text-light) !important;
+}
+
+/* Sidebar labels */
+.sidebar label {
+  color: var(--text-light) !important;
+  font-weight: 500;
+}
+
+/* ======= SELECT BOXES ======= */
+/* White background with dark text for select boxes */
+.sidebar [data-baseweb="select"] > div {
+  background-color: white;
+}
+
+/* Dark text for all content inside select boxes */
+.sidebar [data-baseweb="select"] span,
+.sidebar [data-baseweb="select"] [data-testid="stMarkdown"],
+.sidebar [data-baseweb="select"] [data-testid="stMarkdown"] p {
+  color: var(--text-dark) !important;
+  font-weight: 500;
+}
+
+/* Ensure the text in the select box is visible */
+.sidebar .stSelectbox [role="combobox"] div {
+  color: var(--text-dark) !important;
+}
+
+/* Fix specifically for the select box placeholders */
+.sidebar [data-baseweb="select"] div[role="button"] {
+  color: var(--text-dark) !important;
+}
+
+.sidebar [data-baseweb="select"] div[role="button"] div {
+  color: var(--text-dark) !important;
+}
+
+/* Style select dropdowns */
+.sidebar [data-baseweb="popover"] {
+  background-color: white !important;
+}
+
+.sidebar div[role="listbox"] ul li {
+  color: var(--text-dark) !important;
+  background-color: white;
+}
+
+/* ======= INPUT FIELDS ======= */
+/* Sidebar buttons and inputs */
+.sidebar .stButton button {
+  background-color: white;
+  color: var(--text-dark);
+}
+
+.sidebar input[type="number"] {
+  color: var(--text-dark) !important;
+  background-color: white !important;
+}
+
+/* ======= CARDS AND CONTAINERS ======= */
+/* Metric cards */
+.metric-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.metric-card div, 
+.metric-card span, 
+.metric-card p {
+  color: var(--text-dark) !important;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--secondary) !important;
+}
+
+/* Vehicle summary card */
+.vehicle-summary-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  border-left: 5px solid var(--secondary);
+  box-shadow: var(--shadow-lg);
+}
+
+.vehicle-summary-card p, 
+.vehicle-summary-card span, 
+.vehicle-summary-card div,
+.vehicle-summary-card [data-testid="stText"],
+.vehicle-summary-card [data-testid="stMarkdown"] p {
+  color: var(--text-dark) !important;
+}
+
+.vehicle-summary-card.bev {
+  border-left-color: var(--secondary);
+}
+
+.vehicle-summary-card.diesel {
+  border-left-color: var(--warning);
+}
+
+/* Comparison card */
+.comparison-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+.comparison-card div, 
+.comparison-card span, 
+.comparison-card p,
+.comparison-card [data-testid="stText"],
+.comparison-card [data-testid="stMarkdown"] p {
+  color: var(--text-dark) !important;
+}
+
+/* Payback highlight */
+.payback-highlight {
+  background-color: #e6f7ff;
+  border-left: 5px solid var(--info);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin: var(--spacing-md) 0;
+}
+
+.payback-highlight div, 
+.payback-highlight span, 
+.payback-highlight p {
+  color: var(--text-dark) !important;
+}
+
+.payback-highlight strong {
+  color: var(--info) !important;
+}
+
+/* Info boxes */
+.stAlert {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.stAlert div, 
+.stAlert span, 
+.stAlert p {
+  color: var(--text-dark) !important;
+}
+
+/* Dataframe container */
+.dataframe-container {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.dataframe-container div, 
+.dataframe-container span, 
+.dataframe-container p {
+  color: var(--text-dark) !important;

@@ -1,0 +1,4 @@
+operating_id,vehicle_type,annual_kms,truck_life_years
+OP001,Light Rigid,23000,15
+OP002,Medium Rigid,23000,15
+OP003,Articulated,84000,15

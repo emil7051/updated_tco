@@ -1,0 +1,7 @@
+infrastructure_id,infrastructure_description,infrastructure_price,service_life_years,maintenance_percent
+I000,No Infrastructure,0,15,0
+I001,Solar Panels,20000,15,0.03
+I002,Solar Battery,20000,15,0.03
+I003,DC Fast Charger 80 kW,55000,15,0.03
+I004,DC Fast Charger 160 kW,90000,15,0.03
+I005,DC Fast Charger 200 kW,80000,15,0.03

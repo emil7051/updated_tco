@@ -1,0 +1,6 @@
+Column Name,Data Type,Description,Units,Valid Range,Notes
+infrastructure_id,string,Unique identifier for infrastructure,-,Format: I###,Primary key
+infrastructure_description,string,Description of the infrastructure,-,"e.g., Solar Panels, DC Fast Charger",-
+infrastructure_price,number,Initial capital cost,AUD,"20,000-90,000",-
+service_life_years,number,Expected service life,years,15,-
+maintenance_percent,number,Annual maintenance as percentage of capital,decimal (%),0.03,Multiply by infrastructure_price for annual cost

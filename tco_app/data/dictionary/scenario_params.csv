@@ -1,0 +1,7 @@
+Column Name,Data Type,Description,Units,Valid Range,Notes
+scenario_id,string,References the scenario this parameter applies to,-,Must match an existing scenario_id in scenarios.csv,Foreign key to scenarios.csv
+parameter_table,string,The table containing the parameter being modified,-,Must be a valid table name in the model,"e.g., financial_params, battery_params"
+parameter_name,string,The name of the parameter being modified,-,Must be a valid column in the referenced parameter_table,"e.g., diesel_default_price, carbon_price"
+vehicle_type,string,Vehicle type this parameter applies to,-,"All, Light Rigid, Medium Rigid, Articulated","""All"" applies to all vehicle types"
+vehicle_drivetrain,string,Drivetrain type this parameter applies to,-,"All, BEV, Diesel","""All"" applies to both drivetrain types"
+parameter_value,number,The value to use for this parameter in this scenario,Varies by parameter,Depends on the parameter,Must be appropriate for the parameter type

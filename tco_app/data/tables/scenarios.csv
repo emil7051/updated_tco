@@ -1,0 +1,9 @@
+scenario_id,scenario_name,scenario_description
+S000,Base Case,Default parameters without modifications - current market conditions
+S001,High Diesel Prices,Scenario where diesel prices increase significantly to $3.50/L due to supply constraints or geopolitical factors
+S002,Carbon Price,Introduction of a $100/tonne carbon price as part of emissions reduction policy
+S003,Falling BEV Price,Electric truck prices fall by 20% due to manufacturing scale and increased competition
+S004,Falling Battery Costs,Battery costs decrease by 40% due to technology improvements and supply chain maturity
+S005,All-out Policy Incentives,"Comprehensive government incentives including purchase subsidies, registration discounts, and accelerated depreciation"
+S006,Improved BEV Technology,Next-generation electric trucks with 20% better range and 20% improved energy efficiency
+S007,Green Transition 2030,"Combined scenario with moderate diesel price increase, carbon price, falling BEV costs, and policy support"

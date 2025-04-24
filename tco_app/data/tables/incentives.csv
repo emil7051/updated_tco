@@ -1,0 +1,15 @@
+incentive_id,vehicle_type,drivetrain,incentive_type,incentive_flag,incentive_rate,start_year,end_year,notes
+IN001,All,BEV,stamp_duty_exemption,0,1.0,2020,2050,Removes stamp duty fee entirely; rate=1.0 means 100% exemption
+IN002,All,BEV,registration_exemption,0,1.0,2020,2050,"Exempts from annual registration fees; rate=1.0 means 100% exemption, rate=0.5 means 50% reduction"
+IN003,All,BEV,accelerated_depreciation,0,0.25,2020,2050,Increases depreciation rate for tax purposes; rate is the additional percentage points added to standard depreciation
+IN004,All,BEV,instant_asset_writeoff,1,1.0,2020,2050,Allows immediate tax deduction of full vehicle cost; rate=1.0 means 100% write-off in first year
+IN005,All,BEV,green_loan,0,0.02,2020,2050,Reduces interest rate on vehicle financing; rate is percentage points below market rate
+IN006,All,Diesel,diesel_fuel_tax_credit,0,0.203,2020,2050,Tax credit for diesel fuel use; rate is dollars per litre refunded
+IN007,All,BEV,electricity_rate_discount,0,0.15,2020,2050,Discount on electricity for charging; rate is the percentage discount on per_kwh_price
+IN008,All,BEV,toll_road_exemption,0,1.0,2020,2050,Exempts from toll road charges; rate=1.0 means 100% exemption
+IN009,All,BEV,battery_replacement_subsidy,0,0.3,2020,2050,Subsidy for battery replacement; rate is percentage of replacement_cost_per_kwh covered
+IN010,All,BEV,purchase_rebate_aud,0,25000.0,2020,2050,Direct rebate on purchase price; rate is the fixed rebate amount in dollars
+IN011,All,BEV,charging_infrastructure_subsidy,0,0.5,2020,2050,Subsidises charging equipment cost; rate is percentage of cost covered
+IN012,All,BEV,carbon_price_redemption,0,25.0,2020,2050,Generates carbon credits for emissions reduction; rate is dollars per tonne CO2 avoided
+IN013,All,BEV,battery_recycling_credit,0,0.15,2020,2050,Credit for end-of-life battery recycling; rate is percentage of original battery cost
+IN014,All,BEV,insurance_discount,0,0.2,2020,2050,Reduces insurance costs; rate is percentage discount on insurance_annual_price

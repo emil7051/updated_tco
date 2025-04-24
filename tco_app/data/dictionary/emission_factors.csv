@@ -1,0 +1,6 @@
+Column Name,Data Type,Description,Units,Valid Range,Notes
+emissions_id,string,Unique identifier for emission factors,-,Format: EF###,Primary key for emission_factors table
+fuel_type,string,Type of fuel/energy source,-,"diesel, electricity",-
+emission_standard,string,Emissions standard or generation type,-,"Euro I, Euro III, Euro IV+, Grid, Renewable","""Renewable"" is misspelled as ""Renwable"" in some entries"
+co2_per_unit,numeric,Carbon dioxide emissions per unit of fuel/energy,kg/unit,0-5,See emissions_unit for specific unit
+emissions_unit,string,Unit of measurement for emissions,-,"kg_per_litre, kg_per_kwh",Defines the denominator in co2_per_unit

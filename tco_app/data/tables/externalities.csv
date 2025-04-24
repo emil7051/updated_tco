@@ -1,0 +1,31 @@
+externality_id,pollutant_type,vehicle_class,drivetrain,cost_per_km,cost_unit,year,calculation_basis
+EC001,noise_pollution,Light Rigid,Diesel,0.01,AUD/km,2025,Australian ATAP & European Handbook values
+EC002,noise_pollution,Light Rigid,BEV,0.004,AUD/km,2025,Australian ATAP & European Handbook values
+EC003,noise_pollution,Medium Rigid,Diesel,0.017,AUD/km,2025,Australian ATAP & European Handbook values
+EC004,noise_pollution,Medium Rigid,BEV,0.006,AUD/km,2025,Australian ATAP & European Handbook values
+EC005,noise_pollution,Articulated,Diesel,0.025,AUD/km,2025,Australian ATAP & European Handbook values
+EC006,noise_pollution,Articulated,BEV,0.009,AUD/km,2025,Australian ATAP & European Handbook values
+EC007,pm25_pollution,Light Rigid,Diesel,0.027,AUD/km,2025,Australian health cost estimates & emissions factors
+EC008,pm25_pollution,Light Rigid,BEV,0.0,AUD/km,2025,Zero tailpipe emissions
+EC009,pm25_pollution,Medium Rigid,Diesel,0.048,AUD/km,2025,Australian health cost estimates & emissions factors
+EC010,pm25_pollution,Medium Rigid,BEV,0.0,AUD/km,2025,Zero tailpipe emissions
+EC011,pm25_pollution,Articulated,Diesel,0.065,AUD/km,2025,Australian health cost estimates & emissions factors
+EC012,pm25_pollution,Articulated,BEV,0.0,AUD/km,2025,Zero tailpipe emissions
+EC013,nox_pollution,Light Rigid,Diesel,0.021,AUD/km,2025,Australian health cost estimates & emissions factors
+EC014,nox_pollution,Light Rigid,BEV,0.0,AUD/km,2025,Zero tailpipe emissions
+EC015,nox_pollution,Medium Rigid,Diesel,0.036,AUD/km,2025,Australian health cost estimates & emissions factors
+EC016,nox_pollution,Medium Rigid,BEV,0.0,AUD/km,2025,Zero tailpipe emissions
+EC017,nox_pollution,Articulated,Diesel,0.056,AUD/km,2025,Australian health cost estimates & emissions factors
+EC018,nox_pollution,Articulated,BEV,0.0,AUD/km,2025,Zero tailpipe emissions
+EC019,air_pollution_total,Light Rigid,Diesel,0.057,AUD/km,2025,Combined PM2.5 NOx SOx VOCs and other pollutants
+EC020,air_pollution_total,Light Rigid,BEV,0.0,AUD/km,2025,Zero tailpipe emissions
+EC021,air_pollution_total,Medium Rigid,Diesel,0.098,AUD/km,2025,Combined PM2.5 NOx SOx VOCs and other pollutants
+EC022,air_pollution_total,Medium Rigid,BEV,0.0,AUD/km,2025,Zero tailpipe emissions
+EC023,air_pollution_total,Articulated,Diesel,0.142,AUD/km,2025,Combined PM2.5 NOx SOx VOCs and other pollutants
+EC024,air_pollution_total,Articulated,BEV,0.0,AUD/km,2025,Zero tailpipe emissions
+EC025,externalities_total,Light Rigid,Diesel,0.067,AUD/km,2025,Sum of noise and air quality costs
+EC026,externalities_total,Light Rigid,BEV,0.004,AUD/km,2025,Sum of noise and remaining impacts
+EC027,externalities_total,Medium Rigid,Diesel,0.115,AUD/km,2025,Sum of noise and air quality costs
+EC028,externalities_total,Medium Rigid,BEV,0.006,AUD/km,2025,Sum of noise and remaining impacts
+EC029,externalities_total,Articulated,Diesel,0.167,AUD/km,2025,Sum of noise and air quality costs
+EC030,externalities_total,Articulated,BEV,0.009,AUD/km,2025,Sum of noise and remaining impacts

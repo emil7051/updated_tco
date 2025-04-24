@@ -1,0 +1,10 @@
+Column Name,Data Type,Description,Units,Valid Range,Notes
+incentive_id,string,Unique identifier for the incentive,-,Format: IN###,Primary key
+vehicle_type,string,Vehicle type the incentive applies to,-,"All, Light Rigid, etc.",-
+drivetrain,string,Type of drivetrain eligible,-,"BEV, Diesel",-
+incentive_flag,number,Indicator if incentive is active,-,"0 (inactive), 1 (active)",-
+incentive_type,string,Type of incentive,-,"e.g., stamp_duty_exemption",-
+incentive_rate,number,Rate or amount of the incentive,decimal or AUD,0-1 for exemptions,-
+start_year,number,Year incentive begins,year,2020-2050,-
+end_year,number,Year incentive expires,year,2020-2050,-
+notes,string,Additional information about the incentive,-,-,-

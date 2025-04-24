@@ -1,0 +1,10 @@
+Column Name,Data Type,Description,Units,Valid Range,Notes
+externality_id,string,Unique identifier for external cost parameter,-,Format: EC###,Primary key
+pollutant_type,string,Type of pollution or externality being measured,-,"noise_pollution, pm25_pollution, nox_pollution, air_pollution_total, externalities_total",Categorises the type of external cost
+vehicle_class,string,Category of vehicle by size/class,-,"Light Rigid, Medium Rigid, Articulated",Matches vehicle_type in vehicle_models.csv
+drivetrain,string,Type of vehicle propulsion system,-,"BEV, Diesel",Matches vehicle_drivetrain in vehicle_models.csv
+cost_per_km,number,Estimated external cost per kilometer,AUD/km,0.000-0.200,Monetised externality cost
+cost_unit,string,Unit of measurement for the cost,-,AUD/km,Consistent across all entries
+year,number,Reference year for cost estimates,year,2020-2030,Year the cost estimates are valid for
+calculation_basis,string,Methodology or source for cost estimates,-,-,Provides traceability for values
+notes,string,Additional information about the calculation or assumptions,-,-,Further context and explanation

@@ -1,0 +1,6 @@
+Column Name,Data Type,Description,Units,Valid Range,Notes
+vehicle_id,string,Unique identifier for the vehicle,-,Format: BEV### or DSL###,Foreign key to vehicle_models
+stamp_duty_price,number,One-time stamp duty fee,AUD,"2,250-21,000",Paid at purchase
+registration_annual_price,number,Annual vehicle registration cost,AUD/year,"653-6,872",
+insurance_annual_price,number,Annual insurance premium,AUD/year,"2,250-21,000",
+maintenance_perkm_price,number,Maintenance cost per km,AUD/km,0.05-0.3,"Lower for BEVs, higher for diesel"

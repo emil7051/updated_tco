@@ -1,0 +1,56 @@
+Category,Field Name,Data Type,Description,Formula,Parameter Sources,Calculation Dependencies
+Energy,energy_cost_per_km,number,Cost of energy per kilometer,"IF(vehicle_drivetrain=""BEV"", kwh_per100km/100 * [electricity_price], litres_per100km/100 * [diesel_price])","charging_options.csv (per_kwh_price), financial_params.csv (diesel_default_price)",
+Energy,energy_mj_per_km,number,Energy consumption in megajoules per km,"IF(vehicle_drivetrain=""BEV"", kwh_per100km/100 * 3.6, litres_per100km/100 * 38.6)",,
+Energy,vehicle_efficiency,number,Payload efficiency (tonnes per megajoule),payload_t / energy_mj_per_km,,energy_mj_per_km
+Operating,annual_maintenance_cost,number,Annual cost of maintenance,maintenance_perkm_price * [annual_kms],operating_params.csv (default_annual_kms),
+Energy,annual_energy_cost,number,Annual cost of energy,energy_cost_per_km * [annual_kms],operating_params.csv (default_annual_kms),energy_cost_per_km
+Operating,annual_operating_cost,number,Total annual operating costs,annual_energy_cost + maintenance_perkm_price*[annual_kms] + registration_annual_price + insurance_annual_price,operating_params.csv (default_annual_kms),annual_energy_cost
+Emissions,co2_per_km,number,CO2 emissions per kilometer,"IF(vehicle_drivetrain=""BEV"", kwh_per100km/100 * [electricity_emission_factor], litres_per100km/100 * [diesel_emission_factor])",emission_factors.csv (co2_per_unit),
+Emissions,annual_emissions,number,Annual CO2 emissions in kg,co2_per_km * [annual_kms],operating_params.csv (default_annual_kms),co2_per_km
+Emissions,lifetime_emissions,number,Lifetime CO2 emissions in kg,annual_emissions * [truck_life_years],operating_params.csv (truck_life_years),annual_emissions
+Emissions,emission_savings_lifetime,number,Lifetime CO2 emissions saved compared to diesel,[diesel:lifetime_emissions] - lifetime_emissions,vehicle_comparison.csv (paired diesel vehicle),lifetime_emissions
+Battery,battery_replacement_year,number,Year when battery needs replacement,CEILING(LN([minimum_capacity_percent]) / LN(1 - [degradation_annual_percent])),"battery_params.csv (minimum_capacity_percent, degradation_annual_percent)",
+Battery,battery_replacement_cost,number,Cost to replace the battery,"IF(vehicle_drivetrain=""BEV"", battery_capacity_kwh * [replacement_per_kwh_price], 0)",battery_params.csv (replacement_per_kwh_price),
+Battery,max_range_with_degradation,number,Maximum range after degradation,"IF(vehicle_drivetrain=""BEV"", range_km * (1 - [degradation_annual_percent] * [years]), range_km)","battery_params.csv (degradation_annual_percent), financial_params.csv (financing_term_years)",
+Battery,battery_residual,number,Residual value of battery,"IF(vehicle_drivetrain=""BEV"", battery_capacity_kwh * [recycling_value_percent] * [replacement_per_kwh_price], 0)","battery_params.csv (recycling_value_percent, replacement_per_kwh_price)",
+Financial,acquisition_cost,number,Initial vehicle acquisition cost,msrp_price + stamp_duty_price - [applicable_incentives],incentives.csv,
+Financial,monthly_finance_payment,number,Monthly financing payment,"PMT([interest_rate]/12, [financing_term]12, acquisition_cost(1-[down_payment_percent]))","financial_params.csv (interest_rate_percent, financing_term_years, down_payment_percent)",acquisition_cost
+Financial,total_financing_cost,number,Total cost of financing over term,monthly_finance_payment * [financing_term] * 12,financial_params.csv (financing_term_years),monthly_finance_payment
+Financial,residual_value,number,Residual value at end of life,msrp_price * (1-[initial_depreciation_percent]) * (1-[annual_depreciation_percent])^([truck_life_years]-1),"financial_params.csv (initial_depreciation_percent, annual_depreciation_percent), operating_params.csv (truck_life_years)",
+TCO,npv_annual_cost,number,Net present value of annual costs,SUM(annual_operating_cost / ((1+[discount_rate])^year)) for year in 1 to [truck_life_years],"financial_params.csv (discount_rate_percent), operating_params.csv (truck_life_years)",annual_operating_cost
+TCO,npv_total_cost,number,Net present value of total cost,Acquisition cost + NPV of operating costs - NPV of residual value,,"acquisition_cost, npv_annual_cost, residual_value"
+TCO,tco_per_tonne_km,number,TCO per tonne-kilometre,tco_per_km / payload_t,,npv_total_cost
+TCO,levelised_cost_of_driving,number,Levelised cost per km,npv_total_cost / ([annual_kms] * [truck_life_years]),"operating_params.csv (default_annual_kms, truck_life_years)",npv_total_cost
+TCO,payback_period,number,Years to break even versus diesel,(acquisition_cost - [diesel:acquisition_cost]) / ([diesel:annual_operating_cost] - annual_operating_cost),vehicle_comparison.csv (paired diesel vehicle),"acquisition_cost, annual_operating_cost"
+TCO,tco_with_carbon_price,number,TCO including carbon price,npv_total_cost + lifetime_emissions/1000 * [carbon_price],financial_params.csv (carbon_price),"npv_total_cost, lifetime_emissions"
+Comparison,bev_to_diesel_upfront_ratio,number,Ratio of BEV to diesel upfront costs,acquisition_cost / [diesel:acquisition_cost],vehicle_comparison.csv (paired diesel vehicle),acquisition_cost
+Comparison,bev_to_diesel_operating_ratio,number,Ratio of BEV to diesel operating costs,annual_operating_cost / [diesel:annual_operating_cost],vehicle_comparison.csv (paired diesel vehicle),annual_operating_cost
+Comparison,bev_to_diesel_tco_ratio,number,Ratio of BEV to diesel TCO,npv_total_cost / [diesel:npv_total_cost],vehicle_comparison.csv (paired diesel vehicle),npv_total_cost
+Emissions,abatement_cost,number,Cost per tonne of CO2 abatement,(npv_total_cost - [diesel:npv_total_cost]) / (emission_savings_lifetime / 1000),vehicle_comparison.csv (paired diesel vehicle),"npv_total_cost, emission_savings_lifetime"
+Sensitivity,diesel_price_breakeven,number,Diesel price where BEV and diesel TCO are equal,Sensitivity calculation to find diesel price where npv_total_cost = [diesel:npv_total_cost]  - will be implemented in python,vehicle_comparison.csv (paired diesel vehicle),npv_total_cost
+Sensitivity,electricity_price_breakeven,number,Electricity price where BEV and diesel TCO are equal,Sensitivity calculation to find electricity price where npv_total_cost = [diesel:npv_total_cost]  - will be implemented in python,vehicle_comparison.csv (paired diesel vehicle),npv_total_cost
+Sensitivity,annual_distance_breakeven,number,Annual distance where BEV and diesel TCO are equal,Sensitivity calculation to find annual_kms where npv_total_cost = [diesel:npv_total_cost] - will be implemented in python,vehicle_comparison.csv (paired diesel vehicle),npv_total_cost
+Infrastructure,infrastructure_annual_cost,number,Annual cost of infrastructure,infrastructure_price / service_life_years + infrastructure_price * [maintenance_percent],infrastructure_options.csv (maintenance_percent),
+Infrastructure,infrastructure_per_vehicle,number,Infrastructure cost per vehicle,infrastructure_annual_cost / [number_of_vehicles],User input (number_of_vehicles),infrastructure_annual_cost
+Infrastructure,daily_distance,number,Average daily distance,[annual_kms] / 365,operating_params.csv (default_annual_kms),
+Infrastructure,daily_kwh_required,number,Daily electricity required,"IF(vehicle_drivetrain=""BEV"", daily_distance * kwh_per100km / 100, 0)",,daily_distance
+Infrastructure,charging_time_per_day,number,Hours of charging required per day,(daily_distance * kwh_per100km/100) / [charger_power],User input (charger_power),"daily_distance, daily_kwh_required"
+Infrastructure,max_vehicles_per_charger,number,Maximum vehicles per charger,24 / charging_time_per_day,,charging_time_per_day
+Externalities,noise_pollution_cost_per_km,number,Noise pollution cost per km,"LOOKUP(vehicle_class, drivetrain, ""noise_pollution"", external_costs)",externalities.csv,
+Externalities,air_pollution_cost_per_km,number,Air pollution cost per km,"LOOKUP(vehicle_class, drivetrain, ""air_pollution_total"", external_costs)",externalities.csv,
+Externalities,total_externality_cost_per_km,number,Total external cost per km,"LOOKUP(vehicle_class, drivetrain, ""externalities_total"", external_costs)",externalities.csv,
+Externalities,annual_noise_cost,number,Annual noise pollution cost,noise_pollution_cost_per_km * [annual_kms],operating_params.csv (default_annual_kms),noise_pollution_cost_per_km
+Externalities,annual_air_pollution_cost,number,Annual air pollution cost,air_pollution_cost_per_km * [annual_kms],operating_params.csv (default_annual_kms),air_pollution_cost_per_km
+Externalities,annual_externality_cost,number,Annual externality cost,total_externality_cost_per_km * [annual_kms],operating_params.csv (default_annual_kms),total_externality_cost_per_km
+Externalities,lifetime_externality_cost,number,Lifetime externality cost,annual_externality_cost * [truck_life_years],operating_params.csv (truck_life_years),annual_externality_cost
+Externalities,npv_externality_cost,number,NPV of externality costs,SUM(annual_externality_cost / ((1+[discount_rate])^year)) for year in 1 to [truck_life_years],"financial_params.csv (discount_rate_percent), operating_params.csv (truck_life_years)",annual_externality_cost
+Externalities,social_tco,number,TCO including externalities,npv_total_cost + npv_externality_cost,,"npv_total_cost, npv_externality_cost"
+Externalities,social_tco_per_km,number,Social TCO per km,social_tco / ([annual_kms] * [truck_life_years]),"operating_params.csv (default_annual_kms, truck_life_years)",social_tco
+Externalities,externality_savings_lifetime,number,Lifetime externality savings,[diesel:lifetime_externality_cost] - lifetime_externality_cost,vehicle_comparison.csv (paired diesel vehicle),lifetime_externality_cost
+Externalities,externality_savings_percent,number,Percent externality savings,externality_savings_lifetime / [diesel:lifetime_externality_cost] * 100,vehicle_comparison.csv (paired diesel vehicle),externality_savings_lifetime
+Externalities,social_payback_period,number,Social payback period,(acquisition_cost - [diesel:acquisition_cost]) / ([diesel:annual_operating_cost] + [diesel:annual_externality_cost] - annual_operating_cost - annual_externality_cost),vehicle_comparison.csv (paired diesel vehicle),"acquisition_cost, annual_operating_cost, annual_externality_cost"
+Externalities,total_social_benefit,number,Total social benefit,([diesel:npv_total_cost] - npv_total_cost) + externality_savings_lifetime,vehicle_comparison.csv (paired diesel vehicle),"npv_total_cost, externality_savings_lifetime"
+Externalities,social_return_ratio,number,Social return on investment,total_social_benefit / (acquisition_cost - [diesel:acquisition_cost]),vehicle_comparison.csv (paired diesel vehicle),"total_social_benefit, acquisition_cost"
+Incentives,acquisition_cost_with_incentives,number,Acquisition cost after incentives,acquisition_cost - sum(applicable_incentives),incentives.csv,acquisition_cost
+Incentives,npv_total_cost_with_incentives,number,TCO including incentives,Recalculated NPV using incentive-adjusted costs,,acquisition_cost_with_incentives
+"Vehicle comparisons use the notation [diesel:field_name] to reference values from the paired diesel vehicle as defined in vehicle_comparison.csv (e.g., BEV001 is compared with DSL001)",,,,,,

@@ -1,0 +1,11 @@
+financial_id,finance_description,default_value
+FP001,discount_rate_percent,0.05
+FP002,financing_term_years,5.0
+FP003,interest_rate_percent,0.055
+FP004,down_payment_percent,0.2
+FP005,initial_depreciation_percent,0.2
+FP006,annual_depreciation_percent,0.1
+FP007,insurance_percent,0.03
+FP008,diesel_price,2.03
+FP009,inflation_rate,0.025
+FP010,carbon_price,0.0
