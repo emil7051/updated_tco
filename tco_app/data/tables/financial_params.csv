@@ -9,3 +9,7 @@ FP007,insurance_percent,0.03
 FP008,diesel_price,2.03
 FP009,inflation_rate,0.025
 FP010,carbon_price,0.0
+FP011,freight_value_per_tonne,120.0
+FP012,driver_cost_hourly,35.0
+FP013,avg_trip_distance,100.0
+FP014,avg_loadunload_time,1.0

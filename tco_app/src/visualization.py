@@ -142,10 +142,48 @@ def create_annual_costs_chart(bev_results, diesel_results, truck_life_years):
         height=400
     )
     
-    # Add price parity point if applicable
-    if bev_results['comparison']['price_parity_year'] < truck_life_years:
+    # Find intersection point (price parity) where BEV and Diesel costs are equal
+    intersection_year = None
+    intersection_cost = None
+    
+    # Check for intersection between consecutive years
+    for i in range(len(years) - 1):
+        bev_cost1, bev_cost2 = bev_cumulative[i], bev_cumulative[i+1]
+        diesel_cost1, diesel_cost2 = diesel_cumulative[i], diesel_cumulative[i+1]
+        
+        # Check if the cost difference changes sign (intersection)
+        if (bev_cost1 - diesel_cost1) * (bev_cost2 - diesel_cost2) <= 0:
+            # Lines intersect between year i and i+1
+            # Use linear interpolation to find the exact point
+            year1, year2 = years[i], years[i+1]
+            
+            # Calculate the intersection point using line equation
+            if bev_cost2 - bev_cost1 != diesel_cost2 - diesel_cost1:  # Avoid division by zero
+                # Solve for t where: bev_cost1 + t*(bev_cost2-bev_cost1) = diesel_cost1 + t*(diesel_cost2-diesel_cost1)
+                t = (diesel_cost1 - bev_cost1) / ((bev_cost2 - bev_cost1) - (diesel_cost2 - diesel_cost1))
+                intersection_year = year1 + t
+                intersection_cost = bev_cost1 + t * (bev_cost2 - bev_cost1)
+                break
+    
+    # Add the calculated price parity point if found
+    if intersection_year is not None and intersection_cost is not None:
+        fig.add_trace(go.Scatter(
+            x=[intersection_year],
+            y=[intersection_cost],
+            mode='markers',
+            marker=dict(size=12, color='green', symbol='star'),
+            name='Price Parity Point',
+            hoverinfo='text',
+            text=f'Price Parity at {intersection_year:.1f} years'
+        ))
+    # If no intersection found but we have a price parity year, use the old method as fallback
+    elif 'comparison' in bev_results and 'price_parity_year' in bev_results['comparison'] and bev_results['comparison']['price_parity_year'] < truck_life_years:
         parity_year = bev_results['comparison']['price_parity_year']
-        parity_cost = np.interp(parity_year, years, diesel_cumulative)
+        # Interpolate costs for both lines to find the exact costs at parity_year
+        parity_bev_cost = np.interp(parity_year, years, bev_cumulative)
+        parity_diesel_cost = np.interp(parity_year, years, diesel_cumulative)
+        # Use the average of both costs to better approximate the intersection
+        parity_cost = (parity_bev_cost + parity_diesel_cost) / 2
         
         fig.add_trace(go.Scatter(
             x=[parity_year],
@@ -391,30 +429,30 @@ def create_sensitivity_chart(bev_results, diesel_results, parameter, param_range
     # Set up the figure
     fig = go.Figure()
     
-    # Add BEV TCO line
+    # Add BEV TCO line - use lifetime TCO instead of per km
     fig.add_trace(go.Scatter(
         x=param_range,
-        y=[tco['bev']['tco_per_km'] for tco in recalculated_tcos],
+        y=[tco['bev']['tco_lifetime'] for tco in recalculated_tcos],
         mode='lines+markers',
         name='BEV TCO',
         line=dict(color='#2E86C1', width=3),
         marker=dict(size=8)
     ))
     
-    # Add Diesel TCO line
+    # Add Diesel TCO line - use lifetime TCO instead of per km
     fig.add_trace(go.Scatter(
         x=param_range,
-        y=[tco['diesel']['tco_per_km'] for tco in recalculated_tcos],
+        y=[tco['diesel']['tco_lifetime'] for tco in recalculated_tcos],
         mode='lines+markers',
         name='Diesel TCO',
         line=dict(color='#E67E22', width=3),
         marker=dict(size=8)
     ))
     
-    # Add TCO difference line
+    # Add TCO difference line - use lifetime TCO difference
     fig.add_trace(go.Scatter(
         x=param_range,
-        y=[tco['bev']['tco_per_km'] - tco['diesel']['tco_per_km'] for tco in recalculated_tcos],
+        y=[tco['bev']['tco_lifetime'] - tco['diesel']['tco_lifetime'] for tco in recalculated_tcos],
         mode='lines+markers',
         name='TCO Difference (BEV - Diesel)',
         line=dict(color='#8E44AD', width=2, dash='dash'),
@@ -451,10 +489,10 @@ def create_sensitivity_chart(bev_results, diesel_results, parameter, param_range
     break_even_value = None
     
     for i in range(len(param_range) - 1):
-        bev_tco1 = recalculated_tcos[i]['bev']['tco_per_km']
-        diesel_tco1 = recalculated_tcos[i]['diesel']['tco_per_km']
-        bev_tco2 = recalculated_tcos[i+1]['bev']['tco_per_km']
-        diesel_tco2 = recalculated_tcos[i+1]['diesel']['tco_per_km']
+        bev_tco1 = recalculated_tcos[i]['bev']['tco_lifetime']
+        diesel_tco1 = recalculated_tcos[i]['diesel']['tco_lifetime']
+        bev_tco2 = recalculated_tcos[i+1]['bev']['tco_lifetime']
+        diesel_tco2 = recalculated_tcos[i+1]['diesel']['tco_lifetime']
         
         # Check if the TCO difference changes sign (crosses 0)
         if (bev_tco1 - diesel_tco1) * (bev_tco2 - diesel_tco2) <= 0:
@@ -473,8 +511,8 @@ def create_sensitivity_chart(bev_results, diesel_results, parameter, param_range
         if break_even_index is not None:
             # Linear interpolation for BEV TCO at break-even
             x1, x2 = param_range[break_even_index], param_range[break_even_index+1]
-            y1 = recalculated_tcos[break_even_index]['bev']['tco_per_km']
-            y2 = recalculated_tcos[break_even_index+1]['bev']['tco_per_km']
+            y1 = recalculated_tcos[break_even_index]['bev']['tco_lifetime']
+            y2 = recalculated_tcos[break_even_index+1]['bev']['tco_lifetime']
             
             bev_tco_at_breakeven = y1 + (break_even_value - x1) * (y2 - y1) / (x2 - x1)
             
@@ -509,7 +547,7 @@ def create_sensitivity_chart(bev_results, diesel_results, parameter, param_range
     fig.update_layout(
         title=f'TCO Sensitivity to {parameter}',
         xaxis_title=f'{parameter} {param_unit}',
-        yaxis_title='TCO per km (AUD)',
+        yaxis_title='Lifetime TCO (AUD)',
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -610,6 +648,190 @@ def create_tornado_chart(base_tco, sensitivity_results):
         line_color="green",
         annotation_text=f"Base TCO: {base_tco:.4f}",
         annotation_position="top right"
+    )
+    
+    return fig
+
+def create_payload_comparison_chart(payload_metrics, bev_results, diesel_results):
+    """
+    Create a stacked bar chart showing the impact of payload penalty on TCO
+    
+    Args:
+        payload_metrics: Dictionary with payload analysis metrics
+        bev_results: Dictionary with BEV results
+        diesel_results: Dictionary with diesel results
+        
+    Returns:
+        Plotly figure object
+    """
+    # Create data for a stacked bar chart showing both original and additional costs
+    fig = go.Figure()
+    
+    # Diesel bar (reference)
+    fig.add_trace(go.Bar(
+        x=['Diesel'],
+        y=[diesel_results['tco']['npv_total_cost']],
+        name='Total TCO',
+        marker_color='#ff7f0e'
+    ))
+    
+    # BEV bars (standard and with payload adjustment)
+    fig.add_trace(go.Bar(
+        x=['BEV (Standard)', 'BEV (Payload-Adjusted)'],
+        y=[
+            bev_results['tco']['npv_total_cost'], 
+            bev_results['tco']['npv_total_cost']
+        ],
+        name='Base TCO',
+        marker_color='#1f77b4'
+    ))
+    
+    # Add payload adjustment costs as a separate bar segment
+    if payload_metrics['has_penalty']:
+        fig.add_trace(go.Bar(
+            x=['BEV (Standard)', 'BEV (Payload-Adjusted)'],
+            y=[
+                0,  # No adjustment for standard
+                payload_metrics['additional_operational_cost_lifetime']
+            ],
+            name='Payload Penalty Costs',
+            marker_color='#d62728'
+        ))
+    
+    fig.update_layout(
+        barmode='stack',
+        title='Lifetime TCO Comparison with Payload Adjustment',
+        xaxis_title='Vehicle Type',
+        yaxis_title='Lifetime TCO (AUD)',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        height=500
+    )
+    
+    return fig
+
+def create_payload_sensitivity_chart(bev_results, diesel_results, financial_params, distances):
+    """
+    Create a chart showing how payload penalty affects TCO ratio at different annual distances
+    
+    Args:
+        bev_results: Dictionary with BEV results
+        diesel_results: Dictionary with diesel results
+        financial_params: Financial parameters
+        distances: List of annual distances to analyze
+        
+    Returns:
+        Plotly figure object
+    """
+    import copy
+    from .calculations import calculate_payload_penalty_costs
+    
+    # Calculate TCO for each distance
+    results = []
+    
+    for distance in distances:
+        # Make deep copies to avoid modifying the original results
+        bev_temp = copy.deepcopy(bev_results)
+        diesel_temp = copy.deepcopy(diesel_results)
+        
+        # Update annual distance
+        bev_temp['annual_kms'] = distance
+        diesel_temp['annual_kms'] = distance
+        
+        # Recalculate energy costs - simplified approach
+        bev_annual_energy = bev_results['energy_cost_per_km'] * distance
+        diesel_annual_energy = diesel_results['energy_cost_per_km'] * distance
+        
+        # Update annual costs
+        bev_temp['annual_costs']['annual_energy_cost'] = bev_annual_energy
+        diesel_temp['annual_costs']['annual_energy_cost'] = diesel_annual_energy
+        
+        # Update total annual operating costs
+        bev_temp['annual_costs']['annual_operating_cost'] = (
+            bev_annual_energy + 
+            bev_temp['annual_costs']['annual_maintenance_cost'] + 
+            bev_temp['annual_costs']['insurance_annual'] + 
+            bev_temp['annual_costs']['registration_annual']
+        )
+        
+        diesel_temp['annual_costs']['annual_operating_cost'] = (
+            diesel_annual_energy + 
+            diesel_temp['annual_costs']['annual_maintenance_cost'] + 
+            diesel_temp['annual_costs']['insurance_annual'] + 
+            diesel_temp['annual_costs']['registration_annual']
+        )
+        
+        # Calculate payload penalty
+        payload_metrics = calculate_payload_penalty_costs(bev_temp, diesel_temp, financial_params)
+        
+        # Store results
+        results.append({
+            'distance': distance,
+            'standard_tco_ratio': bev_temp['tco']['npv_total_cost'] / diesel_temp['tco']['npv_total_cost'],
+            'adjusted_tco_ratio': payload_metrics['bev_adjusted_lifetime_tco'] / diesel_temp['tco']['npv_total_cost'] if payload_metrics['has_penalty'] else bev_temp['tco']['npv_total_cost'] / diesel_temp['tco']['npv_total_cost']
+        })
+    
+    # Create DataFrame for plotting
+    results_df = pd.DataFrame(results)
+    
+    # Create line chart
+    fig = go.Figure()
+    
+    fig.add_trace(go.Scatter(
+        x=results_df['distance'],
+        y=results_df['standard_tco_ratio'],
+        mode='lines+markers',
+        name='Standard TCO Ratio (BEV/Diesel)',
+        line=dict(color='#1f77b4')
+    ))
+    
+    fig.add_trace(go.Scatter(
+        x=results_df['distance'],
+        y=results_df['adjusted_tco_ratio'],
+        mode='lines+markers',
+        name='Payload-Adjusted TCO Ratio',
+        line=dict(color='#d62728')
+    ))
+    
+    # Add horizontal line at ratio = 1 (break-even)
+    fig.add_shape(
+        type="line",
+        x0=min(distances),
+        y0=1,
+        x1=max(distances),
+        y1=1,
+        line=dict(
+            color="green",
+            width=2,
+            dash="dash",
+        )
+    )
+    
+    fig.add_annotation(
+        x=min(distances) + (max(distances) - min(distances))*0.05,
+        y=1.02,
+        text="Break-even point (BEV = Diesel)",
+        showarrow=False,
+        font=dict(color="green")
+    )
+    
+    fig.update_layout(
+        title='Impact of Annual Distance on TCO Ratio with Payload Adjustment',
+        xaxis_title='Annual Distance (km)',
+        yaxis_title='TCO Ratio (BEV/Diesel)',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        height=500
     )
     
     return fig

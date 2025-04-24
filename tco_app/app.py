@@ -23,13 +23,14 @@ from src.calculations import (
     calculate_social_tco, calculate_comparative_metrics,
     calculate_infrastructure_costs, calculate_charging_requirements,
     apply_infrastructure_incentives, integrate_infrastructure_with_tco,
-    perform_sensitivity_analysis, calculate_tornado_data
+    perform_sensitivity_analysis, calculate_tornado_data, calculate_payload_penalty_costs
 )
 from src.visualization import (
     create_cost_breakdown_chart, create_annual_costs_chart,
     create_emissions_chart,
     create_charging_mix_chart,
-    create_sensitivity_chart, create_tornado_chart
+    create_sensitivity_chart, create_tornado_chart,
+    create_payload_comparison_chart, create_payload_sensitivity_chart
 )
 from src.ui_components import (
     display_metric_card, display_comparison_metrics,
@@ -935,7 +936,8 @@ def main():
         tabs = st.tabs([
             "Cost Breakdown", 
             "Emissions", 
-            "Detailed Results", 
+            "Detailed Results",
+            "Payload Analysis",
             "Sensitivity Analysis"
         ])
         
@@ -1015,12 +1017,12 @@ def main():
             
             st.subheader("Costs Over Time")
             annual_costs_chart = create_annual_costs_chart(bev_results, diesel_results, truck_life_years)
-            st.plotly_chart(annual_costs_chart, use_container_width=True)
+            st.plotly_chart(annual_costs_chart, use_container_width=True, key="annual_costs_chart")
         
         # Emissions tab
         with tabs[1]:
             emissions_chart = create_emissions_chart(bev_results, diesel_results, truck_life_years)
-            st.plotly_chart(emissions_chart, use_container_width=True)
+            st.plotly_chart(emissions_chart, use_container_width=True, key="emissions_chart")
             
             col1, col2 = st.columns(2)
             
@@ -1053,9 +1055,251 @@ def main():
         # Detailed Results tab
         with tabs[2]:
             display_detailed_results_table(bev_results, diesel_results)
+            
+        # Payload Analysis tab
+        with tabs[3]:
+            st.subheader("Payload Capacity Analysis")
+            
+            # Calculate payload penalty metrics
+            payload_metrics = calculate_payload_penalty_costs(bev_results, diesel_results, financial_params)
+            
+            # Display basic payload comparison
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric(
+                    "BEV Payload Capacity", 
+                    f"{bev_results['vehicle_data']['payload_t']} tonnes"
+                )
+            with col2:
+                st.metric(
+                    "Diesel Payload Capacity", 
+                    f"{diesel_results['vehicle_data']['payload_t']} tonnes"
+                )
+            with col3:
+                if payload_metrics['has_penalty']:
+                    st.metric(
+                        "Payload Difference", 
+                        f"{payload_metrics['payload_difference']:.1f} tonnes", 
+                        delta=f"-{payload_metrics['payload_difference_percentage']:.1f}%",
+                        delta_color="inverse"
+                    )
+                else:
+                    st.metric(
+                        "Payload Difference", 
+                        f"{payload_metrics['payload_difference']:.1f} tonnes",
+                        delta=f"+{-payload_metrics['payload_difference_percentage']:.1f}%",
+                        delta_color="normal"
+                    )
+            
+            # Only show detailed analysis if there's a payload penalty
+            if payload_metrics['has_penalty']:
+                st.markdown("### Economic Impact of Reduced Payload Capacity")
+                st.markdown("""
+                When electric trucks have lower payload capacity than their diesel counterparts, 
+                there are several economic implications to consider:
+                """)
+                
+                # Fleet size implications
+                st.markdown("#### Fleet Size Impact")
+                st.markdown(f"""
+                To move the same amount of freight, you would need **{payload_metrics['fleet_ratio']:.2f}x** 
+                as many BEV trucks compared to diesel trucks. This means:
+                
+                - For every 10 diesel trucks, you would need approximately **{(10 * payload_metrics['fleet_ratio']):.1f}** BEV trucks
+                - This represents an additional **{payload_metrics['additional_bevs_needed_per_diesel'] * 100:.1f}%** vehicles in your fleet
+                """)
+                
+                # Operational impacts
+                st.markdown("#### Operational Impacts")
+                
+                impact_col1, impact_col2 = st.columns(2)
+                with impact_col1:
+                    st.metric(
+                        "Additional Annual Operating Cost", 
+                        f"${payload_metrics['additional_operational_cost_annual']:,.2f}"
+                    )
+                    st.metric(
+                        "Additional Lifetime Operating Cost", 
+                        f"${payload_metrics['additional_operational_cost_lifetime']:,.2f}"
+                    )
+                
+                with impact_col2:
+                    st.metric(
+                        "Additional Driver Hours Annually", 
+                        f"{payload_metrics['additional_hours_annual']:,.1f} hours"
+                    )
+                    st.metric(
+                        "Additional Labour Cost Annually", 
+                        f"${payload_metrics['additional_labour_cost_annual']:,.2f}"
+                    )
+                
+                # Opportunity cost
+                st.markdown("#### Opportunity Cost")
+                st.markdown(f"""
+                The reduced payload represents potential lost revenue or increased costs:
+                
+                - Lost carrying capacity of **{payload_metrics['lost_carrying_capacity_annual']:,.1f} tonnes** per year
+                - Potential opportunity cost of **${payload_metrics['opportunity_cost_annual']:,.2f}** per year
+                - Lifetime opportunity cost of **${payload_metrics['opportunity_cost_lifetime']:,.2f}**
+                """)
+                
+                # Adjusted TCO
+                st.markdown("#### Adjusted TCO Metrics")
+                
+                adjusted_col1, adjusted_col2 = st.columns(2)
+                with adjusted_col1:
+                    st.metric(
+                        "Standard TCO per tonne-km", 
+                        f"${bev_results['tco']['tco_per_tonne_km']:,.3f}",
+                        delta=f"{(bev_results['tco']['tco_per_tonne_km'] - diesel_results['tco']['tco_per_tonne_km']) / diesel_results['tco']['tco_per_tonne_km'] * 100:.1f}%",
+                        delta_color="inverse" if bev_results['tco']['tco_per_tonne_km'] > diesel_results['tco']['tco_per_tonne_km'] else "normal"
+                    )
+                    st.metric(
+                        "Adjusted TCO per effective tonne-km", 
+                        f"${payload_metrics['bev_tco_per_effective_tonnekm']:,.3f}",
+                        delta=f"{(payload_metrics['bev_tco_per_effective_tonnekm'] - diesel_results['tco']['tco_per_tonne_km']) / diesel_results['tco']['tco_per_tonne_km'] * 100:.1f}%",
+                        delta_color="inverse" if payload_metrics['bev_tco_per_effective_tonnekm'] > diesel_results['tco']['tco_per_tonne_km'] else "normal"
+                    )
+                
+                with adjusted_col2:
+                    st.metric(
+                        "Standard Lifetime TCO", 
+                        f"${bev_results['tco']['npv_total_cost']:,.2f}",
+                        delta=f"{(bev_results['tco']['npv_total_cost'] - diesel_results['tco']['npv_total_cost']) / diesel_results['tco']['npv_total_cost'] * 100:.1f}%",
+                        delta_color="inverse" if bev_results['tco']['npv_total_cost'] > diesel_results['tco']['npv_total_cost'] else "normal"
+                    )
+                    st.metric(
+                        "Payload-Adjusted Lifetime TCO", 
+                        f"${payload_metrics['bev_adjusted_lifetime_tco']:,.2f}",
+                        delta=f"{(payload_metrics['bev_adjusted_lifetime_tco'] - diesel_results['tco']['npv_total_cost']) / diesel_results['tco']['npv_total_cost'] * 100:.1f}%",
+                        delta_color="inverse" if payload_metrics['bev_adjusted_lifetime_tco'] > diesel_results['tco']['npv_total_cost'] else "normal"
+                    )
+                
+                # Visualization of effective TCO
+                st.markdown("### Visualization of Payload-Adjusted TCO")
+                
+                # Create stacked bar chart
+                payload_chart = create_payload_comparison_chart(payload_metrics, bev_results, diesel_results)
+                st.plotly_chart(payload_chart, use_container_width=True, key="payload_comparison_chart")
+                
+                # Add explanatory text
+                st.markdown("""
+                **Interpretation:**
+                
+                The payload-adjusted TCO incorporates the economic impact of the lower payload capacity 
+                of the BEV compared to the diesel equivalent. This provides a more comprehensive 
+                comparison when the vehicles have different carrying capacities.
+                """)
+                
+                # Allow user to adjust payload parameters
+                with st.expander("Adjust Payload Analysis Parameters"):
+                    st.markdown("These parameters can be adjusted to better match your specific operation:")
+                    
+                    param_col1, param_col2 = st.columns(2)
+                    
+                    with param_col1:
+                        new_freight_value = st.number_input(
+                            "Freight Value per Tonne (AUD)",
+                            min_value=10.0,
+                            max_value=500.0,
+                            value=float(financial_params[financial_params['finance_description'] == 'freight_value_per_tonne'].iloc[0]['default_value']),
+                            step=5.0
+                        )
+                        
+                        new_driver_cost = st.number_input(
+                            "Driver Cost per Hour (AUD)",
+                            min_value=10.0,
+                            max_value=100.0,
+                            value=float(financial_params[financial_params['finance_description'] == 'driver_cost_hourly'].iloc[0]['default_value']),
+                            step=1.0
+                        )
+                    
+                    with param_col2:
+                        new_trip_distance = st.number_input(
+                            "Average Trip Distance (km)",
+                            min_value=10.0,
+                            max_value=500.0,
+                            value=float(financial_params[financial_params['finance_description'] == 'avg_trip_distance'].iloc[0]['default_value']),
+                            step=10.0
+                        )
+                        
+                        new_loadunload_time = st.number_input(
+                            "Loading/Unloading Time (hours)",
+                            min_value=0.25,
+                            max_value=5.0,
+                            value=float(financial_params[financial_params['finance_description'] == 'avg_loadunload_time'].iloc[0]['default_value']),
+                            step=0.25
+                        )
+                    
+                    # Create a copy of financial params with the new values
+                    if st.button("Recalculate with New Parameters"):
+                        updated_params = financial_params.copy()
+                        updated_params.loc[updated_params['finance_description'] == 'freight_value_per_tonne', 'default_value'] = new_freight_value
+                        updated_params.loc[updated_params['finance_description'] == 'driver_cost_hourly', 'default_value'] = new_driver_cost
+                        updated_params.loc[updated_params['finance_description'] == 'avg_trip_distance', 'default_value'] = new_trip_distance
+                        updated_params.loc[updated_params['finance_description'] == 'avg_loadunload_time', 'default_value'] = new_loadunload_time
+                        
+                        # Recalculate payload metrics
+                        updated_payload_metrics = calculate_payload_penalty_costs(bev_results, diesel_results, updated_params)
+                        
+                        # Display updated metrics
+                        st.markdown("### Updated Payload Analysis Results")
+                        
+                        update_col1, update_col2 = st.columns(2)
+                        with update_col1:
+                            st.metric(
+                                "Updated Additional Annual Cost", 
+                                f"${updated_payload_metrics['additional_operational_cost_annual']:,.2f}",
+                                delta=f"{(updated_payload_metrics['additional_operational_cost_annual'] - payload_metrics['additional_operational_cost_annual']) / payload_metrics['additional_operational_cost_annual'] * 100:.1f}%",
+                                delta_color="inverse"
+                            )
+                            st.metric(
+                                "Updated Annual Labour Cost", 
+                                f"${updated_payload_metrics['additional_labour_cost_annual']:,.2f}",
+                                delta=f"{(updated_payload_metrics['additional_labour_cost_annual'] - payload_metrics['additional_labour_cost_annual']) / payload_metrics['additional_labour_cost_annual'] * 100:.1f}%",
+                                delta_color="inverse"
+                            )
+                        
+                        with update_col2:
+                            st.metric(
+                                "Updated Annual Opportunity Cost", 
+                                f"${updated_payload_metrics['opportunity_cost_annual']:,.2f}",
+                                delta=f"{(updated_payload_metrics['opportunity_cost_annual'] - payload_metrics['opportunity_cost_annual']) / payload_metrics['opportunity_cost_annual'] * 100:.1f}%",
+                                delta_color="inverse"
+                            )
+                            st.metric(
+                                "Updated Adjusted TCO per tonne-km", 
+                                f"${updated_payload_metrics['bev_tco_per_effective_tonnekm']:,.3f}",
+                                delta=f"{(updated_payload_metrics['bev_tco_per_effective_tonnekm'] - payload_metrics['bev_tco_per_effective_tonnekm']) / payload_metrics['bev_tco_per_effective_tonnekm'] * 100:.1f}%",
+                                delta_color="inverse"
+                            )
+                        
+                        # Show updated chart
+                        updated_chart = create_payload_comparison_chart(updated_payload_metrics, bev_results, diesel_results)
+                        st.plotly_chart(updated_chart, use_container_width=True, key="updated_payload_chart")
+            
+            else:
+                st.success("""
+                **No Payload Penalty Detected**
+                
+                The selected BEV has equal or greater payload capacity compared to the diesel counterpart, 
+                so there's no economic penalty to calculate. This is advantageous for the BEV case.
+                """)
+                
+                # Show any payload advantage
+                if payload_metrics['payload_difference'] < 0:
+                    st.markdown(f"""
+                    In fact, the BEV has a **payload advantage** of {-payload_metrics['payload_difference']:.1f} tonnes 
+                    ({-payload_metrics['payload_difference_percentage']:.1f}% more capacity than the diesel equivalent).
+                    
+                    This could potentially create additional economic benefits for the BEV option, such as:
+                    - Fewer trips needed to transport the same amount of freight
+                    - Lower labor costs per tonne-km
+                    - More revenue potential per vehicle
+                    """)
         
         # Sensitivity Analysis tab
-        with tabs[3]:
+        with tabs[4]:
             st.subheader("Sensitivity Analysis")
             st.info("Sensitivity Analysis helps understand how changes in key parameters affect the TCO comparison.")
             
@@ -1067,7 +1311,8 @@ def main():
                     "Diesel Price ($/L)",
                     "Electricity Price ($/kWh)",
                     "Vehicle Lifetime (years)",
-                    "Discount Rate (%)"
+                    "Discount Rate (%)",
+                    "Annual Distance (km) with Payload Effect"
                 ]
             )
             
@@ -1075,425 +1320,127 @@ def main():
             param_range = None
             num_points = 11  # Number of points to calculate (odd number to include current value)
             
-            if sensitivity_param == "Annual Distance (km)":
+            if sensitivity_param == "Annual Distance (km) with Payload Effect":
+                # Define range of annual distances
                 min_val = max(1000, annual_kms * 0.5)
                 max_val = annual_kms * 1.5
                 step = (max_val - min_val) / (num_points - 1)
-                param_range = [round(min_val + i * step) for i in range(num_points)]
-                # Ensure current value is in the range
-                if annual_kms not in param_range:
-                    param_range.append(annual_kms)
-                    param_range.sort()
-            
-            elif sensitivity_param == "Diesel Price ($/L)":
-                diesel_base = diesel_price
-                min_val = max(0.5, diesel_base * 0.7)
-                max_val = diesel_base * 1.3
-                step = (max_val - min_val) / (num_points - 1)
-                param_range = [round(min_val + i * step, 2) for i in range(num_points)]
-                # Ensure current value is in the range
-                if diesel_base not in param_range:
-                    param_range.append(diesel_base)
-                    param_range.sort()
-            
-            elif sensitivity_param == "Electricity Price ($/kWh)":
-                # Get base electricity price
-                if 'weighted_electricity_price' in bev_results:
-                    electricity_base = bev_results['weighted_electricity_price']
-                else:
-                    electricity_base = charging_options[charging_options['charging_id'] == selected_charging].iloc[0]['per_kwh_price']
+                distances = [round(min_val + i * step) for i in range(num_points)]
                 
-                min_val = max(0.05, electricity_base * 0.7)
-                max_val = electricity_base * 1.3
-                step = (max_val - min_val) / (num_points - 1)
-                param_range = [round(min_val + i * step, 2) for i in range(num_points)]
-                # Ensure current value is in the range
-                if electricity_base not in param_range:
-                    param_range.append(electricity_base)
-                    param_range.sort()
-            
-            elif sensitivity_param == "Vehicle Lifetime (years)":
-                min_val = max(1, truck_life_years - 3)
-                max_val = truck_life_years + 3
-                param_range = list(range(int(min_val), int(max_val + 1)))
-                # Ensure current value is in the range
-                if truck_life_years not in param_range:
-                    param_range.append(truck_life_years)
-                    param_range.sort()
-            
-            elif sensitivity_param == "Discount Rate (%)":
-                discount_base = discount_rate * 100  # Convert to percentage
-                min_val = max(0.5, discount_base - 3)
-                max_val = min(15, discount_base + 3)
-                step = (max_val - min_val) / (num_points - 1)
-                param_range = [round(min_val + i * step, 1) for i in range(num_points)]
-                # Ensure current value is in the range
-                if discount_base not in param_range:
-                    param_range.append(discount_base)
-                    param_range.sort()
-            
-            # Run sensitivity analysis
-            with st.spinner(f"Calculating sensitivity for {sensitivity_param}..."):
-                sensitivity_results = perform_sensitivity_analysis(
-                    sensitivity_param,
-                    param_range,
-                    bev_vehicle_data,
-                    diesel_vehicle_data,
-                    bev_fees,
-                    diesel_fees,
-                    charging_options,
-                    infrastructure_options,
-                    financial_params_with_ui,
-                    battery_params_with_ui,
-                    emission_factors,
-                    incentives,
-                    selected_charging,
-                    selected_infrastructure,
-                    annual_kms,
-                    truck_life_years,
-                    discount_rate,
-                    fleet_size,
-                    charging_mix if use_charging_mix else None,
-                    apply_incentives
+                # Create payload sensitivity chart
+                payload_sensitivity_chart = create_payload_sensitivity_chart(
+                    bev_results, 
+                    diesel_results, 
+                    financial_params,
+                    distances
                 )
-            
-            # Create sensitivity chart
-            sensitivity_chart = create_sensitivity_chart(
-                bev_results,
-                diesel_results,
-                sensitivity_param,
-                param_range,
-                sensitivity_results
-            )
-            
-            # Display sensitivity chart
-            st.plotly_chart(sensitivity_chart, use_container_width=True)
-            
-            # Find break-even point
-            break_even_value = None
-            for i in range(len(sensitivity_results) - 1):
-                bev_tco1 = sensitivity_results[i]['bev']['tco_per_km']
-                diesel_tco1 = sensitivity_results[i]['diesel']['tco_per_km']
-                bev_tco2 = sensitivity_results[i+1]['bev']['tco_per_km']
-                diesel_tco2 = sensitivity_results[i+1]['diesel']['tco_per_km']
                 
-                # Check if the TCO difference changes sign (crosses 0)
-                if (bev_tco1 - diesel_tco1) * (bev_tco2 - diesel_tco2) <= 0:
-                    # Simple linear interpolation to find the break-even point
-                    x1, x2 = param_range[i], param_range[i+1]
-                    y1, y2 = bev_tco1 - diesel_tco1, bev_tco2 - diesel_tco2
-                    
-                    # Avoid division by zero
-                    if y1 != y2:
-                        break_even_value = x1 - y1 * (x2 - x1) / (y2 - y1)
-                        break_even_value = round(break_even_value, 2)
-            
-            # Display break-even value if found
-            st.subheader("Break-even Analysis")
-            if break_even_value is not None:
-                st.success(f"**Break-even {sensitivity_param}: {break_even_value}**")
+                # Display chart
+                st.plotly_chart(payload_sensitivity_chart, use_container_width=True, key="payload_sensitivity_chart")
                 
-                # Show contextual information based on parameter
+                st.markdown("""
+                **Interpretation:**
+                
+                This chart shows how the TCO ratio between BEV and diesel trucks changes with annual distance, 
+                both with and without payload capacity adjustment. Values below 1.0 indicate BEV is more cost-effective.
+                
+                The growing gap between the standard and adjusted lines shows how the payload penalty becomes more 
+                significant at higher annual distances, as more trips are needed to move the same amount of freight.
+                """)
+            else:
                 if sensitivity_param == "Annual Distance (km)":
-                    current = annual_kms
-                    if break_even_value > current:
-                        st.markdown(f"BEV becomes more cost-effective than diesel when annual distance exceeds {break_even_value:,.0f} km (current: {current:,.0f} km).")
-                    else:
-                        st.markdown(f"BEV is more cost-effective than diesel at the current annual distance of {current:,.0f} km.")
-                    
+                    min_val = max(1000, annual_kms * 0.5)
+                    max_val = annual_kms * 1.5
+                    step = (max_val - min_val) / (num_points - 1)
+                    param_range = [round(min_val + i * step) for i in range(num_points)]
+                    # Ensure current value is in the range
+                    if annual_kms not in param_range:
+                        param_range.append(annual_kms)
+                        param_range.sort()
                 elif sensitivity_param == "Diesel Price ($/L)":
-                    current = diesel_price
-                    if break_even_value > current:
-                        st.markdown(f"BEV becomes more cost-effective than diesel when diesel price exceeds ${break_even_value:.2f}/L (current: ${current:.2f}/L).")
-                    else:
-                        st.markdown(f"BEV is more cost-effective than diesel at the current diesel price of ${current:.2f}/L.")
-                    
+                    diesel_base = diesel_price
+                    min_val = max(0.5, diesel_base * 0.7)
+                    max_val = diesel_base * 1.3
+                    step = (max_val - min_val) / (num_points - 1)
+                    param_range = [round(min_val + i * step, 2) for i in range(num_points)]
+                    # Ensure current value is in the range
+                    if diesel_base not in param_range:
+                        param_range.append(diesel_base)
+                        param_range.sort()
                 elif sensitivity_param == "Electricity Price ($/kWh)":
-                    if 'weighted_electricity_price' in bev_results:
-                        current = bev_results['weighted_electricity_price']
-                    else:
-                        current = charging_options[charging_options['charging_id'] == selected_charging].iloc[0]['per_kwh_price']
-                    
-                    if break_even_value < current:
-                        st.markdown(f"BEV becomes more cost-effective than diesel when electricity price falls below ${break_even_value:.2f}/kWh (current: ${current:.2f}/kWh).")
-                    else:
-                        st.markdown(f"BEV is more cost-effective than diesel at the current electricity price of ${current:.2f}/kWh.")
-                    
-                elif sensitivity_param == "Vehicle Lifetime (years)":
-                    current = truck_life_years
-                    if break_even_value > current:
-                        st.markdown(f"BEV becomes more cost-effective than diesel when vehicle lifetime exceeds {break_even_value:.1f} years (current: {current} years).")
-                    else:
-                        st.markdown(f"BEV is more cost-effective than diesel at the current vehicle lifetime of {current} years.")
-                    
-                elif sensitivity_param == "Discount Rate (%)":
-                    current = discount_rate * 100
-                    if break_even_value < current:
-                        st.markdown(f"BEV becomes more cost-effective than diesel when discount rate falls below {break_even_value:.1f}% (current: {current:.1f}%).")
-                    else:
-                        st.markdown(f"BEV is more cost-effective than diesel at the current discount rate of {current:.1f}%.")
-                else:
-                    st.info(f"No break-even point found within the analyzed range. BEV is {'more' if bev_results['tco']['tco_per_km'] < diesel_results['tco']['tco_per_km'] else 'less'} cost-effective than diesel across all values tested.")
-            
-            # What-if scenario analysis
-            st.subheader("What-if Break-even Analysis")
-            st.markdown("Explore break-even points by adjusting other parameters")
-            
-            # Create 2 columns for the what-if parameters
-            whatif_col1, whatif_col2 = st.columns(2)
-            
-            with whatif_col1:
-                # Parameter 1: Always offer diesel price as it's a common break-even factor
-                if sensitivity_param != "Diesel Price ($/L)":
-                    whatif_diesel_price = st.slider(
-                        "Diesel Price ($/L)",
-                        min_value=0.5,
-                        max_value=5.0,
-                        value=diesel_price,
-                        step=0.05
-                    )
-                else:
-                    # If diesel price is the main parameter, offer electricity price instead
+                    # Get base electricity price
                     if 'weighted_electricity_price' in bev_results:
                         electricity_base = bev_results['weighted_electricity_price']
                     else:
                         electricity_base = charging_options[charging_options['charging_id'] == selected_charging].iloc[0]['per_kwh_price']
                     
-                    whatif_electricity_price = st.slider(
-                        "Electricity Price ($/kWh)",
-                        min_value=0.05,
-                        max_value=0.50,
-                        value=electricity_base,
-                        step=0.01
-                    )
+                    min_val = max(0.05, electricity_base * 0.7)
+                    max_val = electricity_base * 1.3
+                    step = (max_val - min_val) / (num_points - 1)
+                    param_range = [round(min_val + i * step, 2) for i in range(num_points)]
+                    # Ensure current value is in the range
+                    if electricity_base not in param_range:
+                        param_range.append(electricity_base)
+                        param_range.sort()
+                elif sensitivity_param == "Vehicle Lifetime (years)":
+                    min_val = max(1, truck_life_years - 3)
+                    max_val = truck_life_years + 3
+                    param_range = list(range(int(min_val), int(max_val + 1)))
+                    # Ensure current value is in the range
+                    if truck_life_years not in param_range:
+                        param_range.append(truck_life_years)
+                        param_range.sort()
+                elif sensitivity_param == "Discount Rate (%)":
+                    discount_base = discount_rate * 100  # Convert to percentage
+                    min_val = max(0.5, discount_base - 3)
+                    max_val = min(15, discount_base + 3)
+                    step = (max_val - min_val) / (num_points - 1)
+                    param_range = [round(min_val + i * step, 1) for i in range(num_points)]
+                    # Ensure current value is in the range
+                    if discount_base not in param_range:
+                        param_range.append(discount_base)
+                        param_range.sort()
             
-            with whatif_col2:
-                # Parameter 2: Annual distance is also a key break-even factor
-                if sensitivity_param != "Annual Distance (km)":
-                    whatif_annual_kms = st.slider(
-                        "Annual Distance (km)",
-                        min_value=5000,
-                        max_value=100000,
-                        value=annual_kms,
-                        step=1000
-                    )
+            # Run sensitivity analysis
+            with st.spinner(f"Calculating sensitivity for {sensitivity_param}..."):
+                if sensitivity_param == "Annual Distance (km) with Payload Effect":
+                    # The chart is already displayed above, so we don't need to repeat it here
+                    pass
                 else:
-                    # If annual distance is the main parameter, offer discount rate instead
-                    whatif_discount_rate = st.slider(
-                        "Discount Rate (%)",
-                        min_value=1.0,
-                        max_value=15.0,
-                        value=discount_rate * 100,
-                        step=0.5
-                    ) / 100
-            
-            # Add button to calculate the break-even for the what-if scenario
-            if st.button("Calculate What-if Break-even"):
-                with st.spinner("Calculating break-even point..."):
-                    whatif_param_range = None
-                    
-                    # Create modified financial parameters
-                    whatif_financial_params = financial_params_with_ui.copy()
-                    
-                    # Set parameters based on user selections
-                    if sensitivity_param != "Diesel Price ($/L)":
-                        # Update diesel price in financial params
-                        whatif_financial_params.loc[
-                            whatif_financial_params['finance_description'] == 'diesel_price', 'default_value'
-                        ] = whatif_diesel_price
-                    
-                    # Define parameter range for the current sensitivity parameter
-                    if sensitivity_param == "Annual Distance (km)":
-                        min_val = max(1000, whatif_annual_kms * 0.3)
-                        max_val = whatif_annual_kms * 2.0
-                        step = (max_val - min_val) / (num_points - 1)
-                        whatif_param_range = [round(min_val + i * step) for i in range(num_points)]
-                        current_value = whatif_annual_kms
-                    
-                    elif sensitivity_param == "Diesel Price ($/L)":
-                        min_val = max(0.5, whatif_diesel_price * 0.5)
-                        max_val = whatif_diesel_price * 1.5
-                        step = (max_val - min_val) / (num_points - 1)
-                        whatif_param_range = [round(min_val + i * step, 2) for i in range(num_points)]
-                        current_value = whatif_diesel_price
-                    
-                    elif sensitivity_param == "Electricity Price ($/kWh)":
-                        if 'weighted_electricity_price' in bev_results:
-                            electricity_base = bev_results['weighted_electricity_price']
-                        else:
-                            electricity_base = charging_options[charging_options['charging_id'] == selected_charging].iloc[0]['per_kwh_price']
-                        
-                        min_val = max(0.05, electricity_base * 0.5)
-                        max_val = electricity_base * 1.5
-                        step = (max_val - min_val) / (num_points - 1)
-                        whatif_param_range = [round(min_val + i * step, 2) for i in range(num_points)]
-                        current_value = electricity_base
-                    
-                    elif sensitivity_param == "Vehicle Lifetime (years)":
-                        min_val = max(1, truck_life_years - 3)
-                        max_val = truck_life_years + 3
-                        step = (max_val - min_val) / (num_points - 1)
-                        whatif_param_range = [round(min_val + i * step) for i in range(num_points)]
-                        current_value = truck_life_years
-                    
-                    elif sensitivity_param == "Discount Rate (%)":
-                        if 'discount_rate' in bev_results:
-                            discount_base = bev_results['discount_rate'] * 100
-                        else:
-                            discount_base = discount_rate * 100
-                        
-                        min_val = max(0.5, discount_base - 3)
-                        max_val = min(15, discount_base + 3)
-                        step = (max_val - min_val) / (num_points - 1)
-                        whatif_param_range = [round(min_val + i * step, 1) for i in range(num_points)]
-                        current_value = discount_base
-                    
-                    # Run sensitivity analysis with what-if parameters
-                    whatif_annual_distance = whatif_annual_kms if sensitivity_param != "Annual Distance (km)" else annual_kms
-                    whatif_discount = whatif_discount_rate if sensitivity_param != "Discount Rate (%)" else discount_rate
-                    
-                    whatif_sensitivity_results = perform_sensitivity_analysis(
+                    sensitivity_results = perform_sensitivity_analysis(
                         sensitivity_param,
-                        whatif_param_range,
+                        param_range,
                         bev_vehicle_data,
                         diesel_vehicle_data,
                         bev_fees,
                         diesel_fees,
                         charging_options,
                         infrastructure_options,
-                        whatif_financial_params,
+                        financial_params_with_ui,
                         battery_params_with_ui,
                         emission_factors,
                         incentives,
                         selected_charging,
                         selected_infrastructure,
-                        whatif_annual_distance,
+                        annual_kms,
                         truck_life_years,
-                        whatif_discount,
+                        discount_rate,
                         fleet_size,
                         charging_mix if use_charging_mix else None,
                         apply_incentives
                     )
-                    
-                    # Create sensitivity chart with what-if results
-                    whatif_chart = create_sensitivity_chart(
+                
+                    # Create sensitivity chart
+                    sensitivity_chart = create_sensitivity_chart(
                         bev_results,
                         diesel_results,
                         sensitivity_param,
-                        whatif_param_range,
-                        whatif_sensitivity_results
+                        param_range,
+                        sensitivity_results
                     )
                     
-                    # Display what-if sensitivity chart
-                    st.plotly_chart(whatif_chart, use_container_width=True)
-                    
-                    # Find break-even point with what-if parameters
-                    whatif_break_even = None
-                    for i in range(len(whatif_sensitivity_results) - 1):
-                        bev_tco1 = whatif_sensitivity_results[i]['bev']['tco_per_km']
-                        diesel_tco1 = whatif_sensitivity_results[i]['diesel']['tco_per_km']
-                        bev_tco2 = whatif_sensitivity_results[i+1]['bev']['tco_per_km']
-                        diesel_tco2 = whatif_sensitivity_results[i+1]['diesel']['tco_per_km']
-                        
-                        # Check if the TCO difference changes sign (crosses 0)
-                        if (bev_tco1 - diesel_tco1) * (bev_tco2 - diesel_tco2) <= 0:
-                            # Simple linear interpolation to find the break-even point
-                            x1, x2 = whatif_param_range[i], whatif_param_range[i+1]
-                            y1, y2 = bev_tco1 - diesel_tco1, bev_tco2 - diesel_tco2
-                            
-                            # Avoid division by zero
-                            if y1 != y2:
-                                whatif_break_even = x1 - y1 * (x2 - x1) / (y2 - y1)
-                                whatif_break_even = round(whatif_break_even, 2)
-                    
-                    # Display what-if break-even results
-                    if whatif_break_even is not None:
-                        st.success(f"**What-if Break-even {sensitivity_param}: {whatif_break_even}**")
-                        
-                        # Show modified parameters
-                        whatif_params = []
-                        if sensitivity_param != "Diesel Price ($/L)":
-                            whatif_params.append(f"Diesel Price: ${whatif_diesel_price:.2f}/L")
-                        if sensitivity_param != "Annual Distance (km)" and 'whatif_annual_kms' in locals():
-                            whatif_params.append(f"Annual Distance: {whatif_annual_kms:,} km")
-                        if sensitivity_param != "Discount Rate (%)" and 'whatif_discount_rate' in locals():
-                            whatif_params.append(f"Discount Rate: {whatif_discount_rate*100:.1f}%")
-                        if sensitivity_param != "Electricity Price ($/kWh)" and 'whatif_electricity_price' in locals():
-                            whatif_params.append(f"Electricity Price: ${whatif_electricity_price:.2f}/kWh")
-                        
-                        st.markdown(f"Parameters: {', '.join(whatif_params)}")
-                    else:
-                        st.info(f"No break-even point found with the what-if parameters. BEV is {'more' if whatif_sensitivity_results[0]['bev']['tco_per_km'] < whatif_sensitivity_results[0]['diesel']['tco_per_km'] else 'less'} cost-effective than diesel across all values tested.")
-            
-            # Multi-parameter sensitivity analysis (Tornado Chart)
-            st.subheader("Multi-parameter Sensitivity Analysis")
-            
-            # Add a button to run the tornado analysis (it's computationally intensive)
-            if st.button("Generate Tornado Chart"):
-                with st.spinner("Calculating impact of multiple parameters..."):
-                    try:
-                        # Generate tornado chart
-                        tornado_data = calculate_tornado_data(
-                            bev_results,
-                            diesel_results,
-                            financial_params_with_ui,
-                            battery_params_with_ui,
-                            charging_options,
-                            infrastructure_options,
-                            emission_factors,
-                            incentives,
-                            selected_charging,
-                            selected_infrastructure,
-                            annual_kms,
-                            truck_life_years,
-                            discount_rate,
-                            fleet_size,
-                            charging_mix if use_charging_mix else None,
-                            apply_incentives
-                        )
-                        
-                        # Create tornado chart
-                        tornado_chart = create_tornado_chart(
-                            tornado_data["base_tco"],
-                            tornado_data["impacts"]
-                        )
-                        
-                        # Display tornado chart
-                        st.plotly_chart(tornado_chart, use_container_width=True)
-                        
-                        # Explanation of tornado chart
-                        st.caption("""
-                        The tornado chart shows how much each parameter affects the TCO of the BEV when varied from its minimum to maximum value. 
-                        Parameters are sorted by their impact, with the most influential at the top.
-                        """)
-                    except ValueError as ve:
-                        if "fees data is required" in str(ve):
-                            st.error("Vehicle fees data is missing. This feature requires complete vehicle fee information to function properly.")
-                            st.markdown("The tornado chart analysis needs detailed vehicle fee information to calculate accurate sensitivity metrics.")
-                        else:
-                            st.error(f"Value error: {ve}")
-                    except Exception as e:
-                        st.error(f"An error occurred while generating the tornado chart: {e}")
-                        st.markdown("Try selecting a different scenario or vehicle combination if this error persists.")
-            
-            # Explain sensitivity analysis 
-            with st.expander("About Sensitivity Analysis"):
-                st.markdown("""
-                ### How to Interpret the Sensitivity Analysis
-                
-                The sensitivity analysis shows how the Total Cost of Ownership (TCO) changes when a single parameter is varied while keeping all other parameters constant.
-                
-                - **Lines**: The chart shows the TCO per kilometer for both BEV and diesel trucks as the parameter changes.
-                - **Break-even point**: Where the BEV and diesel lines cross - at this point, both vehicles have the same TCO.
-                - **Current value**: The currently selected value is marked with a vertical line.
-                
-                ### Using This for Decision Making
-                
-                - Identify parameters with the greatest impact on TCO.
-                - Understand how sensitive your investment decision is to parameter changes.
-                - Evaluate if the break-even point is achievable given your operational constraints.
-                - Plan for scenarios where parameters might change (e.g., rising diesel prices).
-                """)
+                    # Display sensitivity chart
+                    st.plotly_chart(sensitivity_chart, use_container_width=True, key="sensitivity_chart")
 
 # Run the application
 if __name__ == "__main__":

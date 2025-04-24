@@ -194,7 +194,7 @@ def display_detailed_results_table(bev_results, diesel_results):
             f"${bev_results['tco']['tco_per_tonne_km']:.2f}",
             f"${bev_results['tco']['npv_total_cost']:,.2f}",
             f"${bev_results['externalities']['externality_per_km']:.4f}",
-            f"${bev_results['social_tco']:,.2f}"
+            f"${bev_results['social_tco']['social_tco_lifetime']:,.2f}"
         ],
         'Diesel': [
             str(diesel_results['vehicle_data']['vehicle_model']),
@@ -212,7 +212,7 @@ def display_detailed_results_table(bev_results, diesel_results):
             f"${diesel_results['tco']['tco_per_tonne_km']:.2f}",
             f"${diesel_results['tco']['npv_total_cost']:,.2f}",
             f"${diesel_results['externalities']['externality_per_km']:.4f}",
-            f"${diesel_results['social_tco']:,.2f}"
+            f"${diesel_results['social_tco']['social_tco_lifetime']:,.2f}"
         ],
         'Difference': [
             "",
@@ -230,7 +230,7 @@ def display_detailed_results_table(bev_results, diesel_results):
             f"${bev_results['tco']['tco_per_tonne_km'] - diesel_results['tco']['tco_per_tonne_km']:.2f}",
             f"${bev_results['tco']['npv_total_cost'] - diesel_results['tco']['npv_total_cost']:,.2f}",
             f"${bev_results['externalities']['externality_per_km'] - diesel_results['externalities']['externality_per_km']:.4f}",
-            f"${bev_results['social_tco'] - diesel_results['social_tco']:,.2f}"
+            f"${bev_results['social_tco']['social_tco_lifetime'] - diesel_results['social_tco']['social_tco_lifetime']:,.2f}"
         ]
     }
     

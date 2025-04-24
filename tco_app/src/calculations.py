@@ -249,8 +249,13 @@ def calculate_externalities(vehicle_data, externalities_data, annual_kms, truck_
         (externalities_data['drivetrain'] == drivetrain)
     ]
     
-    # Calculate total externality cost per km
-    total_externality_per_km = vehicle_externalities['cost_per_km'].sum()
+    # Calculate total externality cost per km (using the externalities_total if available)
+    total_entry = vehicle_externalities[vehicle_externalities['pollutant_type'] == 'externalities_total']
+    if not total_entry.empty:
+        total_externality_per_km = total_entry.iloc[0]['cost_per_km']
+    else:
+        # Sum individual externality costs if total not available
+        total_externality_per_km = vehicle_externalities['cost_per_km'].sum()
     
     # Calculate annual and lifetime costs
     annual_externality_cost = total_externality_per_km * annual_kms
@@ -259,20 +264,59 @@ def calculate_externalities(vehicle_data, externalities_data, annual_kms, truck_
     # Calculate NPV of externality costs
     npv_externality = calculate_npv(annual_externality_cost, discount_rate, truck_life_years)
     
+    # Create breakdown by externality type
+    externality_breakdown = {}
+    for _, row in vehicle_externalities.iterrows():
+        if row['pollutant_type'] != 'externalities_total':
+            pollutant_type = row['pollutant_type']
+            cost_per_km = row['cost_per_km']
+            annual_cost = cost_per_km * annual_kms
+            lifetime_cost = annual_cost * truck_life_years
+            npv_cost = calculate_npv(annual_cost, discount_rate, truck_life_years)
+            
+            externality_breakdown[pollutant_type] = {
+                'cost_per_km': cost_per_km,
+                'annual_cost': annual_cost,
+                'lifetime_cost': lifetime_cost,
+                'npv_cost': npv_cost
+            }
+    
     return {
         'externality_per_km': total_externality_per_km,
         'annual_externality_cost': annual_externality_cost,
         'lifetime_externality_cost': lifetime_externality_cost,
-        'npv_externality': npv_externality
+        'npv_externality': npv_externality,
+        'breakdown': externality_breakdown
     }
 
 def calculate_social_tco(tco_metrics, externality_metrics):
     """
     Calculate social TCO including externalities
     """
-    social_tco = tco_metrics['npv_total_cost'] + externality_metrics['npv_externality']
+    # Calculate social TCO metrics
+    social_tco_lifetime = tco_metrics['npv_total_cost'] + externality_metrics['npv_externality']
     
-    return social_tco
+    # Calculate other social TCO metrics
+    annual_kms = tco_metrics.get('annual_kms', 0)
+    truck_life_years = tco_metrics.get('truck_life_years', 0)
+    payload_t = tco_metrics.get('payload_t', 0)
+    
+    # Calculate per-km metrics if we have the necessary data
+    social_tco_per_km = 0
+    social_tco_per_tonne_km = 0
+    if annual_kms > 0 and truck_life_years > 0:
+        total_lifetime_kms = annual_kms * truck_life_years
+        social_tco_per_km = social_tco_lifetime / total_lifetime_kms
+        
+        if payload_t > 0:
+            social_tco_per_tonne_km = social_tco_per_km / payload_t
+    
+    return {
+        'social_tco_lifetime': social_tco_lifetime,
+        'social_tco_per_km': social_tco_per_km,
+        'social_tco_per_tonne_km': social_tco_per_tonne_km,
+        'externality_percentage': (externality_metrics['npv_externality'] / social_tco_lifetime) * 100 if social_tco_lifetime > 0 else 0
+    }
 
 def calculate_comparative_metrics(bev_results, diesel_results, annual_kms, truck_life_years):
     """
@@ -284,18 +328,82 @@ def calculate_comparative_metrics(bev_results, diesel_results, annual_kms, truck
     # Annual operating cost savings
     annual_savings = diesel_results['annual_costs']['annual_operating_cost'] - bev_results['annual_costs']['annual_operating_cost']
     
-    # Calculate price parity year (intersection of price curves)
-    # Price parity occurs when: BEV_initial + BEV_annual*years = Diesel_initial + Diesel_annual*years
-    # Solving for years: (BEV_initial - Diesel_initial) / (Diesel_annual - BEV_annual)
-    bev_initial = bev_results['acquisition_cost']
-    diesel_initial = diesel_results['acquisition_cost']
-    bev_annual = bev_results['annual_costs']['annual_operating_cost']
-    diesel_annual = diesel_results['annual_costs']['annual_operating_cost']
+    # Calculate price parity year (intersection of cumulative cost curves)
+    # Create arrays to track cumulative costs over time
+    years = list(range(1, truck_life_years + 1))
     
-    if diesel_annual > bev_annual:
-        price_parity_year = (bev_initial - diesel_initial) / (diesel_annual - bev_annual)
-    else:
-        price_parity_year = float('inf')
+    # Initialize cumulative costs with acquisition costs
+    bev_cumulative = [bev_results['acquisition_cost']]
+    diesel_cumulative = [diesel_results['acquisition_cost']]
+    
+    # Add initial infrastructure cost for BEV if available
+    if 'infrastructure_costs' in bev_results:
+        if 'infrastructure_price_with_incentives' in bev_results['infrastructure_costs']:
+            bev_cumulative[0] += bev_results['infrastructure_costs']['infrastructure_price_with_incentives'] / bev_results['infrastructure_costs'].get('fleet_size', 1)
+        else:
+            bev_cumulative[0] += bev_results['infrastructure_costs']['infrastructure_price'] / bev_results['infrastructure_costs'].get('fleet_size', 1)
+    
+    # Calculate cumulative costs for each year
+    for year in range(1, truck_life_years):
+        # Add annual operating costs
+        bev_annual = bev_results['annual_costs']['annual_operating_cost']
+        diesel_annual = diesel_results['annual_costs']['annual_operating_cost']
+        
+        # Add battery replacement in the appropriate year if applicable
+        if bev_results.get('battery_replacement_year') == year:
+            bev_annual += bev_results.get('battery_replacement_cost', 0)
+        
+        # Add infrastructure maintenance costs for BEV
+        if 'infrastructure_costs' in bev_results:
+            infrastructure_maintenance = bev_results['infrastructure_costs']['annual_maintenance'] / bev_results['infrastructure_costs'].get('fleet_size', 1)
+            bev_annual += infrastructure_maintenance
+            
+            # Add infrastructure replacement costs if needed
+            service_life = bev_results['infrastructure_costs']['service_life_years']
+            if year % service_life == 0 and year < truck_life_years:
+                if 'infrastructure_price_with_incentives' in bev_results['infrastructure_costs']:
+                    bev_annual += bev_results['infrastructure_costs']['infrastructure_price_with_incentives'] / bev_results['infrastructure_costs'].get('fleet_size', 1)
+                else:
+                    bev_annual += bev_results['infrastructure_costs']['infrastructure_price'] / bev_results['infrastructure_costs'].get('fleet_size', 1)
+        
+        # Update cumulative costs
+        bev_cumulative.append(bev_cumulative[-1] + bev_annual)
+        diesel_cumulative.append(diesel_cumulative[-1] + diesel_annual)
+    
+    # Adjust for residual value in final year
+    bev_cumulative[-1] -= bev_results['residual_value']
+    diesel_cumulative[-1] -= diesel_results['residual_value']
+    
+    # Find intersection point (price parity) where BEV and Diesel costs are equal
+    price_parity_year = float('inf')  # Default if no intersection
+    
+    # Check for intersection between consecutive years
+    for i in range(len(years) - 1):
+        bev_cost1, bev_cost2 = bev_cumulative[i], bev_cumulative[i+1]
+        diesel_cost1, diesel_cost2 = diesel_cumulative[i], diesel_cumulative[i+1]
+        
+        # Check if the cost difference changes sign (intersection)
+        if (bev_cost1 - diesel_cost1) * (bev_cost2 - diesel_cost2) <= 0:
+            # Lines intersect between year i and i+1
+            # Use linear interpolation to find the exact point
+            year1, year2 = years[i], years[i+1]
+            
+            # Calculate the intersection point using line equation
+            if bev_cost2 - bev_cost1 != diesel_cost2 - diesel_cost1:  # Avoid division by zero
+                # Solve for t where: bev_cost1 + t*(bev_cost2-bev_cost1) = diesel_cost1 + t*(diesel_cost2-diesel_cost1)
+                t = (diesel_cost1 - bev_cost1) / ((bev_cost2 - bev_cost1) - (diesel_cost2 - diesel_cost1))
+                price_parity_year = year1 + t
+                break
+    
+    # Fallback to the algebraic calculation if no intersection found
+    if price_parity_year == float('inf'):
+        bev_initial = bev_results['acquisition_cost']
+        diesel_initial = diesel_results['acquisition_cost']
+        bev_annual = bev_results['annual_costs']['annual_operating_cost']
+        diesel_annual = diesel_results['annual_costs']['annual_operating_cost']
+        
+        if diesel_annual > bev_annual:
+            price_parity_year = (bev_initial - diesel_initial) / (diesel_annual - bev_annual)
     
     # Emission savings
     emission_savings = diesel_results['emissions']['lifetime_emissions'] - bev_results['emissions']['lifetime_emissions']
@@ -309,13 +417,33 @@ def calculate_comparative_metrics(bev_results, diesel_results, annual_kms, truck
     else:
         abatement_cost = float('inf')
     
+    # Social TCO comparison metrics
+    social_tco_ratio = 0
+    social_abatement_cost = float('inf')
+    
+    if ('social_tco' in bev_results and 'social_tco' in diesel_results):
+        # Social TCO ratio
+        social_tco_ratio = bev_results['social_tco']['social_tco_lifetime'] / diesel_results['social_tco']['social_tco_lifetime']
+        
+        # Social abatement cost
+        if emission_savings > 0:
+            social_abatement_cost = (bev_results['social_tco']['social_tco_lifetime'] - diesel_results['social_tco']['social_tco_lifetime']) / (emission_savings / 1000)
+    
+    # Externality savings
+    externality_savings = 0
+    if ('externalities' in bev_results and 'externalities' in diesel_results):
+        externality_savings = diesel_results['externalities']['lifetime_externality_cost'] - bev_results['externalities']['lifetime_externality_cost']
+    
     return {
         'upfront_cost_difference': upfront_diff,
         'annual_operating_savings': annual_savings,
         'price_parity_year': price_parity_year,
         'emission_savings_lifetime': emission_savings,
         'bev_to_diesel_tco_ratio': tco_ratio,
-        'abatement_cost': abatement_cost
+        'abatement_cost': abatement_cost,
+        'social_tco_ratio': social_tco_ratio,
+        'social_abatement_cost': social_abatement_cost,
+        'externality_savings_lifetime': externality_savings
     }
 
 def calculate_infrastructure_costs(infrastructure_option, truck_life_years, discount_rate, fleet_size=1):
@@ -962,3 +1090,350 @@ def calculate_tornado_data(
         "base_tco": base_tco,
         "impacts": impacts
     }
+
+def prepare_externality_comparison(bev_externalities, diesel_externalities):
+    """
+    Prepare externality data for visualization comparison between BEV and diesel
+    
+    Args:
+        bev_externalities: Externality metrics for BEV
+        diesel_externalities: Externality metrics for diesel
+        
+    Returns:
+        Dictionary with processed data for visualization
+    """
+    # Extract breakdowns
+    bev_breakdown = bev_externalities.get('breakdown', {})
+    diesel_breakdown = diesel_externalities.get('breakdown', {})
+    
+    # Combine all pollutant types
+    all_pollutants = set(bev_breakdown.keys()) | set(diesel_breakdown.keys())
+    
+    # Prepare comparison data
+    comparison_data = []
+    for pollutant in all_pollutants:
+        bev_cost = bev_breakdown.get(pollutant, {}).get('cost_per_km', 0)
+        diesel_cost = diesel_breakdown.get(pollutant, {}).get('cost_per_km', 0)
+        savings = diesel_cost - bev_cost
+        savings_percent = (savings / diesel_cost * 100) if diesel_cost > 0 else 0
+        
+        comparison_data.append({
+            'pollutant_type': pollutant,
+            'bev_cost_per_km': bev_cost,
+            'diesel_cost_per_km': diesel_cost,
+            'savings_per_km': savings,
+            'savings_percent': savings_percent
+        })
+    
+    # Sort by savings amount (highest first)
+    comparison_data.sort(key=lambda x: x['savings_per_km'], reverse=True)
+    
+    # Calculate totals
+    bev_total = bev_externalities.get('externality_per_km', 0)
+    diesel_total = diesel_externalities.get('externality_per_km', 0)
+    total_savings = diesel_total - bev_total
+    total_savings_percent = (total_savings / diesel_total * 100) if diesel_total > 0 else 0
+    
+    return {
+        'breakdown': comparison_data,
+        'bev_total': bev_total,
+        'diesel_total': diesel_total,
+        'total_savings': total_savings,
+        'total_savings_percent': total_savings_percent
+    }
+
+def calculate_social_benefit_metrics(bev_results, diesel_results, annual_kms, truck_life_years, discount_rate):
+    """
+    Calculate social benefit-cost ratio and payback period for BEV
+    
+    Args:
+        bev_results: Results dictionary for BEV
+        diesel_results: Results dictionary for diesel
+        annual_kms: Annual distance traveled
+        truck_life_years: Vehicle service life in years
+        discount_rate: Discount rate for NPV calculations
+        
+    Returns:
+        Dictionary with social benefit metrics
+    """
+    # Calculate the upfront cost difference (BEV premium)
+    bev_premium = bev_results['acquisition_cost'] - diesel_results['acquisition_cost']
+    
+    # Get annual operating cost savings (diesel minus BEV)
+    annual_operating_savings = diesel_results['annual_costs']['annual_operating_cost'] - bev_results['annual_costs']['annual_operating_cost']
+    
+    # Get annual externality savings
+    annual_externality_savings = 0
+    if 'externalities' in bev_results and 'externalities' in diesel_results:
+        annual_externality_savings = diesel_results['externalities']['annual_externality_cost'] - bev_results['externalities']['annual_externality_cost']
+    
+    # Total annual benefits (operating + externality savings)
+    total_annual_benefits = annual_operating_savings + annual_externality_savings
+    
+    # Calculate NPV of benefits
+    npv_benefits = calculate_npv(total_annual_benefits, discount_rate, truck_life_years)
+    
+    # Calculate social benefit-cost ratio
+    # BCR = NPV of benefits / upfront premium
+    if bev_premium > 0:
+        social_benefit_cost_ratio = npv_benefits / bev_premium
+    else:
+        # If BEV costs less upfront than diesel, the BCR is infinite (or very large)
+        social_benefit_cost_ratio = float('inf')
+    
+    # Calculate social payback period (in years)
+    # This is when cumulative discounted benefits exceed the upfront premium
+    if total_annual_benefits > 0:
+        # Simple payback period (not considering discount rate)
+        simple_payback_period = bev_premium / total_annual_benefits
+        
+        # Discounted payback period calculation
+        cumulative_benefits = 0
+        social_payback_period = truck_life_years  # Default to max lifetime
+        
+        for year in range(1, truck_life_years + 1):
+            annual_benefit_discounted = total_annual_benefits / ((1 + discount_rate) ** year)
+            cumulative_benefits += annual_benefit_discounted
+            
+            if cumulative_benefits >= bev_premium:
+                # Linear interpolation for more precise payback period
+                if year > 1:
+                    prev_year_benefits = cumulative_benefits - annual_benefit_discounted
+                    fraction = (bev_premium - prev_year_benefits) / annual_benefit_discounted
+                    social_payback_period = year - 1 + fraction
+                else:
+                    social_payback_period = bev_premium / annual_benefit_discounted
+                break
+    else:
+        simple_payback_period = float('inf')
+        social_payback_period = float('inf')
+    
+    return {
+        'bev_premium': bev_premium,
+        'annual_operating_savings': annual_operating_savings,
+        'annual_externality_savings': annual_externality_savings,
+        'total_annual_benefits': total_annual_benefits,
+        'npv_benefits': npv_benefits,
+        'social_benefit_cost_ratio': social_benefit_cost_ratio,
+        'simple_payback_period': simple_payback_period,
+        'social_payback_period': social_payback_period
+    }
+
+def calculate_payload_penalty_costs(bev_results, diesel_results, financial_params):
+    """
+    Calculate the economic impact of reduced payload capacity in BEV trucks
+    
+    Args:
+        bev_results: Results dictionary for the BEV vehicle
+        diesel_results: Results dictionary for the diesel vehicle
+        financial_params: Financial parameters dataframe
+        
+    Returns:
+        Dictionary containing various payload penalty metrics
+    """
+    # Extract payload capacities
+    bev_payload = bev_results['vehicle_data']['payload_t']
+    diesel_payload = diesel_results['vehicle_data']['payload_t']
+    
+    # Calculate payload difference
+    payload_difference = diesel_payload - bev_payload
+    payload_difference_percentage = (payload_difference / diesel_payload) * 100 if diesel_payload > 0 else 0
+    
+    # Only proceed if BEV has lower payload
+    if payload_difference <= 0:
+        return {
+            'has_penalty': False,
+            'payload_difference': payload_difference,
+            'payload_difference_percentage': payload_difference_percentage
+        }
+    
+    # Get annual distance and years
+    annual_kms = bev_results.get('annual_kms', 0)
+    truck_life_years = bev_results.get('truck_life_years', 0)
+    
+    # Calculate additional trips required
+    trips_multiplier = diesel_payload / bev_payload if bev_payload > 0 else 1
+    additional_trips_percentage = (trips_multiplier - 1) * 100
+    
+    # Get financial parameters
+    freight_value_per_tonne = financial_params[
+        financial_params['finance_description'] == 'freight_value_per_tonne'
+    ].iloc[0]['default_value'] if 'freight_value_per_tonne' in financial_params['finance_description'].values else 120
+    
+    driver_cost_hourly = financial_params[
+        financial_params['finance_description'] == 'driver_cost_hourly'
+    ].iloc[0]['default_value'] if 'driver_cost_hourly' in financial_params['finance_description'].values else 35
+    
+    avg_trip_distance = financial_params[
+        financial_params['finance_description'] == 'avg_trip_distance'
+    ].iloc[0]['default_value'] if 'avg_trip_distance' in financial_params['finance_description'].values else 100
+    
+    avg_loadunload_time = financial_params[
+        financial_params['finance_description'] == 'avg_loadunload_time'
+    ].iloc[0]['default_value'] if 'avg_loadunload_time' in financial_params['finance_description'].values else 1
+    
+    # Calculate economic impacts
+    
+    # 1. Fleet expansion approach - how many more BEVs needed for same total capacity
+    fleet_ratio = diesel_payload / bev_payload if bev_payload > 0 else 1
+    additional_bevs_needed_per_diesel = fleet_ratio - 1
+    
+    # 2. Additional operating costs due to more trips
+    # Assume linear relationship between trips and costs, excluding acquisition
+    additional_operational_cost_annual = (trips_multiplier - 1) * bev_results['annual_costs']['annual_operating_cost']
+    additional_operational_cost_lifetime = additional_operational_cost_annual * truck_life_years
+    
+    # 3. Additional driver hours (assuming average speed and load/unload time)
+    avg_speed_kmh = 60  # Assume 60 km/h average speed
+    
+    baseline_driving_hours = annual_kms / avg_speed_kmh
+    baseline_trips = annual_kms / avg_trip_distance
+    baseline_loadunload_hours = baseline_trips * avg_loadunload_time
+    
+    # Total baseline hours
+    baseline_total_hours = baseline_driving_hours + baseline_loadunload_hours
+    
+    # Additional hours due to more trips
+    additional_hours_annual = baseline_total_hours * (trips_multiplier - 1)
+    additional_labour_cost_annual = additional_hours_annual * driver_cost_hourly
+    additional_labour_cost_lifetime = additional_labour_cost_annual * truck_life_years
+    
+    # 4. Opportunity cost (revenue potential lost)
+    lost_carrying_capacity_annual = payload_difference * baseline_trips
+    opportunity_cost_annual = lost_carrying_capacity_annual * freight_value_per_tonne
+    opportunity_cost_lifetime = opportunity_cost_annual * truck_life_years
+    
+    # 5. Adjusted TCO metrics
+    # TCO per effective tonne-km
+    effective_payload_ratio = bev_payload / diesel_payload
+    bev_tco_per_effective_tonnekm = bev_results['tco']['tco_per_tonne_km'] / effective_payload_ratio
+    
+    # Total adjusted lifetime TCO
+    bev_adjusted_lifetime_tco = bev_results['tco']['npv_total_cost'] + additional_operational_cost_lifetime
+    
+    # Return all calculated metrics
+    return {
+        'has_penalty': True,
+        'payload_difference': payload_difference,
+        'payload_difference_percentage': payload_difference_percentage,
+        'trips_multiplier': trips_multiplier,
+        'additional_trips_percentage': additional_trips_percentage,
+        'fleet_ratio': fleet_ratio,
+        'additional_bevs_needed_per_diesel': additional_bevs_needed_per_diesel,
+        'additional_operational_cost_annual': additional_operational_cost_annual,
+        'additional_operational_cost_lifetime': additional_operational_cost_lifetime,
+        'additional_hours_annual': additional_hours_annual,
+        'additional_labour_cost_annual': additional_labour_cost_annual,
+        'additional_labour_cost_lifetime': additional_labour_cost_lifetime,
+        'lost_carrying_capacity_annual': lost_carrying_capacity_annual,
+        'opportunity_cost_annual': opportunity_cost_annual,
+        'opportunity_cost_lifetime': opportunity_cost_lifetime,
+        'bev_tco_per_effective_tonnekm': bev_tco_per_effective_tonnekm,
+        'bev_adjusted_lifetime_tco': bev_adjusted_lifetime_tco
+    }
+
+def perform_externality_sensitivity(
+    bev_results, 
+    diesel_results, 
+    externalities_data, 
+    annual_kms, 
+    truck_life_years, 
+    discount_rate, 
+    sensitivity_range=[-50, 0, 50, 100]
+):
+    """
+    Perform sensitivity analysis by adjusting externality costs
+    
+    Args:
+        bev_results: Results dictionary for BEV
+        diesel_results: Results dictionary for diesel
+        externalities_data: Externality data
+        annual_kms: Annual distance traveled
+        truck_life_years: Vehicle service life in years
+        discount_rate: Discount rate for NPV calculations
+        sensitivity_range: List of percentage changes to apply to externality costs
+        
+    Returns:
+        Dictionary with sensitivity analysis results
+    """
+    results = []
+    
+    # Get original externality data
+    bev_vehicle_data = bev_results['vehicle_data']
+    diesel_vehicle_data = diesel_results['vehicle_data']
+    
+    # Get original TCO values
+    original_bev_tco = bev_results['tco']['tco_per_km']
+    original_diesel_tco = diesel_results['tco']['tco_per_km']
+    
+    # Get original social TCO values
+    if 'social_tco' in bev_results and 'social_tco' in diesel_results:
+        original_bev_social_tco = bev_results['social_tco']['social_tco_per_km']
+        original_diesel_social_tco = diesel_results['social_tco']['social_tco_per_km']
+    else:
+        original_bev_social_tco = original_bev_tco
+        original_diesel_social_tco = original_diesel_tco
+    
+    for percent_change in sensitivity_range:
+        # Create modified externality data with the percentage change
+        modified_externalities_data = externalities_data.copy()
+        modified_externalities_data['cost_per_km'] = externalities_data['cost_per_km'] * (1 + percent_change / 100)
+        
+        # Recalculate externalities
+        bev_externalities = calculate_externalities(
+            bev_vehicle_data, 
+            modified_externalities_data, 
+            annual_kms, 
+            truck_life_years, 
+            discount_rate
+        )
+        
+        diesel_externalities = calculate_externalities(
+            diesel_vehicle_data, 
+            modified_externalities_data, 
+            annual_kms, 
+            truck_life_years, 
+            discount_rate
+        )
+        
+        # Recalculate social TCO
+        bev_social_tco = calculate_social_tco(
+            bev_results['tco'], 
+            bev_externalities
+        )
+        
+        diesel_social_tco = calculate_social_tco(
+            diesel_results['tco'], 
+            diesel_externalities
+        )
+        
+        # Calculate comparative metrics
+        abatement_cost = 0
+        emission_savings = diesel_results['emissions']['lifetime_emissions'] - bev_results['emissions']['lifetime_emissions']
+        if emission_savings > 0:
+            abatement_cost = (bev_social_tco['social_tco_lifetime'] - diesel_social_tco['social_tco_lifetime']) / (emission_savings / 1000)
+        
+        # Calculate social benefit metrics
+        social_benefit_metrics = calculate_social_benefit_metrics(
+            {**bev_results, 'externalities': bev_externalities, 'social_tco': bev_social_tco},
+            {**diesel_results, 'externalities': diesel_externalities, 'social_tco': diesel_social_tco},
+            annual_kms,
+            truck_life_years,
+            discount_rate
+        )
+        
+        # Store results
+        results.append({
+            'percent_change': percent_change,
+            'bev_externality_per_km': bev_externalities['externality_per_km'],
+            'diesel_externality_per_km': diesel_externalities['externality_per_km'],
+            'bev_tco_per_km': original_bev_tco,  # This doesn't change
+            'diesel_tco_per_km': original_diesel_tco,  # This doesn't change
+            'bev_social_tco_per_km': bev_social_tco['social_tco_per_km'],
+            'diesel_social_tco_per_km': diesel_social_tco['social_tco_per_km'],
+            'social_abatement_cost': abatement_cost,
+            'social_benefit_cost_ratio': social_benefit_metrics['social_benefit_cost_ratio'],
+            'social_payback_period': social_benefit_metrics['social_payback_period']
+        })
+    
+    return results
