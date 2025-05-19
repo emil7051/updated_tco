@@ -1430,3 +1430,25 @@ def perform_externality_sensitivity(
         })
     
     return results
+
+# ---------------------------------------------------------------------------
+# Temporary delegations to utilities modules
+# ---------------------------------------------------------------------------
+# These re-bindings ensure the public API of this module remains stable while
+# the underlying implementations are progressively moved into dedicated
+# utility modules. Once all call-sites have been updated to import directly
+# from their respective domain modules, the legacy definitions above will be
+# deleted.
+
+from .utils.energy import (
+    calculate_energy_costs as _delegated_calculate_energy_costs,
+    calculate_emissions as _delegated_calculate_emissions,
+)
+from .utils.battery import calculate_battery_replacement as _delegated_battery_replacement
+from .utils.finance import calculate_residual_value as _delegated_calculate_residual_value
+
+# Re-bind symbols to the delegated implementations.
+calculate_energy_costs = _delegated_calculate_energy_costs  # type: ignore[assignment]
+calculate_emissions = _delegated_calculate_emissions  # type: ignore[assignment]
+calculate_battery_replacement = _delegated_battery_replacement  # type: ignore[assignment]
+calculate_residual_value = _delegated_calculate_residual_value  # type: ignore[assignment]

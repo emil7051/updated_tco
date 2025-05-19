@@ -19,16 +19,20 @@ price_parity_year(bev_curve, diesel_curve, years=None)
     Year at which two cumulative cost curves intersect (price parity). Uses
     linear interpolation between yearly observations to estimate fractional
     years.
+
+calculate_residual_value(vehicle_data, years, initial_depreciation, annual_depreciation)
+    Return the residual value of a vehicle after *years* years.
 """
 from __future__ import annotations
 
 from math import inf
-from typing import Iterable, List, Sequence
+from typing import Iterable, List, Sequence, Any
 
 __all__ = [
     "npv_constant",
     "cumulative_cost_curve",
     "price_parity_year",
+    "calculate_residual_value",
 ]
 
 
@@ -124,4 +128,22 @@ def price_parity_year(
             parity = years[i] + t  # Fractional year value.
             break
 
-    return parity 
+    return parity
+
+
+def calculate_residual_value(
+    vehicle_data: Any,
+    years: int,
+    initial_depreciation: float,
+    annual_depreciation: float,
+) -> float:  # noqa: D401
+    """Return the residual value of a vehicle after *years* years.
+
+    The formula mirrors the one formerly present in ``calculations.py``.
+    """
+
+    if years <= 0:
+        return 0.0
+
+    value_after_initial = vehicle_data["msrp_price"] * (1 - initial_depreciation)
+    return value_after_initial * ((1 - annual_depreciation) ** (years - 1)) 

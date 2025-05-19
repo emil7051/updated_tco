@@ -12,6 +12,8 @@ import pandas as pd
 
 __all__ = [
     "weighted_electricity_price",
+    "calculate_energy_costs",
+    "calculate_emissions",
 ]
 
 
@@ -65,3 +67,76 @@ def weighted_electricity_price(
         weighted_price += price * weight
 
     return weighted_price 
+
+
+from ..constants import Drivetrain, FuelType  # noqa: E402  # Imported late to avoid circularity
+
+
+def calculate_energy_costs(
+    vehicle_data,
+    fees_data,
+    charging_data,
+    financial_params,
+    selected_charging,
+    charging_mix: dict | None = None,
+):
+    """Return the **energy cost per kilometre** for a given vehicle.
+
+    The implementation is lifted verbatim from the previous monolithic
+    *calculations.py* so that future refactors can simply remove the old copy.
+    """
+
+    if vehicle_data["vehicle_drivetrain"] == Drivetrain.BEV:
+        # Determine the electricity price either from a weighted mix or a single option.
+        if charging_mix:
+            electricity_price = weighted_electricity_price(charging_mix, charging_data)
+        else:
+            charging_option = charging_data[charging_data["charging_id"] == selected_charging].iloc[0]
+            electricity_price = charging_option["per_kwh_price"]
+
+        energy_cost_per_km = vehicle_data["kwh_per100km"] / 100 * electricity_price
+    else:
+        diesel_price = (
+            financial_params[financial_params["finance_description"] == "diesel_price"].iloc[0][
+                "default_value"
+            ]
+        )
+        energy_cost_per_km = vehicle_data["litres_per100km"] / 100 * diesel_price
+
+    return energy_cost_per_km
+
+
+
+def calculate_emissions(
+    vehicle_data,
+    emission_factors,
+    annual_kms: int,
+    truck_life_years: int,
+):
+    """Return a dictionary with per-km, annual and lifetime CO₂ emissions."""
+
+    if vehicle_data["vehicle_drivetrain"] == Drivetrain.BEV:
+        electricity_ef = (
+            emission_factors[
+                (emission_factors["fuel_type"] == FuelType.ELECTRICITY)
+                & (emission_factors["emission_standard"] == "Grid")
+            ].iloc[0]["co2_per_unit"]
+        )
+        co2_per_km = vehicle_data["kwh_per100km"] / 100 * electricity_ef
+    else:
+        diesel_ef = (
+            emission_factors[
+                (emission_factors["fuel_type"] == FuelType.DIESEL)
+                & (emission_factors["emission_standard"] == "Euro IV+")
+            ].iloc[0]["co2_per_unit"]
+        )
+        co2_per_km = vehicle_data["litres_per100km"] / 100 * diesel_ef
+
+    annual_emissions = co2_per_km * annual_kms
+    lifetime_emissions = annual_emissions * truck_life_years
+
+    return {
+        "co2_per_km": co2_per_km,
+        "annual_emissions": annual_emissions,
+        "lifetime_emissions": lifetime_emissions,
+    } 
