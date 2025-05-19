@@ -10,7 +10,6 @@ Date: April 2025
 import streamlit as st
 import pandas as pd
 import os
-import base64
 # Remove the import for streamlit-tailwind since we're not using it
 # from streamlit_tailwind import st_tw
 
