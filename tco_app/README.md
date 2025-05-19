@@ -32,9 +32,6 @@ tco_app/
 │   │   ├── parameter_library.csv
 │   │   ├── vehicle_comparison.csv
 │   │   └── ...
-│   │
-│   ├── tco_tidytables.xlsx # Original Excel data source
-│   └── tco_data_dictionary.xlsx # Original Excel data dictionary
 │
 ├── src/                    # Source code modules
 │   ├── __init__.py
