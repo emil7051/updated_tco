@@ -22,17 +22,14 @@ tco_app/
 │
 ├── data/                   # Data directory
 │   ├── tables/             # CSV data tables for the model
-│   │   ├── tco_tidytables_vehicle_models.csv.csv
-│   │   ├── tco_tidytables_vehicle_fees.csv.csv
+│   │   ├── vehicle_models.csv
+│   │   ├── vehicle_fees.csv
 │   │   └── ...
 │   │
 │   ├── dictionary/         # Data dictionary and documentation
-│   │   ├── tco_data_dictionary_calculations.csv.csv
-│   │   ├── tco_data_dictionary_parameter_library.csv.csv
+│   │   ├── calculations.csv
+│   │   ├── parameter_library.csv
 │   │   └── ...
-│   │
-│   ├── tco_tidytables.xlsx # Original Excel data source
-│   └── tco_data_dictionary.xlsx # Original Excel data dictionary
 │
 ├── src/                    # Source code modules
 │   ├── __init__.py
