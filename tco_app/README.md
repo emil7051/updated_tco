@@ -22,6 +22,7 @@ tco_app/
 │
 ├── data/                   # Data directory
 │   ├── tables/             # CSV data tables for the model
+│   │   ├── battery_params.csv
 │   │   ├── vehicle_models.csv
 │   │   ├── vehicle_fees.csv
 │   │   └── ...
@@ -29,6 +30,7 @@ tco_app/
 │   ├── dictionary/         # Data dictionary and documentation
 │   │   ├── calculations.csv
 │   │   ├── parameter_library.csv
+│   │   ├── vehicle_comparison.csv
 │   │   └── ...
 │
 ├── src/                    # Source code modules
@@ -45,19 +47,25 @@ tco_app/
 ## Setup Instructions
 
 1. Clone this repository
-2. Install the required dependencies:
+2. Change to the `tco_app` directory:
+
+```bash
+cd tco_app
+```
+
+3. Install the required dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the Streamlit application:
+4. Run the Streamlit application:
 
 ```bash
 streamlit run app.py
 ```
 
-4. Access the application in your web browser at http://localhost:8501
+5. Access the application in your web browser at http://localhost:8501
 
 ## Data Sources
 
