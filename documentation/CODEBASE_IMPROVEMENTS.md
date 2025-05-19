@@ -3,6 +3,7 @@
 Below is a curated backlog of refactoring, debugging and technical	debt tasks that will simplify ongoing implementation. Each item is phrased so it can be lifted straight into a ticketing system.
 
 ---
+#DONE:
 
 #### 0. High-Priority – Deduplicate Reusable Logic  
 *Rationale*: Significant code duplication (price-parity & cumulative cost curves, weighted electricity price logic, charging-mix computation) exists across `calculations.py`, `visualization.py`, `app.py`, and `ui_components.py`. Divergent copies risk silent defects and inflate maintenance costs.  
@@ -28,6 +29,8 @@ Below is a curated backlog of refactoring, debugging and technical	debt tasks th
 - Unit regression `tests/test_regression.py` validating pre- vs post-refactor outputs is green.  
 - CI pipeline passes (lint, type-check, tests).
 
+#TO DO:
+
 #### 0.1 Medium-Priority – Harmonise Naming Conventions  
 *Rationale*: Mixed naming styles (e.g., `msrp_price` vs `battery_capacity_kwh`, inconsistent casing in UI strings) impede searchability and comprehension.  
 *Tasks*  
@@ -41,7 +44,12 @@ Below is a curated backlog of refactoring, debugging and technical	debt tasks th
 • Constants such as `'vehicle_drivetrain'`, `'BEV'`, `'Diesel'` repeated across >50 call-sites.  
 • Data dictionary field names diverge from code attributes (see Task 0.2).
 
-**Enhancements / sub-tasks**  
+**Progress (2025-05-19)**  
+✅ Created `tco_app/src/constants.py` with `Drivetrain`, `FuelType` enums and shared column-name constants.  
+✅ Replaced magic strings `'BEV'`, `'Diesel'`, `'All'` with `Drivetrain` enum in `app.py` & `calculations.py`.  
+✅ Added `documentation/naming_map.csv` capturing current→next naming map.  
+
+**Enhancements / sub-tasks – remaining**  
 - Add `documentation/naming_map.csv` with columns `current_name,next_name,notes`.  
 - Automate renaming using `rope`/`libcst` driven from the map; fallback to manual patches for dynamic attributes.  
 - Insert temporary failing test: `assert hasattr(calculations, 'msrp_price') is False` – removed after migration.  

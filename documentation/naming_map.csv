@@ -1,0 +1,8 @@
+current_name,next_name,notes
+vehicle_drivetrain,drivetrain,"Snake_case retained but future-proofed constant Drivetrain enum introduced"
+BEV,bev,"Enum Drivetrain.BEV replaces magic string"
+Diesel,diesel,"Enum Drivetrain.DIESEL replaces magic string"
+All,all,"Enum Drivetrain.ALL replaces magic string"
+msrp_price,msrp_price,"Already snake_case – unchanged"
+price_parity_year,price_parity_year,"Already snake_case – unchanged"
+battery_capacity_kwh,battery_capacity_kwh,"Already consistent, noted for completeness" 

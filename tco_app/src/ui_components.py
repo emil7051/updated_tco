@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+
+from .constants import Drivetrain  # Centralised drivetrain labels
 from .utils.energy import weighted_electricity_price
 
 def display_metric_card(title, value, unit, tooltip=None):
@@ -179,7 +181,7 @@ def display_detailed_results_table(bev_results, diesel_results):
             'Externality Cost per km ($)',
             'Social TCO ($)'
         ],
-        'BEV': [
+        Drivetrain.BEV.value: [
             str(bev_results['vehicle_data']['vehicle_model']),
             str(bev_results['vehicle_data']['vehicle_type']),
             str(bev_results['vehicle_data']['payload_t']),
@@ -197,7 +199,7 @@ def display_detailed_results_table(bev_results, diesel_results):
             f"${bev_results['externalities']['externality_per_km']:.4f}",
             f"${bev_results['social_tco']['social_tco_lifetime']:,.2f}"
         ],
-        'Diesel': [
+        Drivetrain.DIESEL.value: [
             str(diesel_results['vehicle_data']['vehicle_model']),
             str(diesel_results['vehicle_data']['vehicle_type']),
             str(diesel_results['vehicle_data']['payload_t']),
@@ -246,8 +248,8 @@ def display_detailed_results_table(bev_results, diesel_results):
             hide_index=True,
             column_config={
                 'Metric': st.column_config.TextColumn('Metric'),
-                'BEV': st.column_config.TextColumn('BEV'),
-                'Diesel': st.column_config.TextColumn('Diesel'),
+                Drivetrain.BEV.value: st.column_config.TextColumn(Drivetrain.BEV.value),
+                Drivetrain.DIESEL.value: st.column_config.TextColumn(Drivetrain.DIESEL.value),
                 'Difference': st.column_config.TextColumn('Difference (BEV - Diesel)')
             }
         )

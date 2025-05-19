@@ -3,6 +3,8 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+
+from .constants import Drivetrain  # Centralised drivetrain strings
 from .utils.energy import weighted_electricity_price
 
 def create_cost_breakdown_chart(bev_results, diesel_results):
@@ -45,11 +47,14 @@ def create_cost_breakdown_chart(bev_results, diesel_results):
     bev_values = list(bev_costs.values())
     diesel_values = [diesel_costs.get(cat, 0) for cat in categories]  # Use get to handle missing keys
     
-    df = pd.DataFrame({
-        'Category': categories + categories,
-        'Cost': bev_values + diesel_values,
-        'Vehicle Type': ['BEV'] * len(categories) + ['Diesel'] * len(categories)
-    })
+    df = pd.DataFrame(
+        {
+            "Category": categories + categories,
+            "Cost": bev_values + diesel_values,
+            "Vehicle Type": [Drivetrain.BEV.value] * len(categories)
+            + [Drivetrain.DIESEL.value] * len(categories),
+        }
+    )
     
     # Create stacked bar chart
     fig = px.bar(
@@ -125,11 +130,14 @@ def create_annual_costs_chart(bev_results, diesel_results, truck_life_years):
     diesel_cumulative[-1] -= diesel_results['residual_value']
     
     # Create DataFrame for plotting
-    df = pd.DataFrame({
-        'Year': years + years,
-        'Cumulative Cost': bev_cumulative + diesel_cumulative,
-        'Vehicle Type': ['BEV'] * len(years) + ['Diesel'] * len(years)
-    })
+    df = pd.DataFrame(
+        {
+            "Year": years + years,
+            "Cumulative Cost": bev_cumulative + diesel_cumulative,
+            "Vehicle Type": [Drivetrain.BEV.value] * len(years)
+            + [Drivetrain.DIESEL.value] * len(years),
+        }
+    )
     
     # Create line chart
     fig = px.line(
@@ -139,7 +147,7 @@ def create_annual_costs_chart(bev_results, diesel_results, truck_life_years):
         color='Vehicle Type',
         title='Cumulative Costs Over Time',
         labels={'Cumulative Cost': 'Cumulative Cost (AUD)', 'Year': 'Year'},
-        color_discrete_map={'BEV': '#1f77b4', 'Diesel': '#ff7f0e'},
+        color_discrete_map={Drivetrain.BEV.value: "#1f77b4", Drivetrain.DIESEL.value: "#ff7f0e"},
         height=400
     )
     
@@ -214,7 +222,7 @@ def create_emissions_chart(bev_results, diesel_results, truck_life_years):
     """
     # Create data for plotting
     data = pd.DataFrame({
-        'Vehicle Type': ['BEV', 'Diesel'],
+        'Vehicle Type': [Drivetrain.BEV.value, Drivetrain.DIESEL.value],
         'Annual Emissions (kg CO₂)': [
             bev_results['emissions']['annual_emissions'],
             diesel_results['emissions']['annual_emissions']

@@ -2,6 +2,7 @@ import math
 import numpy as np
 from .utils.finance import npv_constant as _npv_constant
 from .utils.energy import weighted_electricity_price
+from .constants import Drivetrain
 
 def calculate_energy_costs(vehicle_data, fees_data, charging_data, financial_params, selected_charging, charging_mix=None):
     """
@@ -15,7 +16,7 @@ def calculate_energy_costs(vehicle_data, fees_data, charging_data, financial_par
         selected_charging: ID of selected charging option
         charging_mix: Optional dictionary of charging_id -> percentage (as decimal) for mixed charging
     """
-    if vehicle_data['vehicle_drivetrain'] == 'BEV':
+    if vehicle_data['vehicle_drivetrain'] == Drivetrain.BEV:
         if charging_mix is not None and len(charging_mix) > 0:
             # Use shared utility to derive weighted average electricity price
             electricity_price = weighted_electricity_price(charging_mix, charging_data)
@@ -54,11 +55,11 @@ def calculate_annual_costs(vehicle_data, fees_data, energy_cost_per_km, annual_k
     insurance_annual = maintenance_data['insurance_annual_price']
     
     # Apply incentives if specified and provided
-    if apply_incentives and incentives_data is not None and vehicle_data['vehicle_drivetrain'] == 'BEV':
+    if apply_incentives and incentives_data is not None and vehicle_data['vehicle_drivetrain'] == Drivetrain.BEV:
         # Filter active incentives
         active_incentives = incentives_data[
             (incentives_data['incentive_flag'] == 1) &
-            ((incentives_data['drivetrain'] == 'BEV') | (incentives_data['drivetrain'] == 'All'))
+            ((incentives_data['drivetrain'] == Drivetrain.BEV) | (incentives_data['drivetrain'] == Drivetrain.ALL))
         ]
         
         # Apply registration exemption if available
@@ -73,7 +74,7 @@ def calculate_annual_costs(vehicle_data, fees_data, energy_cost_per_km, annual_k
         
         # Apply electricity rate discount if available
         electricity_discount = active_incentives[active_incentives['incentive_type'] == 'electricity_rate_discount']
-        if not electricity_discount.empty and vehicle_data['vehicle_drivetrain'] == 'BEV':
+        if not electricity_discount.empty and vehicle_data['vehicle_drivetrain'] == Drivetrain.BEV:
             annual_energy_cost *= (1 - electricity_discount.iloc[0]['incentive_rate'])
     
     # Calculate total annual operating cost
@@ -91,7 +92,7 @@ def calculate_emissions(vehicle_data, emission_factors, annual_kms, truck_life_y
     """
     Calculate emissions metrics
     """
-    if vehicle_data['vehicle_drivetrain'] == 'BEV':
+    if vehicle_data['vehicle_drivetrain'] == Drivetrain.BEV:
         # Get electricity emission factor from the emission_factors table
         electricity_ef = emission_factors[
             (emission_factors['fuel_type'] == 'electricity') & 
@@ -135,11 +136,11 @@ def calculate_acquisition_cost(vehicle_data, fees_data, incentives_data, apply_i
     acquisition_cost = msrp + stamp_duty
     
     # Apply incentives if specified and for BEVs
-    if apply_incentives and vehicle_data['vehicle_drivetrain'] == 'BEV':
+    if apply_incentives and vehicle_data['vehicle_drivetrain'] == Drivetrain.BEV:
         # Filter active incentives
         active_incentives = incentives_data[
             (incentives_data['incentive_flag'] == 1) &
-            ((incentives_data['drivetrain'] == 'BEV') | (incentives_data['drivetrain'] == 'All'))
+            ((incentives_data['drivetrain'] == Drivetrain.BEV) | (incentives_data['drivetrain'] == Drivetrain.ALL))
         ]
         
         # Apply purchase rebate if available
@@ -174,7 +175,7 @@ def calculate_battery_replacement(vehicle_data, battery_params, truck_life_years
     """
     Calculate battery replacement costs if needed
     """
-    if vehicle_data['vehicle_drivetrain'] != 'BEV':
+    if vehicle_data['vehicle_drivetrain'] != Drivetrain.BEV:
         return 0
     
     # Get battery parameters
@@ -521,7 +522,7 @@ def calculate_charging_requirements(vehicle_data, annual_kms, infrastructure_opt
         Dictionary containing charging requirement metrics
     """
     # Only applicable for BEVs
-    if vehicle_data['vehicle_drivetrain'] != 'BEV':
+    if vehicle_data['vehicle_drivetrain'] != Drivetrain.BEV:
         return {
             'daily_distance': 0,
             'daily_kwh_required': 0,

@@ -15,6 +15,7 @@ import os
 
 # Import modules
 from src.data_loading import load_data
+from src.constants import Drivetrain
 from src.calculations import (
     calculate_energy_costs, calculate_annual_costs, calculate_emissions,
     calculate_acquisition_cost, calculate_npv, calculate_residual_value,
@@ -299,7 +300,7 @@ def main():
         type_vehicles = vehicle_models[vehicle_models['vehicle_type'] == vehicle_type]
         
         # Get BEV vehicles
-        bev_vehicles = type_vehicles[type_vehicles['vehicle_drivetrain'] == 'BEV']
+        bev_vehicles = type_vehicles[type_vehicles['vehicle_drivetrain'] == Drivetrain.BEV]
         
         # Vehicle pair selection
         selected_bev_id = st.selectbox(
@@ -318,7 +319,7 @@ def main():
         st.info(f"Comparison Diesel: {diesel_model}")
         
         # Apply scenario parameters to relevant tables
-        modified_tables = apply_scenario_parameters(scenario_id, data_tables, vehicle_type, 'All')
+        modified_tables = apply_scenario_parameters(scenario_id, data_tables, vehicle_type, Drivetrain.ALL)
         
         # Update the data tables with scenario-specific values
         financial_params = modified_tables['financial_params']
@@ -510,7 +511,7 @@ def main():
             (applicable_incentives['vehicle_type'] == 'All') | (applicable_incentives['vehicle_type'] == vehicle_type)
         ]
         applicable_incentives = applicable_incentives[
-            (applicable_incentives['drivetrain'] == 'All') | (applicable_incentives['drivetrain'] == 'BEV')
+            (applicable_incentives['drivetrain'] == Drivetrain.ALL) | (applicable_incentives['drivetrain'] == Drivetrain.BEV)
         ]
         
         # Create a dictionary to store individual incentive toggle states
@@ -950,7 +951,7 @@ def main():
                 st.plotly_chart(charging_mix_chart, use_container_width=True)
             
             # Add infrastructure cost information
-            if bev_vehicle_data['vehicle_drivetrain'] == 'BEV':
+            if bev_vehicle_data['vehicle_drivetrain'] == Drivetrain.BEV:
                 st.subheader("Infrastructure Costs")
                 
                 infra_col1, infra_col2 = st.columns(2)
