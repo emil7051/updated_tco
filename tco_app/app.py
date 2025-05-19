@@ -36,6 +36,9 @@ from src.ui_components import (
     display_summary_metrics, display_detailed_results_table
 )
 
+# Shared utilities to avoid duplicated maths
+from tco_app.src.utils.energy import weighted_electricity_price
+
 # Set page configuration
 st.set_page_config(
     page_title="Electric vs. Diesel Truck TCO Model",
@@ -461,12 +464,8 @@ def main():
                 charging_percentages[charging_id] = percentage / 100
                 total_percentage += percentage
             
-            # Display weighted average price
-            weighted_price = 0
-            if total_percentage > 0:  # Prevent division by zero
-                for charging_id, percentage in charging_percentages.items():
-                    charging_option = charging_options[charging_options['charging_id'] == charging_id].iloc[0]
-                    weighted_price += charging_option['per_kwh_price'] * (percentage / total_percentage * 100)
+            # Display weighted average electricity price using shared utility
+            weighted_price = weighted_electricity_price(charging_percentages, charging_options)
             
             # Display total and validation
             st.metric(
@@ -656,15 +655,17 @@ def main():
     )
     
     # Display charging option information in a smaller info box
-    charging_info = f"Using single charging option: {charging_options[charging_options['charging_id'] == selected_charging].iloc[0]['charging_approach']} (${charging_options[charging_options['charging_id'] == selected_charging].iloc[0]['per_kwh_price']:.2f}/kWh)"
+    charging_info = (
+        f"Using single charging option: "
+        f"{charging_options[charging_options['charging_id'] == selected_charging].iloc[0]['charging_approach']} "
+        f"(${charging_options[charging_options['charging_id'] == selected_charging].iloc[0]['per_kwh_price']:.2f}/kWh)"
+    )
     if use_charging_mix and charging_mix is not None:
-        # Calculate weighted average electricity price for display
-        weighted_price = 0
-        for charging_id, percentage in charging_mix.items():
-            charging_option = charging_options[charging_options['charging_id'] == charging_id].iloc[0]
-            weighted_price += charging_option['per_kwh_price'] * percentage
-        
-        charging_info = f"Using mixed charging with weighted average price: ${weighted_price:.2f}/kWh"
+        # Calculate weighted average electricity price for display via utility
+        weighted_price = weighted_electricity_price(charging_mix, charging_options)
+        charging_info = (
+            f"Using mixed charging with weighted average price: ${weighted_price:.2f}/kWh"
+        )
     
     # Calculate annual costs
     bev_annual_costs = calculate_annual_costs(
@@ -874,14 +875,10 @@ def main():
     # Add charging mix information if using mixed charging
     if use_charging_mix and charging_mix is not None:
         bev_results['charging_mix'] = charging_mix
-        
-        # Calculate and store weighted average electricity price
-        weighted_price = 0
-        for charging_id, percentage in charging_mix.items():
-            charging_option = charging_options[charging_options['charging_id'] == charging_id].iloc[0]
-            weighted_price += charging_option['per_kwh_price'] * percentage
-            
-        bev_results['weighted_electricity_price'] = weighted_price
+        # Store weighted average electricity price using utility
+        bev_results['weighted_electricity_price'] = weighted_electricity_price(
+            charging_mix, charging_options
+        )
     
     # Diesel results (without infrastructure costs)
     diesel_results = {

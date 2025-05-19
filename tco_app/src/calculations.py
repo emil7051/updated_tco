@@ -1,5 +1,7 @@
 import math
 import numpy as np
+from .utils.finance import npv_constant as _npv_constant
+from .utils.energy import weighted_electricity_price
 
 def calculate_energy_costs(vehicle_data, fees_data, charging_data, financial_params, selected_charging, charging_mix=None):
     """
@@ -15,13 +17,8 @@ def calculate_energy_costs(vehicle_data, fees_data, charging_data, financial_par
     """
     if vehicle_data['vehicle_drivetrain'] == 'BEV':
         if charging_mix is not None and len(charging_mix) > 0:
-            # Calculate weighted average electricity price
-            weighted_price = 0
-            for charging_id, percentage in charging_mix.items():
-                charging_option = charging_data[charging_data['charging_id'] == charging_id].iloc[0]
-                weighted_price += charging_option['per_kwh_price'] * percentage
-            
-            electricity_price = weighted_price
+            # Use shared utility to derive weighted average electricity price
+            electricity_price = weighted_electricity_price(charging_mix, charging_data)
         else:
             # Get electricity price from selected charging option
             charging_option = charging_data[charging_data['charging_id'] == selected_charging].iloc[0]
@@ -158,13 +155,8 @@ def calculate_acquisition_cost(vehicle_data, fees_data, incentives_data, apply_i
     return acquisition_cost
 
 def calculate_npv(annual_cost, discount_rate, years):
-    """
-    Calculate Net Present Value of a constant annual cost
-    """
-    npv = 0
-    for year in range(1, years + 1):
-        npv += annual_cost / ((1 + discount_rate) ** year)
-    return npv
+    """Delegate to utils.finance.npv_constant for the calculation."""
+    return _npv_constant(annual_cost, discount_rate, years)
 
 def calculate_residual_value(vehicle_data, years, initial_depreciation, annual_depreciation):
     """

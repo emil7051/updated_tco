@@ -3,6 +3,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from .utils.energy import weighted_electricity_price
 
 def create_cost_breakdown_chart(bev_results, diesel_results):
     """
@@ -390,9 +391,15 @@ def create_charging_mix_chart(bev_results):
         )
     )])
     
-    # Calculate weighted average price
+    # Calculate weighted average price using utility (values are already percentages)
     if sum(values) > 0:
-        weighted_price = sum([price * (value / 100) for price, value in zip(prices, values)])
+        # Reconstruct mix dict for the utility
+        charging_mix = {
+            cid: bev_results['charging_mix'][cid]
+            for cid in bev_results['charging_mix']
+            if bev_results['charging_mix'][cid] > 0
+        }
+        weighted_price = weighted_electricity_price(charging_mix, bev_results['charging_options'])
         subtitle = f"Weighted Average: ${weighted_price:.2f}/kWh"
     else:
         subtitle = "No charging mix data"

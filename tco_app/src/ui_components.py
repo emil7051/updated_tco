@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from .utils.energy import weighted_electricity_price
 
 def display_metric_card(title, value, unit, tooltip=None):
     """
@@ -273,11 +274,9 @@ def display_detailed_results_table(bev_results, diesel_results):
             
             charging_mix_df = pd.DataFrame(charging_mix_data)
             
-            # Calculate weighted average price
-            weighted_price = sum(
-                [option['per_kwh_price'] * bev_results['charging_mix'][option['charging_id']] 
-                 for idx, option in bev_results['charging_options'].iterrows() 
-                 if option['charging_id'] in bev_results['charging_mix']]
+            # Calculate weighted average electricity price using shared utility
+            weighted_price = weighted_electricity_price(
+                bev_results['charging_mix'], bev_results['charging_options']
             )
             
             # Display charging mix table
