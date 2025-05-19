@@ -22,13 +22,15 @@ tco_app/
 │
 ├── data/                   # Data directory
 │   ├── tables/             # CSV data tables for the model
-│   │   ├── tco_tidytables_vehicle_models.csv.csv
-│   │   ├── tco_tidytables_vehicle_fees.csv.csv
+│   │   ├── battery_params.csv
+│   │   ├── vehicle_models.csv
+│   │   ├── vehicle_fees.csv
 │   │   └── ...
 │   │
 │   ├── dictionary/         # Data dictionary and documentation
-│   │   ├── tco_data_dictionary_calculations.csv.csv
-│   │   ├── tco_data_dictionary_parameter_library.csv.csv
+│   │   ├── calculations.csv
+│   │   ├── parameter_library.csv
+│   │   ├── vehicle_comparison.csv
 │   │   └── ...
 │   │
 │   ├── tco_tidytables.xlsx # Original Excel data source
