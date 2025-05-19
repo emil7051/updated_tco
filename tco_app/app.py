@@ -37,7 +37,7 @@ from src.ui_components import (
 )
 
 # Shared utilities to avoid duplicated maths
-from tco_app.src.utils.energy import weighted_electricity_price
+from src.utils.energy import weighted_electricity_price
 
 # Set page configuration
 st.set_page_config(
