@@ -4,7 +4,7 @@ import math
 import pandas as pd
 import pytest
 
-from tco_app.src import calculations as calc
+from tco_app.domain.finance import calculate_npv
 from tco_app.src.utils import finance as fin
 from tco_app.src.utils import energy as en
 
@@ -13,7 +13,7 @@ from tco_app.src.utils import energy as en
 def test_npv_constant_matches_original(annual_cost, discount_rate, years):
     """The wrapped `calc.calculate_npv` must equal `fin.npv_constant`."""
     assert math.isclose(
-        calc.calculate_npv(annual_cost, discount_rate, years),
+        calculate_npv(annual_cost, discount_rate, years),
         fin.npv_constant(annual_cost, discount_rate, years),
         rel_tol=1e-9,
     )

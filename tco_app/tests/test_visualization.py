@@ -1,4 +1,4 @@
-from tco_app.src.visualization import (
+from tco_app.plotters import (
     create_cost_breakdown_chart,
     create_emissions_chart,
 )

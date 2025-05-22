@@ -1,0 +1,273 @@
+from __future__ import annotations
+
+"""Single-parameter sensitivity analysis helpers (extracted from the former
+`tco_app.domain.sensitivity` monolith to satisfy the 300-line file limit).
+
+The implementation is a verbatim copy of the original logic so regression
+behaviour is unchanged.  Only import paths were updated where the monolith
+previously referenced legacy modules.
+"""
+
+from typing import Any, Dict, List
+
+import pandas as pd
+
+from tco_app.domain.energy import (
+	calculate_energy_costs,
+	calculate_charging_requirements,
+)
+from tco_app.domain.finance import (
+	calculate_annual_costs,
+	calculate_acquisition_cost,
+	calculate_npv,
+	calculate_residual_value,
+	calculate_tco,
+	calculate_infrastructure_costs,
+	apply_infrastructure_incentives,
+	integrate_infrastructure_with_tco,
+)
+from tco_app.domain.externalities import (
+	calculate_externalities,
+	calculate_social_tco,
+)
+from tco_app.src.utils.battery import calculate_battery_replacement
+
+__all__ = ['perform_sensitivity_analysis']
+
+# --------------------------------------------------------------------------------------
+# perform_sensitivity_analysis (verbatim copy)
+# --------------------------------------------------------------------------------------
+
+def perform_sensitivity_analysis(
+	parameter_name: str,
+	parameter_range: List[Any],
+	bev_vehicle_data: pd.Series | dict,
+	diesel_vehicle_data: pd.Series | dict,
+	bev_fees: pd.DataFrame,
+	diesel_fees: pd.DataFrame,
+	charging_options: pd.DataFrame,
+	infrastructure_options: pd.DataFrame,
+	financial_params: pd.DataFrame,
+	battery_params: pd.DataFrame,
+	emission_factors: pd.DataFrame,
+	incentives: pd.DataFrame,
+	selected_charging: Any,
+	selected_infrastructure: Any,
+	annual_kms: int,
+	truck_life_years: int,
+	discount_rate: float,
+	fleet_size: int,
+	charging_mix: Dict[int, float] | None = None,
+	apply_incentives: bool = True,
+) -> List[Dict[str, Any]]:
+	"""Return result rows for each *parameter_value* in *parameter_range*.
+
+	This is the same algorithm used previously; refactor only affects file
+	organisation, not behaviour.
+	"""
+	results: List[Dict[str, Any]] = []
+
+	financial_params_copy = financial_params.copy()
+	battery_params_copy = battery_params.copy()
+
+	for param_value in parameter_range:
+		current_annual_kms = annual_kms
+		current_diesel_price = financial_params_copy[
+			financial_params_copy['finance_description'] == 'diesel_price'
+		].iloc[0]['default_value']
+		current_discount_rate = discount_rate
+		current_truck_life_years = truck_life_years
+		current_charging_mix = charging_mix
+		modified_charging_options = charging_options
+
+		if parameter_name == 'Annual Distance (km)':
+			current_annual_kms = param_value
+		elif parameter_name == 'Diesel Price ($/L)':
+			current_diesel_price = param_value
+			financial_params_copy.loc[
+				financial_params_copy['finance_description'] == 'diesel_price',
+				'default_value',
+			] = param_value
+		elif parameter_name == 'Vehicle Lifetime (years)':
+			current_truck_life_years = param_value
+		elif parameter_name == 'Discount Rate (%)':
+			current_discount_rate = param_value / 100
+		elif parameter_name == 'Electricity Price ($/kWh)':
+			base_price = charging_options[
+				charging_options['charging_id'] == selected_charging
+			].iloc[0]['per_kwh_price']
+			modified_charging_options = charging_options.copy()
+			for idx in modified_charging_options.index:
+				orig = charging_options.loc[idx, 'per_kwh_price']
+				modified_charging_options.loc[idx, 'per_kwh_price'] = param_value * (
+					orig / base_price
+				)
+		else:
+			# Unsupported parameter name – skip
+			continue
+
+		# --------------- Energy costs ---------------
+		bev_energy_cost_per_km = calculate_energy_costs(
+			bev_vehicle_data,
+			bev_fees,
+			modified_charging_options,
+			financial_params_copy,
+			selected_charging,
+			current_charging_mix,
+		)
+		diesel_energy_cost_per_km = calculate_energy_costs(
+			diesel_vehicle_data,
+			diesel_fees,
+			charging_options,
+			financial_params_copy,
+			selected_charging,
+		)
+
+		# --------------- Annual costs ---------------
+		bev_annual_costs = calculate_annual_costs(
+			bev_vehicle_data,
+			bev_fees,
+			bev_energy_cost_per_km,
+			current_annual_kms,
+			incentives,
+			apply_incentives,
+		)
+		diesel_annual_costs = calculate_annual_costs(
+			diesel_vehicle_data,
+			diesel_fees,
+			diesel_energy_cost_per_km,
+			current_annual_kms,
+			incentives,
+			apply_incentives,
+		)
+
+		# --------------- Emissions ---------------
+		bev_emissions = calculate_externalities(
+			bev_vehicle_data,
+			emission_factors,
+			current_annual_kms,
+			current_truck_life_years,
+			current_discount_rate,
+		)
+		# diesel_emissions intentionally unused
+
+		# --------------- Acquisition & residual ---------------
+		bev_acquisition = calculate_acquisition_cost(
+			bev_vehicle_data,
+			bev_fees,
+			incentives,
+			apply_incentives,
+		)
+		diesel_acquisition = calculate_acquisition_cost(
+			diesel_vehicle_data,
+			diesel_fees,
+			incentives,
+			apply_incentives,
+		)
+
+		initial_dep = financial_params_copy[
+			financial_params_copy['finance_description'] == 'initial_depreciation_percent'
+		].iloc[0]['default_value']
+		annual_dep = financial_params_copy[
+			financial_params_copy['finance_description'] == 'annual_depreciation_percent'
+		].iloc[0]['default_value']
+
+		bev_residual = calculate_residual_value(
+			bev_vehicle_data,
+			current_truck_life_years,
+			initial_dep,
+			annual_dep,
+		)
+		diesel_residual = calculate_residual_value(
+			diesel_vehicle_data,
+			current_truck_life_years,
+			initial_dep,
+			annual_dep,
+		)
+
+		# --------------- Battery replacement ---------------
+		bev_battery_replacement = calculate_battery_replacement(
+			bev_vehicle_data,
+			battery_params_copy,
+			current_truck_life_years,
+			current_discount_rate,
+		)
+
+		# --------------- NPV of annuals ---------------
+		bev_npv_annual = calculate_npv(
+			bev_annual_costs['annual_operating_cost'],
+			current_discount_rate,
+			current_truck_life_years,
+		)
+		diesel_npv_annual = calculate_npv(
+			diesel_annual_costs['annual_operating_cost'],
+			current_discount_rate,
+			current_truck_life_years,
+		)
+
+		# --------------- TCO ---------------
+		bev_tco = calculate_tco(
+			bev_vehicle_data,
+			bev_fees,
+			bev_annual_costs,
+			bev_acquisition,
+			bev_residual,
+			bev_battery_replacement,
+			bev_npv_annual,
+			current_annual_kms,
+			current_truck_life_years,
+		)
+		diesel_tco = calculate_tco(
+			diesel_vehicle_data,
+			diesel_fees,
+			diesel_annual_costs,
+			diesel_acquisition,
+			diesel_residual,
+			0,
+			diesel_npv_annual,
+			current_annual_kms,
+			current_truck_life_years,
+		)
+
+		# --------------- Infrastructure ---------------
+		infra_data = infrastructure_options[
+			infrastructure_options['infrastructure_id'] == selected_infrastructure
+		].iloc[0]
+		bev_charging_requirements = calculate_charging_requirements(
+			bev_vehicle_data,
+			current_annual_kms,
+			infra_data,
+		)
+		infra_costs = calculate_infrastructure_costs(
+			infra_data,
+			current_truck_life_years,
+			current_discount_rate,
+			fleet_size,
+		)
+		infra_with_incentives = apply_infrastructure_incentives(
+			infra_costs,
+			incentives,
+			apply_incentives,
+		)
+		bev_tco_with_infra = integrate_infrastructure_with_tco(
+			bev_tco,
+			infra_with_incentives,
+			apply_incentives,
+		)
+
+		# --------------- Output ---------------
+		results.append({
+			'parameter_value': param_value,
+			'bev': {
+				'tco_per_km': bev_tco_with_infra['tco_per_km'],
+				'tco_lifetime': bev_tco_with_infra['tco_lifetime'],
+				'annual_operating_cost': bev_annual_costs['annual_operating_cost'],
+			},
+			'diesel': {
+				'tco_per_km': diesel_tco['tco_per_km'],
+				'tco_lifetime': diesel_tco['tco_lifetime'],
+				'annual_operating_cost': diesel_annual_costs['annual_operating_cost'],
+			},
+		})
+
+	return results 

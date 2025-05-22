@@ -1,0 +1,19 @@
+repos:
+  - repo: local
+    hooks:
+      - id: calc-changes-require-tests
+        name: 'Run tests when calculations.py touched'
+        entry: pytest -q
+        language: system
+        types: [python]
+        files: ^tco_app/src/calculations\.py$
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        language_version: python3 

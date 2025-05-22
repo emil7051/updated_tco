@@ -7,7 +7,9 @@ from tco_app.src.constants import Drivetrain
 from tco_app.src.utils import energy as en
 from tco_app.src.utils import battery as bat
 from tco_app.src.utils import finance as fin
-from tco_app.src import calculations as calc
+from tco_app.domain.energy import calculate_energy_costs as energy_cost_domain
+from tco_app.domain.finance import calculate_residual_value as residual_domain
+from tco_app.src.utils.battery import calculate_battery_replacement as battery_domain
 
 
 @pytest.fixture
@@ -68,7 +70,7 @@ def test_calculate_energy_costs_delegation(dummy_financial_params, dummy_chargin
         "C1",
         None,
     )
-    delegated = calc.calculate_energy_costs(
+    delegated = energy_cost_domain(
         vehicle_data,
         None,
         dummy_charging_options,
@@ -105,9 +107,9 @@ def test_calculate_residual_value():
     assert math.isclose(
         fin.calculate_residual_value(vehicle_data, years, initial_dep, annual_dep), expected, rel_tol=1e-9
     )
-    # Delegation parity
+    # Domain parity
     assert math.isclose(
-        calc.calculate_residual_value(vehicle_data, years, initial_dep, annual_dep), expected, rel_tol=1e-9
+        residual_domain(vehicle_data, years, initial_dep, annual_dep), expected, rel_tol=1e-9
     )
 
 
@@ -138,9 +140,9 @@ def test_calculate_battery_replacement():
         expected,
         rel_tol=1e-9,
     )
-    # Delegation parity
+    # Domain parity
     assert math.isclose(
-        calc.calculate_battery_replacement(vehicle_data, battery_params, life_years, rate),
+        battery_domain(vehicle_data, battery_params, life_years, rate),
         expected,
         rel_tol=1e-9,
     ) 

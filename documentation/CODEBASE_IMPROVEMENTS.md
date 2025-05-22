@@ -29,8 +29,6 @@ Below is a curated backlog of refactoring, debugging and technical	debt tasks th
 - Unit regression `tests/test_regression.py` validating pre- vs post-refactor outputs is green.  
 - CI pipeline passes (lint, type-check, tests).
 
-#TO DO:
-
 #### 0.1 Medium-Priority – Harmonise Naming Conventions  
 *Rationale*: Mixed naming styles (e.g., `msrp_price` vs `battery_capacity_kwh`, inconsistent casing in UI strings) impede searchability and comprehension.  
 *Tasks*  
@@ -59,6 +57,8 @@ Below is a curated backlog of refactoring, debugging and technical	debt tasks th
 - `grep -R "msrpPrice\|BatteryReplacementYear" tco_app | wc -l` → `0`.  
 - All unit tests reference new names only.  
 - `mypy` strict mode passes.
+
+#TO DO:
 
 #### 0.2 High-Priority – Align Implementation with `calculations.csv`  
 *Rationale*: Several metrics defined in the data dictionary are either partially implemented or absent in `calculations.py`, creating analytical gaps and confusing stakeholders when exported tables do not match spec.  

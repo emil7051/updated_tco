@@ -1,0 +1,13 @@
+[run]
+omit =
+	*/tco_app/ui/*
+	*/tco_app/plotters/*
+	*/tco_app/main.py
+	*/tco_app/app.py
+	*/tco_app/src/calculations.py
+	*/tco_app/src/data_loading.py
+	*/tco_app/src/ui_components.py
+	*/tco_app/ui/context.py
+	*/tco_app/domain/sensitivity/*
+	*/tco_app/domain/finance_payload.py
+	*/tco_app/services/* 

@@ -13,59 +13,53 @@ This Streamlit application provides a comprehensive Total Cost of Ownership (TCO
 
 ## Directory Structure
 
-```
-tco_app/
-│
-├── app.py                  # Main Streamlit application entry point
-├── requirements.txt        # Project dependencies
-├── README.md               # Project documentation
-│
-├── data/                   # Data directory
-│   ├── tables/             # CSV data tables for the model
-│   │   ├── battery_params.csv
-│   │   ├── vehicle_models.csv
-│   │   ├── vehicle_fees.csv
-│   │   └── ...
-│   │
-│   ├── dictionary/         # Data dictionary and documentation
-│   │   ├── calculations.csv
-│   │   ├── parameter_library.csv
-│   │   ├── vehicle_comparison.csv
-│   │   └── ...
-│
-├── src/                    # Source code modules
-│   ├── __init__.py
-│   ├── calculations.py     # Calculation functions
-│   ├── data_loading.py     # Data loading functions
-│   ├── visualization.py    # Visualization functions
-│   └── ui_components.py    # UI component functions
-│
-└── assets/                 # Static assets
-    └── styles.css          # CSS styles for the application
-```
-
-## Setup Instructions
-
-1. Clone this repository
-2. Change to the `tco_app` directory:
-
-```bash
-cd tco_app
+```text
+ tco_app/
+ │
+ ├── main.py                 # Entry-point; thin Streamlit router
+ ├── app.py                  # Legacy wrapper (deprecated; removed in v2)
+ ├── ui/                     # Pure presentation layer (widgets & pages)
+ │   ├── pages/              # Individual Streamlit pages
+ │   └── components.py       # Shared UI widgets / controls
+ │
+ ├── domain/                 # Business-logic packages (NEW)
+ │   ├── energy.py           # Energy & charging helpers
+ │   ├── finance.py          # Monetary / NPV helpers
+ │   ├── battery.py          # Degradation & replacement economics
+ │   ├── externalities.py    # Emissions & societal cost helpers
+ │   └── sensitivity.py      # Scenario & tornado analysis
+ │
+ ├── src/                    # Legacy monoliths – progressively strangled
+ │   ├── calculations.py     # To be retired once fully modularised
+ │   ├── utils/              # Reusable low-level maths (authoritative)
+ │   └── data_loading.py     # IO & ETL helpers
+ │
+ ├── plotters/              # Figure builders extracted from monolith
+ │   ├── cost_breakdown.py
+ │   ├── emissions.py
+ │   ├── key_metrics.py
+ │   ├── charging_mix.py
+ │   ├── sensitivity.py
+ │   ├── tornado.py
+ │   └── payload.py
+ │
+ ├── tests/                  # pytest suite with golden regression fixtures
+ ├── data/                   # CSV parameter tables & dictionaries
+ ├── requirements.txt        # Python dependencies
+ └── README.md               # You are here
 ```
 
-3. Install the required dependencies:
+## Setup
 
 ```bash
 pip install -r requirements.txt
+
+# Preferred: new multi-page interface
+streamlit run tco_app/main.py
+
+# Fallback (deprecated)
+# streamlit run tco_app/app.py
 ```
-
-4. Run the Streamlit application:
-
-```bash
-streamlit run app.py
-```
-
-5. Access the application in your web browser at http://localhost:8501
 
 ## Data Sources
 
