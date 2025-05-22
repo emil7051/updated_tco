@@ -4,14 +4,26 @@ import pandas as pd
 from .constants import Drivetrain  # Centralised drivetrain labels
 from .utils.energy import weighted_electricity_price
 
+def _to_scalar(val):
+	"""Return numeric scalar from possible Pandas scalar/Series/NumPy."""
+	if isinstance(val, pd.Series):
+		if val.empty:
+			return 0.0
+		return float(val.iloc[0])
+	try:
+		return float(val)
+	except Exception:
+		return 0.0
+
 def display_metric_card(title, value, unit, tooltip=None):
     """
     Display a metric in a formatted card
     """
+    val = _to_scalar(value)
     metric_html = f"""
     <div class="metric-card">
         <div style="font-size: 0.8rem; color: #505A64;">{title}</div>
-        <div class="metric-value">{value:,.2f} {unit}</div>
+        <div class="metric-value">{val:,.2f} {unit}</div>
     </div>
     """
     
@@ -100,6 +112,10 @@ def display_summary_metrics(bev_results, diesel_results):
     col1, col2 = st.columns(2)
     
     with col1:
+        bev_npv = _to_scalar(bev_results['tco']['npv_total_cost'])
+        bev_tco_km = _to_scalar(bev_results['tco']['tco_per_km'])
+        bev_tco_tkm = _to_scalar(bev_results['tco']['tco_per_tonne_km'])
+        bev_annual = _to_scalar(bev_results['annual_costs']['annual_operating_cost'])
         bev_html = f"""
         <div class="vehicle-summary-card bev" style="margin-bottom: 0;">
             <h5 style="color: #0B3954; font-weight: 600; margin-bottom: 1rem;">Battery Electric Vehicle</h5>
@@ -113,22 +129,26 @@ def display_summary_metrics(bev_results, diesel_results):
                 <span style="color: #333333; font-weight: 600;">Range:</span> <span style="color: #333333;">{bev_results['vehicle_data'].get('range_km', 'N/A')} km</span>
             </div>
             <div style="background-color: rgba(8, 126, 139, 0.1); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem;">
-                <span style="color: #333333; font-weight: 600;">Lifetime TCO:</span> <span style="color: #333333;">${bev_results['tco']['npv_total_cost']:,.2f}</span>
+                <span style="color: #333333; font-weight: 600;">Lifetime TCO:</span> <span style="color: #333333;">${bev_npv:,.2f}</span>
             </div>
             <div style="background-color: rgba(8, 126, 139, 0.1); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem;">
-                <span style="color: #333333; font-weight: 600;">TCO per km:</span> <span style="color: #333333;">${bev_results['tco']['tco_per_km']:,.2f}</span>
+                <span style="color: #333333; font-weight: 600;">TCO per km:</span> <span style="color: #333333;">${bev_tco_km:,.2f}</span>
             </div>
             <div style="background-color: rgba(8, 126, 139, 0.1); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem;">
-                <span style="color: #333333; font-weight: 600;">TCO per tonne-km:</span> <span style="color: #333333;">${bev_results['tco']['tco_per_tonne_km']:,.2f}</span>
+                <span style="color: #333333; font-weight: 600;">TCO per tonne-km:</span> <span style="color: #333333;">${bev_tco_tkm:,.2f}</span>
             </div>
             <div style="background-color: rgba(8, 126, 139, 0.1); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem;">
-                <span style="color: #333333; font-weight: 600;">Annual Operating Cost:</span> <span style="color: #333333;">${bev_results['annual_costs']['annual_operating_cost']:,.2f}</span>
+                <span style="color: #333333; font-weight: 600;">Annual Operating Cost:</span> <span style="color: #333333;">${bev_annual:,.2f}</span>
             </div>
         </div>
         """
         st.markdown(bev_html, unsafe_allow_html=True)
     
     with col2:
+        diesel_npv = _to_scalar(diesel_results['tco']['npv_total_cost'])
+        diesel_tco_km = _to_scalar(diesel_results['tco']['tco_per_km'])
+        diesel_tco_tkm = _to_scalar(diesel_results['tco']['tco_per_tonne_km'])
+        diesel_annual = _to_scalar(diesel_results['annual_costs']['annual_operating_cost'])
         diesel_html = f"""
         <div class="vehicle-summary-card diesel" style="margin-bottom: 0;">
             <h5 style="color: #0B3954; font-weight: 600; margin-bottom: 1rem;">Diesel Vehicle</h5>
@@ -142,16 +162,16 @@ def display_summary_metrics(bev_results, diesel_results):
                 <span style="color: #333333; font-weight: 600;">Range:</span> <span style="color: #333333;">{diesel_results['vehicle_data'].get('range_km', 'N/A')} km</span>
             </div>
             <div style="background-color: rgba(255, 193, 7, 0.1); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem;">
-                <span style="color: #333333; font-weight: 600;">Lifetime TCO:</span> <span style="color: #333333;">${diesel_results['tco']['npv_total_cost']:,.2f}</span>
+                <span style="color: #333333; font-weight: 600;">Lifetime TCO:</span> <span style="color: #333333;">${diesel_npv:,.2f}</span>
             </div>
             <div style="background-color: rgba(255, 193, 7, 0.1); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem;">
-                <span style="color: #333333; font-weight: 600;">TCO per km:</span> <span style="color: #333333;">${diesel_results['tco']['tco_per_km']:,.2f}</span>
+                <span style="color: #333333; font-weight: 600;">TCO per km:</span> <span style="color: #333333;">${diesel_tco_km:,.2f}</span>
             </div>
             <div style="background-color: rgba(255, 193, 7, 0.1); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem;">
-                <span style="color: #333333; font-weight: 600;">TCO per tonne-km:</span> <span style="color: #333333;">${diesel_results['tco']['tco_per_tonne_km']:,.2f}</span>
+                <span style="color: #333333; font-weight: 600;">TCO per tonne-km:</span> <span style="color: #333333;">${diesel_tco_tkm:,.2f}</span>
             </div>
             <div style="background-color: rgba(255, 193, 7, 0.1); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem;">
-                <span style="color: #333333; font-weight: 600;">Annual Operating Cost:</span> <span style="color: #333333;">${diesel_results['annual_costs']['annual_operating_cost']:,.2f}</span>
+                <span style="color: #333333; font-weight: 600;">Annual Operating Cost:</span> <span style="color: #333333;">${diesel_annual:,.2f}</span>
             </div>
         </div>
         """
@@ -211,8 +231,8 @@ def display_detailed_results_table(bev_results, diesel_results):
             f"{diesel_results['emissions']['co2_per_km']:.4f}",
             f"{diesel_results['emissions']['annual_emissions'] / 1000:.2f}",
             f"{diesel_results['emissions']['lifetime_emissions'] / 1000:.2f}",
-            f"${diesel_results['tco']['tco_per_km']:.2f}",
-            f"${diesel_results['tco']['tco_per_tonne_km']:.2f}",
+            f"${diesel_tco_km:.2f}",
+            f"${diesel_tco_tkm:.2f}",
             f"${diesel_results['tco']['npv_total_cost']:,.2f}",
             f"${diesel_results['externalities']['externality_per_km']:.4f}",
             f"${diesel_results['social_tco']['social_tco_lifetime']:,.2f}"
@@ -229,8 +249,8 @@ def display_detailed_results_table(bev_results, diesel_results):
             f"{bev_results['emissions']['co2_per_km'] - diesel_results['emissions']['co2_per_km']:.4f}",
             f"{(bev_results['emissions']['annual_emissions'] - diesel_results['emissions']['annual_emissions']) / 1000:.2f}",
             f"{(bev_results['emissions']['lifetime_emissions'] - diesel_results['emissions']['lifetime_emissions']) / 1000:.2f}",
-            f"${bev_results['tco']['tco_per_km'] - diesel_results['tco']['tco_per_km']:.2f}",
-            f"${bev_results['tco']['tco_per_tonne_km'] - diesel_results['tco']['tco_per_tonne_km']:.2f}",
+            f"${bev_results['tco']['tco_per_km'] - diesel_tco_km:.2f}",
+            f"${bev_results['tco']['tco_per_tonne_km'] - diesel_tco_tkm:.2f}",
             f"${bev_results['tco']['npv_total_cost'] - diesel_results['tco']['npv_total_cost']:,.2f}",
             f"${bev_results['externalities']['externality_per_km'] - diesel_results['externalities']['externality_per_km']:.4f}",
             f"${bev_results['social_tco']['social_tco_lifetime'] - diesel_results['social_tco']['social_tco_lifetime']:,.2f}"

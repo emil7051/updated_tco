@@ -2,7 +2,8 @@ from __future__ import annotations
 
 """Comparative BEV-vs-Diesel KPI helper, extracted to its own file."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
+import pandas as pd
 
 import math
 
@@ -55,8 +56,8 @@ def calculate_comparative_metrics(
 		bev_cum.append(bev_cum[-1] + bev_annual)
 		diesel_cum.append(diesel_cum[-1] + diesel_annual)
 
-	bev_cum[-1] -= bev_results['residual_value']
-	diesel_cum[-1] -= diesel_results['residual_value']
+	bev_cum[-1] -= _to_scalar(bev_results['residual_value'])
+	diesel_cum[-1] -= _to_scalar(diesel_results['residual_value'])
 
 	price_parity_year = math.inf
 	for i in range(len(years) - 1):
@@ -68,14 +69,14 @@ def calculate_comparative_metrics(
 				price_parity_year = years[i] + t
 				break
 
-	emission_savings = diesel_results['emissions']['lifetime_emissions'] - bev_results['emissions']['lifetime_emissions']
+	emission_savings = _to_scalar(diesel_results['emissions']['lifetime_emissions']) - _to_scalar(bev_results['emissions']['lifetime_emissions'])
+	bev_npv = _to_scalar(bev_results['tco']['npv_total_cost'])
+	diesel_npv = _to_scalar(diesel_results['tco']['npv_total_cost'])
 	abatement_cost = (
-		(
-			bev_results['tco']['npv_total_cost'] - diesel_results['tco']['npv_total_cost']
-		) / (emission_savings / 1000)
+		(bev_npv - diesel_npv) / (emission_savings / 1000)
 	) if emission_savings > 0 else float('inf')
 
-	bev_to_diesel_ratio = bev_results['tco']['npv_total_cost'] / diesel_results['tco']['npv_total_cost'] if diesel_results['tco']['npv_total_cost'] else float('inf')
+	bev_to_diesel_ratio = bev_npv / diesel_npv if diesel_npv else float('inf')
 
 	return {
 		'upfront_cost_difference': upfront_diff,
@@ -84,4 +85,12 @@ def calculate_comparative_metrics(
 		'emission_savings_lifetime': emission_savings,
 		'abatement_cost': abatement_cost,
 		'bev_to_diesel_tco_ratio': bev_to_diesel_ratio,
-	} 
+	}
+
+def _to_scalar(val: Union[int, float, pd.Series]):
+	"""Return numeric scalar from possible Pandas scalar/Series."""
+	if isinstance(val, pd.Series):
+		if val.empty:
+			return 0.0
+		return float(val.iloc[0])
+	return float(val) 
