@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Externalities domain – emissions & societal cost helpers."""
 
-from typing import Dict, Any
+from typing import Dict, Any, Union
 
 import pandas as pd
 
@@ -70,14 +70,27 @@ def calculate_externalities(
 	}
 
 
+def _to_scalar(value: Union[int, float, pd.Series]) -> float:
+	"""Return numeric scalar from possible Pandas scalar/Series."""
+	if isinstance(value, pd.Series):
+		if value.empty:
+			return 0.0
+		# Assume first element represents intended scalar
+		return float(value.iloc[0])
+	return float(value)
+
+
 def calculate_social_tco(
 	tco_metrics: Dict[str, Any],
 	externality_metrics: Dict[str, Any],
 ) -> Dict[str, Any]:
-	social_lifetime = tco_metrics['npv_total_cost'] + externality_metrics['npv_externality']
-	annual_kms = tco_metrics.get('annual_kms', 0)
-	truck_life_years = tco_metrics.get('truck_life_years', 0)
-	payload_t = tco_metrics.get('payload_t', 0)
+	social_lifetime = (
+		_to_scalar(tco_metrics['npv_total_cost'])
+		+ _to_scalar(externality_metrics['npv_externality'])
+	)
+	annual_kms = _to_scalar(tco_metrics.get('annual_kms', 0))
+	truck_life_years = _to_scalar(tco_metrics.get('truck_life_years', 0))
+	payload_t = _to_scalar(tco_metrics.get('payload_t', 0))
 
 	social_per_km = 0.0
 	social_per_tonne_km = 0.0
@@ -92,8 +105,8 @@ def calculate_social_tco(
 		'social_tco_per_km': social_per_km,
 		'social_tco_per_tonne_km': social_per_tonne_km,
 		'externality_percentage': (
-			externality_metrics['npv_externality'] / social_lifetime * 100
-		) if social_lifetime else 0,
+			_to_scalar(externality_metrics['npv_externality']) / social_lifetime * 100
+		) if social_lifetime != 0 else 0,
 	}
 
 

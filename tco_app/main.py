@@ -19,7 +19,7 @@ PAGES: Dict[str, str] = {
 # ------- Page config ------------------------------------------------------
 
 st.set_page_config(
-	title='Electric vs. Diesel Truck TCO Model',
+	page_title='Electric vs. Diesel Truck TCO Model',
 	page_icon='🚚',
 	layout='wide',
 	initial_sidebar_state='expanded',

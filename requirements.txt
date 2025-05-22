@@ -1,0 +1,2 @@
+# Root-level aggregate requirements – delegates to package list
+-r tco_app/requirements.txt 
