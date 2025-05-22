@@ -21,4 +21,4 @@ def render():
 	display_summary_metrics(bev_results, diesel_results)
 	display_comparison_metrics(comparison_metrics)
 
-	st.experimental_set_query_params(page='home') 
+	st.query_params['page'] = 'home' 

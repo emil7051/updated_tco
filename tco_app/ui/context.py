@@ -57,15 +57,21 @@ from tco_app.services.scenario_service import apply_scenario_parameters as _svc_
 
 def get_context() -> Dict[str, Any]:
 	"""Return cached modelling context (data + computed results)."""
+	print("Attempting to get context...")
 
 	# Basic cache – recompute when the user presses the Streamlit *rerun* button.
 	if 'ctx_cache' in st.session_state:
+		print("Returning cached context.")
 		return st.session_state['ctx_cache']
+	
+	print("No cached context found, computing new context...")
 
 	# ----------------------------------------------------------------------------------
 	# 1. Data loading
 	# ----------------------------------------------------------------------------------
+	print("Loading data...")
 	data_tables = load_data()
+	print("Data loaded successfully.")
 
 	vehicle_models = data_tables['vehicle_models']
 	vehicle_fees = data_tables['vehicle_fees']
@@ -85,6 +91,7 @@ def get_context() -> Dict[str, Any]:
 	# ----------------------------------------------------------------------------------
 	with st.sidebar:
 		st.header('Configuration')
+		print("Setting up sidebar inputs...")
 
 		# Scenario selection
 		scenario_id = st.selectbox(
@@ -98,6 +105,7 @@ def get_context() -> Dict[str, Any]:
 		# Show scenario parameter overrides
 		scenario_name = scenarios[scenarios['scenario_id'] == scenario_id].iloc[0]['scenario_name']
 		_svc_display(scenario_id, scenario_params, scenario_name)
+		print("Sidebar inputs setup complete.")
 
 		# Vehicle selection
 		vehicle_type = st.selectbox(
@@ -243,6 +251,7 @@ def get_context() -> Dict[str, Any]:
 	# 3. Derived parameter tables (UI overrides applied)
 	# ----------------------------------------------------------------------------------
 	battery_params_with_ui = battery_params.copy()
+	print("Preparing derived parameter tables...")
 	mask = battery_params_with_ui['battery_description'] == 'degradation_annual_percent'
 	battery_params_with_ui.loc[mask, 'default_value'] = degradation_rate
 	mask = battery_params_with_ui['battery_description'] == 'replacement_per_kwh_price'
@@ -258,6 +267,7 @@ def get_context() -> Dict[str, Any]:
 	# 4. Core calculations (identical to legacy implementation)
 	# ----------------------------------------------------------------------------------
 	bev_fees = vehicle_fees[vehicle_fees['vehicle_id'] == selected_bev_id]
+	print("Starting core TCO calculations...")
 	diesel_fees = vehicle_fees[vehicle_fees['vehicle_id'] == comparison_diesel_id]
 
 	bev_energy_cost_per_km = calculate_energy_costs(
@@ -455,6 +465,7 @@ def get_context() -> Dict[str, Any]:
 
 	# Show caption for active scenario
 	st.caption(f'Scenario: {scenario_name}')
+	print("Core TCO calculations complete.")
 
 	ctx: Dict[str, Any] = {
 		'bev_results': bev_results,
@@ -481,4 +492,5 @@ def get_context() -> Dict[str, Any]:
 	}
 
 	st.session_state['ctx_cache'] = ctx
+	print("Context computed and cached.")
 	return ctx 
