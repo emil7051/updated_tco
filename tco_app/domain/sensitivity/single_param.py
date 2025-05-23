@@ -10,9 +10,9 @@ behaviour is unchanged.  Only import paths were updated where the monolith
 previously referenced legacy modules.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
-import pandas as pd
+from tco_app.src import pd
 
 from tco_app.domain.energy import (
 	calculate_energy_costs,
@@ -43,8 +43,8 @@ __all__ = ['perform_sensitivity_analysis']
 def perform_sensitivity_analysis(
 	parameter_name: str,
 	parameter_range: List[Any],
-	bev_vehicle_data: pd.Series | dict,
-	diesel_vehicle_data: pd.Series | dict,
+	bev_vehicle_data: Union[pd.Series, dict],
+	diesel_vehicle_data: Union[pd.Series, dict],
 	bev_fees: pd.DataFrame,
 	diesel_fees: pd.DataFrame,
 	charging_options: pd.DataFrame,

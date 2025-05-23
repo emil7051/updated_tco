@@ -12,7 +12,6 @@ from importlib import import_module as _imp
 __all__ = [
 	'energy',
 	'finance',
-	'battery',
 	'externalities',
 	'sensitivity',
 ]

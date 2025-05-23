@@ -1,7 +1,7 @@
 """Performance tests for Work Package 8 optimisations."""
 import time
-import numpy as np
-import pandas as pd
+from tco_app.src import np
+from tco_app.src import pd
 import pytest
 
 from tco_app.src.utils.finance import npv_constant

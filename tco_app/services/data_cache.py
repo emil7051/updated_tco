@@ -1,10 +1,5 @@
 """Caching layer for expensive data operations."""
-from typing import Any, Dict, Optional, Tuple
-import hashlib
-import json
-import logging
-from functools import lru_cache
-import pandas as pd
+from tco_app.src import pd, logging, lru_cache, hashlib, json, Any, Dict, Optional, Tuple, PERFORMANCE_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +7,7 @@ logger = logging.getLogger(__name__)
 class DataCache:
     """Cache for data operations and calculations."""
     
-    def __init__(self, max_size: int = 128):
+    def __init__(self, max_size: int = PERFORMANCE_CONFIG.DEFAULT_CACHE_SIZE):
         """Initialise cache with maximum size."""
         self.max_size = max_size
         self._cache: Dict[str, Any] = {}
@@ -113,16 +108,12 @@ class DataCache:
 data_cache = DataCache()
 
 
-@lru_cache(maxsize=256)
-def cached_vehicle_lookup(
-    vehicle_id: str,
-    vehicle_models_hash: int
-) -> Optional[Dict[str, Any]]:
+@lru_cache(maxsize=PERFORMANCE_CONFIG.LRU_CACHE_SIZE)
+def cached_vehicle_lookup(vehicle_id: str) -> Optional[Dict[str, Any]]:
     """Cached vehicle lookup by ID.
     
     Args:
         vehicle_id: Vehicle ID to lookup
-        vehicle_models_hash: Hash of vehicle models DataFrame
         
     Returns:
         Vehicle data as dictionary

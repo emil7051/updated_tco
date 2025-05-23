@@ -1,9 +1,6 @@
-from __future__ import annotations
-
-import math
-from typing import Dict, Any
-
-import pandas as pd
+"""Energy consumption and emissions calculations."""
+from tco_app.src import pd, Dict, CALC_DEFAULTS, EMISSION_CONSTANTS
+from typing import Union, Optional
 
 from tco_app.src.constants import DataColumns, ParameterKeys, Drivetrain
 from tco_app.src.utils.energy import weighted_electricity_price
@@ -22,12 +19,12 @@ __all__ = [
 # --------------------------------------------------------------------------------------
 
 def calculate_energy_costs(
-	vehicle_data: pd.Series | dict,
-	fees_data: pd.DataFrame | None,
+	vehicle_data: Union[pd.Series, dict],
+	fees_data: Optional[pd.DataFrame],
 	charging_data: pd.DataFrame,
 	financial_params: pd.DataFrame,
 	selected_charging,
-	charging_mix: Dict[int, float] | None = None,
+	charging_mix: Optional[Dict[int, float]] = None,
 ) -> float:  # noqa: D401
 	"""Return the energy cost per km for the supplied vehicle."""
 	if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
@@ -44,7 +41,7 @@ def calculate_energy_costs(
 
 
 def calculate_emissions(
-	vehicle_data: pd.Series | dict,
+	vehicle_data: Union[pd.Series, dict],
 	emission_factors: pd.DataFrame,
 	annual_kms: int,
 	truck_life_years: int,
@@ -53,7 +50,7 @@ def calculate_emissions(
 	if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
 		electricity_ef_condition = (
 			(emission_factors['fuel_type'] == 'electricity') 
-			& (emission_factors['emission_standard'] == 'Grid')
+			& (emission_factors['emission_standard'] == EMISSION_CONSTANTS.DEFAULT_ELECTRICITY_STANDARD)
 		)
 		electricity_ef_row = safe_iloc_zero(
 			emission_factors, 
@@ -65,7 +62,7 @@ def calculate_emissions(
 	else:
 		diesel_ef_condition = (
 			(emission_factors['fuel_type'] == 'diesel') 
-			& (emission_factors['emission_standard'] == 'Euro IV+')
+			& (emission_factors['emission_standard'] == EMISSION_CONSTANTS.DEFAULT_DIESEL_STANDARD)
 		)
 		diesel_ef_row = safe_iloc_zero(
 			emission_factors, 
@@ -85,9 +82,9 @@ def calculate_emissions(
 
 
 def calculate_charging_requirements(
-	vehicle_data: pd.Series | dict,
+	vehicle_data: Union[pd.Series, dict],
 	annual_kms: int,
-	infrastructure_option: pd.Series | dict | None = None,
+	infrastructure_option: Optional[Union[pd.Series, dict]] = None,
 ) -> Dict[str, float]:  # noqa: D401
 	"""Estimate daily charging demand and utilisation metrics."""
 	if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] != Drivetrain.BEV:
@@ -99,10 +96,10 @@ def calculate_charging_requirements(
 			'max_vehicles_per_charger': 0,
 		}
 
-	daily_distance = annual_kms / 365
+	daily_distance = annual_kms / CALC_DEFAULTS.DAYS_PER_YEAR
 	daily_kwh_required = daily_distance * vehicle_data[DataColumns.KWH_PER100KM] / 100
 
-	charger_power = 80.0  # Default 80 kW DC fast charger
+	charger_power = CALC_DEFAULTS.DEFAULT_CHARGER_POWER_KW
 	if infrastructure_option is not None:
 		description = infrastructure_option[DataColumns.INFRASTRUCTURE_DESCRIPTION]
 		if 'kW' in description:

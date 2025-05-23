@@ -8,7 +8,7 @@ Separated to keep each module under 300 lines.
 
 from typing import Any, Dict
 
-import pandas as pd
+from tco_app.src import pd
 
 __all__ = ['calculate_payload_penalty_costs']
 

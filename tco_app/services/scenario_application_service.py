@@ -1,7 +1,7 @@
 """Service for applying scenario modifications to data."""
 from typing import Dict, Any, List
-import logging
-import pandas as pd
+from tco_app.src import logging
+from tco_app.src import pd
 from dataclasses import dataclass
 
 from tco_app.src.constants import DataColumns, ParameterKeys

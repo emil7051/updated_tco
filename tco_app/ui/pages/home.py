@@ -1,4 +1,4 @@
-import streamlit as st
+from tco_app.src import st
 
 # Legacy app contains full interactive UI.
 # We invoke its `main()` function to preserve behaviour while we gradually

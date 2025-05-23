@@ -19,6 +19,13 @@ class FuelType(str, Enum):
     DIESEL = "diesel"
 
 
+@unique
+class EmissionStandard(str, Enum):
+    """Enumeration of emission standard identifiers."""
+    GRID = "Grid"
+    EURO_IV_PLUS = "Euro IV+"
+
+
 class DataColumns(str, Enum):
     """Column names used across DataFrames.
     
@@ -107,10 +114,10 @@ class IncentiveTypes(str, Enum):
 
 
 # Common data-frame column names (only a few to start; extend as the codebase is refactored)
-VEHICLE_DRIVETRAIN_COL = "vehicle_drivetrain"
-VEHICLE_TYPE_COL = "vehicle_type"
-CHARGING_ID_COL = "charging_id"
-INFRASTRUCTURE_ID_COL = "infrastructure_id"
+# VEHICLE_DRIVETRAIN_COL = "vehicle_drivetrain"
+# VEHICLE_TYPE_COL = "vehicle_type"
+# CHARGING_ID_COL = "charging_id"
+# INFRASTRUCTURE_ID_COL = "infrastructure_id"
 
 __all__ = [
     "Drivetrain",
@@ -118,8 +125,10 @@ __all__ = [
     "DataColumns",
     "ParameterKeys", 
     "IncentiveTypes",
-    "VEHICLE_DRIVETRAIN_COL",
-    "VEHICLE_TYPE_COL",
-    "CHARGING_ID_COL",
-    "INFRASTRUCTURE_ID_COL",
+    "EmissionStandard",
+    # "BatteryParameterKeys",
+    # "VEHICLE_DRIVETRAIN_COL",
+    # "VEHICLE_TYPE_COL",
+    # "CHARGING_ID_COL",
+    # "INFRASTRUCTURE_ID_COL",
 ] 

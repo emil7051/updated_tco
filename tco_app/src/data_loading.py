@@ -4,8 +4,8 @@ import os
 from pathlib import Path
 from typing import Dict, List, Protocol
 
-import pandas as pd
-import streamlit as st
+from tco_app.src import pd
+from tco_app.src import st
 
 # --------------------------------------------------------------------------------------
 # Data-layer abstraction (step 8 of CODEBASE_IMPROVEMENTS.md)

@@ -5,7 +5,7 @@ from tco_app.src.utils.safe_operations import safe_division
 """Comparative BEV-vs-Diesel KPI helper, extracted to its own file."""
 
 from typing import Any, Dict, List, Union
-import pandas as pd
+from tco_app.src import pd
 
 import math
 from tco_app.src.utils.pandas_helpers import to_scalar
@@ -36,7 +36,12 @@ def calculate_comparative_metrics(
 			bev_results['infrastructure_costs'].get('infrastructure_price_with_incentives')
 			or bev_results['infrastructure_costs'][DataColumns.INFRASTRUCTURE_PRICE]
 		)
-		bev_cum[0] += safe_division(infra_price, bev_results, context="infra_price/bev_results calculation")['infrastructure_costs'].get('fleet_size', 1)
+
+		fleet_size = bev_results['infrastructure_costs'].get('fleet_size', 1) or 1
+
+		# Allocate infrastructure CAPEX on a per-vehicle basis and add to the
+		# upfront cash-flow for the BEV.
+		bev_cum[0] += infra_price / float(fleet_size)
 
 	for year in range(1, truck_life_years):
 		bev_annual = bev_results['annual_costs']['annual_operating_cost']
@@ -81,7 +86,8 @@ def calculate_comparative_metrics(
 
 	bev_to_diesel_ratio = safe_division(bev_npv, diesel_npv, context="bev_npv/diesel_npv calculation") if diesel_npv else float('inf')
 
-	return {
+	# Compose response
+	response = {
 		'upfront_cost_difference': upfront_diff,
 		'annual_operating_savings': annual_savings,
 		'price_parity_year': price_parity_year,
@@ -90,4 +96,4 @@ def calculate_comparative_metrics(
 		'bev_to_diesel_tco_ratio': bev_to_diesel_ratio,
 	}
 
- 
+	return response

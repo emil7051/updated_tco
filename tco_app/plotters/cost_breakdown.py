@@ -1,5 +1,5 @@
-import pandas as pd
-import numpy as np
+from tco_app.src import pd
+from tco_app.src import np
 import plotly.express as px
 import plotly.graph_objects as go
 

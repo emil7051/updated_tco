@@ -1,6 +1,6 @@
 """Unit tests for calculation utility functions."""
 import math
-import pandas as pd
+from tco_app.src import pd
 import pytest
 from tco_app.src.constants import Drivetrain
 from tco_app.src.utils import energy as en

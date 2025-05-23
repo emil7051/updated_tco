@@ -1,7 +1,7 @@
 """Test optimised calculation utilities."""
 import pytest
-import numpy as np
-import pandas as pd
+from tco_app.src import np
+from tco_app.src import pd
 from unittest.mock import patch
 
 from tco_app.src.utils.calculation_optimisations import (

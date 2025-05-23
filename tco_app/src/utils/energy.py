@@ -8,11 +8,14 @@ charging-mix calculations.
 """
 
 from tco_app.src.utils.safe_operations import safe_division, safe_get_charging_option, safe_get_parameter, safe_iloc_zero
-from tco_app.src.constants import DataColumns, ParameterKeys
+from tco_app.src.constants import DataColumns, ParameterKeys, EmissionStandard
+import logging
 
 from typing import Dict, Mapping
 
-import pandas as pd
+from tco_app.src import pd
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "weighted_electricity_price",
@@ -46,6 +49,9 @@ def weighted_electricity_price(
     id_column, price_column
         Column names for the identifier and price respectively.
     """
+    logger.debug(f"weighted_electricity_price called with charging_mix: {charging_mix}")
+    logger.debug(f"charging_mix type: {type(charging_mix)}, keys: {list(charging_mix.keys()) if charging_mix else 'None'}")
+    
     if not charging_mix:
         return 0.0
 
@@ -59,12 +65,15 @@ def weighted_electricity_price(
 
     # Map each id to its price.
     prices = charging_options.set_index(id_column)[price_column]
+    logger.debug(f"Prices index: {prices.index.tolist()}")
 
     weighted_price = 0.0
     for cid, weight in normalised_mix.items():
+        logger.debug(f"Looking up charging ID: {cid} (type: {type(cid)})")
         try:
             price = float(prices.loc[cid])
         except KeyError as exc:
+            logger.error(f"Failed to find charging ID {cid} in prices. Available IDs: {prices.index.tolist()}")
             raise KeyError(
                 f"Charging option with ID {cid!r} not found in charging_options table."
             ) from exc
@@ -117,27 +126,27 @@ def calculate_emissions(
 
     if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
         electricity_ef_condition = (
-            (emission_factors["fuel_type"] == FuelType.ELECTRICITY)
-            & (emission_factors["emission_standard"] == "Grid")
+            (emission_factors[DataColumns.FUEL_TYPE.value] == FuelType.ELECTRICITY)
+            & (emission_factors[DataColumns.EMISSION_STANDARD.value] == EmissionStandard.GRID.value)
         )
         electricity_ef_row = safe_iloc_zero(
             emission_factors, 
             electricity_ef_condition, 
             context="electricity emission factor"
         )
-        electricity_ef = electricity_ef_row["co2_per_unit"]
+        electricity_ef = electricity_ef_row[DataColumns.CO2_PER_UNIT.value]
         co2_per_km = vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_ef
     else:
         diesel_ef_condition = (
-            (emission_factors["fuel_type"] == FuelType.DIESEL)
-            & (emission_factors["emission_standard"] == "Euro IV+")
+            (emission_factors[DataColumns.FUEL_TYPE.value] == FuelType.DIESEL)
+            & (emission_factors[DataColumns.EMISSION_STANDARD.value] == EmissionStandard.EURO_IV_PLUS.value)
         )
         diesel_ef_row = safe_iloc_zero(
             emission_factors, 
             diesel_ef_condition, 
             context="diesel emission factor"
         )
-        diesel_ef = diesel_ef_row["co2_per_unit"]
+        diesel_ef = diesel_ef_row[DataColumns.CO2_PER_UNIT.value]
         co2_per_km = vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_ef
 
     annual_emissions = co2_per_km * annual_kms

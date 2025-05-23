@@ -14,9 +14,7 @@ if _project_root.as_posix() not in sys.path:
 	sys.path.insert(0, _project_root.as_posix())
 
 import importlib
-from typing import Dict
-
-import streamlit as st
+from tco_app.src import st, Dict, UI_CONFIG
 
 # ------- Page registry ----------------------------------------------------
 
@@ -29,10 +27,10 @@ PAGES: Dict[str, str] = {
 # ------- Page config ------------------------------------------------------
 
 st.set_page_config(
-	page_title='Electric vs. Diesel Truck TCO Model',
-	page_icon='🚚',
-	layout='wide',
-	initial_sidebar_state='expanded',
+	page_title=UI_CONFIG.PAGE_TITLE,
+	page_icon=UI_CONFIG.PAGE_ICON,
+	layout=UI_CONFIG.PAGE_LAYOUT,
+	initial_sidebar_state=UI_CONFIG.SIDEBAR_STATE,
 )
 
 # ------- Navigation -------------------------------------------------------

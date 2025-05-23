@@ -1,6 +1,6 @@
 """Tests for the ScenarioApplicationService."""
 import pytest
-import pandas as pd
+from tco_app.src import pd
 from dataclasses import asdict
 
 from tco_app.services.scenario_application_service import (

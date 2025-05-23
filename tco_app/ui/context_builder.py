@@ -1,9 +1,9 @@
 """Context director for orchestrating UI context building."""
-from typing import Dict, Any
-import pandas as pd
-import streamlit as st
+from tco_app.src import Dict, Any
+from tco_app.src import pd
+from tco_app.src import st
 
-from tco_app.src.constants import Drivetrain
+from tco_app.src.constants import Drivetrain, DataColumns
 from tco_app.services.scenario_service import apply_scenario_parameters
 from tco_app.ui.builders import (
     ScenarioBuilder,

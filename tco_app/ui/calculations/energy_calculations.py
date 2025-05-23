@@ -1,7 +1,7 @@
 """Energy calculation modules for TCO analysis."""
-from typing import Dict, Any
+from tco_app.src import Dict, Any
 from tco_app.src.constants import DataColumns, ParameterKeys
-import pandas as pd
+from tco_app.src import pd
 
 from tco_app.domain.energy import calculate_energy_costs, calculate_emissions
 

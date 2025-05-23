@@ -14,9 +14,9 @@ maintainability and testability.
 """
 
 from __future__ import annotations
-from typing import Dict, Any
+from tco_app.src import Dict, Any
 
-import streamlit as st
+from tco_app.src import st
 
 from tco_app.src.data_loading import load_data
 from tco_app.ui.context_builder import ContextDirector

@@ -1,4 +1,4 @@
-import streamlit as st
+from tco_app.src import st
 from tco_app.src.utils.pandas_helpers import to_scalar
 
 from tco_app.src.utils.safe_operations import safe_division

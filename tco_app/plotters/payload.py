@@ -1,5 +1,5 @@
 import copy
-import pandas as pd
+from tco_app.src import pd
 import plotly.graph_objects as go
 
 from tco_app.domain.finance import calculate_payload_penalty_costs

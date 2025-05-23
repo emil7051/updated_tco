@@ -1,7 +1,7 @@
 """Safe operations for DataFrame access and calculations."""
 from typing import Any, Optional, Union, List
-import pandas as pd
-import logging
+from tco_app.src import pd
+from tco_app.src import logging
 
 from tco_app.src.exceptions import DataNotFoundError, CalculationError
 from tco_app.src.utils.pandas_helpers import safe_get_first

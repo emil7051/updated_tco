@@ -2,7 +2,7 @@
 import math
 from typing import List
 
-import pandas as pd
+from tco_app.src import pd
 import pytest
 
 from tco_app.src.utils.energy import weighted_electricity_price

@@ -1,10 +1,9 @@
+"""Financial calculations for TCO analysis."""
 from __future__ import annotations
 
 import math
-from typing import Dict, Any
-
-import pandas as pd
-import numpy as np
+from tco_app.src import pd, np, Dict, Any, PERFORMANCE_CONFIG, Optional
+from typing import Union
 
 from tco_app.src.constants import Drivetrain, DataColumns
 from tco_app.src.utils.finance import (
@@ -48,7 +47,7 @@ def calculate_npv_optimised(
 		Net present value
 	"""
 	# For small calculations, use the original function
-	if years <= 10:
+	if years <= PERFORMANCE_CONFIG.NPV_OPTIMIZATION_THRESHOLD:
 		return calculate_npv(annual_cost, discount_rate, years)
 	
 	# For larger calculations, use optimised version
@@ -65,15 +64,21 @@ def calculate_npv_optimised(
 # --------------------------------------------------------------------------------------
 
 def calculate_annual_costs(
-	vehicle_data: pd.Series | dict,
-	fees_data: pd.DataFrame,
+	vehicle_data: Union[pd.Series, dict],
+	fees_data: Union[pd.Series, pd.DataFrame],
 	energy_cost_per_km: float,
 	annual_kms: int,
-	incentives_data: pd.DataFrame | None = None,
+	incentives_data: Optional[pd.DataFrame] = None,
 	apply_incentives: bool = False,
 ) -> Dict[str, float]:
-	maintenance_condition = fees_data[DataColumns.VEHICLE_ID] == vehicle_data[DataColumns.VEHICLE_ID]
-	maintenance_data = safe_iloc_zero(fees_data, maintenance_condition, context="maintenance data")
+	# If fees_data is a Series (single row), use it directly
+	if isinstance(fees_data, pd.Series):
+		maintenance_data = fees_data
+	else:
+		# If it's a DataFrame, filter by vehicle ID
+		maintenance_condition = fees_data[DataColumns.VEHICLE_ID] == vehicle_data[DataColumns.VEHICLE_ID]
+		maintenance_data = safe_iloc_zero(fees_data, maintenance_condition, context="maintenance data")
+	
 	maintenance_per_km = maintenance_data['maintenance_perkm_price']
 
 	annual_maintenance_cost = maintenance_per_km * annual_kms
@@ -111,19 +116,28 @@ def calculate_annual_costs(
 		'registration_annual': registration_annual,
 		'insurance_annual': insurance_annual,
 		'annual_operating_cost': annual_operating_cost,
-	}
+}
 
 
 def calculate_acquisition_cost(
-	vehicle_data: pd.Series | dict,
-	fees_data: pd.DataFrame,
+	vehicle_data: Union[pd.Series, dict],
+	fees_data: Union[pd.Series, pd.DataFrame],
 	incentives_data: pd.DataFrame,
 	apply_incentives: bool = True,
 ) -> float:
 	msrp = vehicle_data[DataColumns.MSRP_PRICE]
-	fees_condition = fees_data[DataColumns.VEHICLE_ID] == vehicle_data[DataColumns.VEHICLE_ID]
-	fees = safe_iloc_zero(fees_data, fees_condition, context="vehicle fees")
-	stamp_duty = fees['stamp_duty_price']
+	
+	# Handle fees_data as either Series (already filtered) or DataFrame
+	if isinstance(fees_data, pd.Series):
+		# If it's already a Series, use it directly
+		fees = fees_data
+		stamp_duty = fees.get('stamp_duty_price', 0) if not fees.empty else 0
+	else:
+		# If it's a DataFrame, filter it
+		fees_condition = fees_data[DataColumns.VEHICLE_ID] == vehicle_data[DataColumns.VEHICLE_ID]
+		fees = safe_iloc_zero(fees_data, fees_condition, context="vehicle fees")
+		stamp_duty = fees['stamp_duty_price']
+	
 	acquisition_cost = msrp + stamp_duty
 
 	if apply_incentives and vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
@@ -148,7 +162,7 @@ def calculate_acquisition_cost(
 # --------------------------------------------------------------------------------------
 
 def calculate_tco(
-	vehicle_data: pd.Series | dict,
+	vehicle_data: Union[pd.Series, dict],
 	fees_data: pd.DataFrame,
 	annual_costs: Dict[str, float],
 	acquisition_cost: float,
@@ -172,7 +186,7 @@ def calculate_tco(
 
 
 def calculate_infrastructure_costs(
-	infrastructure_option: pd.Series | dict,
+	infrastructure_option: Union[pd.Series, dict],
 	truck_life_years: int,
 	discount_rate: float,
 	fleet_size: int = 1,
@@ -213,7 +227,7 @@ def calculate_infrastructure_costs(
 		'npv_infrastructure': npv_infra,
 		'npv_per_vehicle': npv_per_vehicle,
 		'fleet_size': fleet_size,
-	}
+}
 
 
 def apply_infrastructure_incentives(

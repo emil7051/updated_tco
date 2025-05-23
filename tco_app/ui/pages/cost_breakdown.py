@@ -1,4 +1,4 @@
-import streamlit as st
+from tco_app.src import st
 
 from tco_app.ui.context import get_context
 from tco_app.plotters import (

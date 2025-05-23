@@ -1,4 +1,4 @@
-import streamlit as st
+from tco_app.src import st
 from tco_app.src.constants import DataColumns, ParameterKeys
 
 from tco_app.ui.context import get_context

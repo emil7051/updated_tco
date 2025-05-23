@@ -5,17 +5,13 @@ run orchestration, incentive handling, etc.).  UI code should depend on these
 services rather than on domain-logic modules directly.
 """
 
-from .calculation_service import CalculationService, CalculationRequest, CalculationResult
 from .scenario_application_service import ScenarioApplicationService, ScenarioModification
 from .data_cache import DataCache, data_cache, get_vehicle_with_cache
 
 __all__ = [
-    'CalculationService',
-    'CalculationRequest', 
-    'CalculationResult',
     'ScenarioApplicationService',
     'ScenarioModification',
     'DataCache',
     'data_cache',
     'get_vehicle_with_cache',
-] 
+]

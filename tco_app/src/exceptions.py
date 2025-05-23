@@ -43,4 +43,11 @@ class ParameterError(TCOBaseException):
     def __init__(self, message: str, parameter_name: str = None, value: Any = None):
         self.parameter_name = parameter_name
         self.value = value
+        super().__init__(message)
+
+
+class VehicleNotFoundError(TCOBaseException):
+    """Raised when a specific vehicle is not found in the data."""
+    def __init__(self, message: str, vehicle_id: str = None):
+        self.vehicle_id = vehicle_id
         super().__init__(message) 

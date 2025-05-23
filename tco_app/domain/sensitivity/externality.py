@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
-import pandas as pd
+from tco_app.src import pd
 
 from tco_app.domain.externalities import calculate_externalities, calculate_social_tco
 

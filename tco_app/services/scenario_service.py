@@ -9,8 +9,10 @@ from __future__ import annotations
 from typing import Dict
 
 import warnings
-import pandas as pd
-import streamlit as st
+from tco_app.src import pd
+from tco_app.src import st
+
+from tco_app.services.scenario_application_service import ScenarioApplicationService, ScenarioModification
 
 __all__ = [
 	'apply_scenario_parameters',
@@ -25,82 +27,56 @@ def apply_scenario_parameters(
 ) -> Dict[str, pd.DataFrame]:
 	"""Return copies of parameter tables with scenario overrides applied.
 
-	This is *exactly* the logic that lived in `tco_app.ui.context` (and before
-	that in the monolithic `app.py`).  It makes defensive copies of the four
-	tables that may be edited in-place and mutates them according to the rows in
-	`scenario_params` for the selected scenario / vehicle / drivetrain.
+	Uses ScenarioApplicationService to apply modifications.
 	"""
-	modified_tables = {
-		'financial_params': data_tables['financial_params'].copy(),
-		'battery_params': data_tables['battery_params'].copy(),
-		'vehicle_models': data_tables['vehicle_models'].copy(),
-		'incentives': data_tables['incentives'].copy(),
+	scenario_params_df = data_tables.get('scenario_params')
+	if scenario_params_df is None:
+		warnings.warn("No scenario_params table found in data_tables.")
+		# Return copies of potentially modifiable tables to maintain original behaviour
+		return {
+			name: df.copy() for name, df in data_tables.items() 
+			if name in ['financial_params', 'battery_params', 'vehicle_models', 'incentives']
+		}
+
+	selected_params_df = scenario_params_df[scenario_params_df['scenario_id'] == scenario_id]
+
+	if selected_params_df.empty:
+		# Return copies of potentially modifiable tables
+		return {
+			name: df.copy() for name, df in data_tables.items() 
+			if name in ['financial_params', 'battery_params', 'vehicle_models', 'incentives']
+		}
+
+	app_service = ScenarioApplicationService()
+	modifications = app_service.parse_scenario_params(selected_params_df)
+	
+	# Create copies of the tables that can be modified by scenarios
+	# to avoid altering the original data_tables dict passed in.
+	tables_to_modify = {
+		'financial_params': data_tables.get('financial_params', pd.DataFrame()).copy(),
+		'battery_params': data_tables.get('battery_params', pd.DataFrame()).copy(),
+		'vehicle_models': data_tables.get('vehicle_models', pd.DataFrame()).copy(),
+		'incentives': data_tables.get('incentives', pd.DataFrame()).copy(),
 	}
 
-	scenario_params = data_tables['scenario_params']
-	selected_params = scenario_params[scenario_params['scenario_id'] == scenario_id]
-	if selected_params.empty:
-		return modified_tables
+	# Include other tables from data_tables, without copying if they are not modified
+	# This ensures the returned dictionary has all original tables.
+	# However, ScenarioApplicationService only modifies the above 4.
+	# We will pass only these 4 to apply_modifications and then merge back.
+	
+	modified_subset = app_service.apply_modifications(
+		data_tables=tables_to_modify, # Pass only the subset of tables that can be modified
+		modifications=modifications,
+		target_vehicle_type=vehicle_type,
+		target_drivetrain=drivetrain
+	)
+	
+	# Start with copies of all original tables
+	final_modified_tables = {name: df.copy() for name, df in data_tables.items()}
+	# Update with the (potentially) modified tables
+	final_modified_tables.update(modified_subset)
 
-	for _, param in selected_params.iterrows():
-		param_table = param['parameter_table']
-		param_name = param['parameter_name']
-		param_value = param['parameter_value']
-		param_vehicle_type = param['vehicle_type']
-		param_drivetrain = param['vehicle_drivetrain']
-
-		if (
-			(param_vehicle_type != 'All' and param_vehicle_type != vehicle_type)
-			or (param_drivetrain != 'All' and param_drivetrain != drivetrain)
-		):
-			continue
-
-		if param_table == 'financial_params':
-			mask = modified_tables['financial_params']['finance_description'] == param_name
-			modified_tables['financial_params'].loc[mask, 'default_value'] = param_value
-
-			if param_name == 'diesel_default_price':
-				mask = modified_tables['financial_params']['finance_description'] == 'diesel_price'
-				modified_tables['financial_params'].loc[mask, 'default_value'] = param_value
-
-		elif param_table == 'battery_params':
-			mask = modified_tables['battery_params']['battery_description'] == param_name
-			modified_tables['battery_params'].loc[mask, 'default_value'] = param_value
-
-		elif param_table == 'vehicle_models':
-			mask = modified_tables['vehicle_models']['vehicle_drivetrain'] == param_drivetrain
-			if param_vehicle_type != 'All':
-				mask &= modified_tables['vehicle_models']['vehicle_type'] == param_vehicle_type
-
-			if param_name == 'msrp_price_modifier':
-				for idx, row in modified_tables['vehicle_models'][mask].iterrows():
-					modified_tables['vehicle_models'].at[idx, 'msrp_price'] = row['msrp_price'] * param_value
-			elif param_name == 'kwh_per100km_modifier':
-				for idx, row in modified_tables['vehicle_models'][mask].iterrows():
-					modified_tables['vehicle_models'].at[idx, 'kwh_per100km'] = row['kwh_per100km'] * param_value
-			elif param_name == 'range_km_modifier':
-				for idx, row in modified_tables['vehicle_models'][mask].iterrows():
-					modified_tables['vehicle_models'].at[idx, 'range_km'] = row['range_km'] * param_value
-
-		elif param_table == 'incentives':
-			if '.' not in param_name:
-				warnings.warn(f'Invalid incentive parameter format: {param_name}')
-				continue
-			incentive_type, incentive_field = param_name.split('.')
-			mask = modified_tables['incentives']['incentive_type'] == incentive_type
-			if param_vehicle_type != 'All':
-				mask &= modified_tables['incentives']['vehicle_type'] == param_vehicle_type
-			if param_drivetrain != 'All':
-				mask &= modified_tables['incentives']['drivetrain'] == param_drivetrain
-			if mask.any():
-				for idx in modified_tables['incentives'][mask].index:
-					modified_tables['incentives'].at[idx, incentive_field] = param_value
-			else:
-				warnings.warn(
-					f'No matching incentive for {incentive_type} VT={param_vehicle_type} DR={param_drivetrain}'
-				)
-
-	return modified_tables
+	return final_modified_tables
 
 
 def display_scenario_parameters(

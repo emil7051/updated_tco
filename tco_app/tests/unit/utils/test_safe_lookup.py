@@ -1,6 +1,6 @@
 """Tests for safe lookup operations."""
 import pytest
-import pandas as pd
+from tco_app.src import pd
 
 from tco_app.src.exceptions import DataNotFoundError
 from tco_app.src.utils.safe_operations import (

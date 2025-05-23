@@ -1,8 +1,6 @@
 """Parameter input builders for UI context."""
-from typing import Dict, Any
+from tco_app.src import Dict, Any, pd, st, VALIDATION_LIMITS, UI_CONFIG
 from tco_app.src.constants import DataColumns, ParameterKeys
-import pandas as pd
-import streamlit as st
 
 from tco_app.src.utils.data_access import FinancialParameters, BatteryParameters
 
@@ -24,16 +22,18 @@ class ParameterInputBuilder:
         
         self.parameters['annual_kms'] = st.number_input(
             'Annual Distance (km)',
-            1000, 200000,
+            VALIDATION_LIMITS.MIN_ANNUAL_KMS, 
+            VALIDATION_LIMITS.MAX_ANNUAL_KMS,
             int(default_params['annual_kms']),
-            1000
+            VALIDATION_LIMITS.ANNUAL_KMS_STEP
         )
         
         self.parameters['truck_life_years'] = st.number_input(
             'Vehicle Lifetime (years)',
-            1, 30,
+            VALIDATION_LIMITS.MIN_TRUCK_LIFE_YEARS, 
+            VALIDATION_LIMITS.MAX_TRUCK_LIFE_YEARS,
             int(default_params['truck_life_years']),
-            1
+            VALIDATION_LIMITS.TRUCK_LIFE_STEP
         )
         
         return self

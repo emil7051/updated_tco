@@ -1,7 +1,7 @@
 """Scenario selection builder for UI context."""
-from typing import Dict, Any
-import pandas as pd
-import streamlit as st
+from tco_app.src import Dict, Any
+from tco_app.src import pd
+from tco_app.src import st
 
 from tco_app.services.scenario_service import display_scenario_parameters
 

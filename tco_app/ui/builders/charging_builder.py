@@ -1,9 +1,12 @@
-from tco_app.src.utils.safe_operations import safe_iloc_zero
 """Charging configuration builders for UI context."""
-from typing import Dict, Any, Optional
-from tco_app.src.constants import DataColumns, ParameterKeys
-import pandas as pd
-import streamlit as st
+from tco_app.src import Dict, Any, Optional
+from tco_app.src import pd
+from tco_app.src import st
+from tco_app.src import VALIDATION_LIMITS, UI_CONFIG
+import logging
+logger = logging.getLogger(__name__)
+
+from tco_app.src.constants import DataColumns
 
 
 class ChargingConfigurationBuilder:
@@ -29,33 +32,37 @@ class ChargingConfigurationBuilder:
         
         if use_charging_mix:
             self.charging_mix = self._configure_mixed_charging(charging_options)
-            self.selected_charging = safe_iloc_zero(charging_options, DataColumns.CHARGING_ID, context="charging_options lookup")
+            # Get the first charging ID as default for mixed charging
+            self.selected_charging = charging_options.iloc[0][DataColumns.CHARGING_ID] if len(charging_options) > 0 else None
+            logger.debug(f"Mixed charging - selected_charging set to: {self.selected_charging}")
         else:
             self.selected_charging = self._configure_single_charging(charging_options)
+            logger.debug(f"Single charging - selected_charging set to: {self.selected_charging}")
             self.charging_mix = None
         
+        logger.debug(f"Final charging_mix: {self.charging_mix}")
         return self
     
     def _configure_mixed_charging(self, charging_options: pd.DataFrame) -> Optional[Dict[int, float]]:
         """Configure mixed charging with time-of-use allocation."""
-        st.markdown('Allocate percentage of charging per option (must sum to 100%)')
+        st.markdown(f'Allocate percentage of charging per option (must sum to {UI_CONFIG.CHARGING_MIX_TOTAL}%)')
         charging_percentages: Dict[int, float] = {}
         total_percentage = 0
-        default_pct = 100 // len(charging_options)
+        default_pct = UI_CONFIG.CHARGING_MIX_TOTAL // len(charging_options)
         
         for idx, option in charging_options.iterrows():
             pct = st.slider(
                 option[DataColumns.CHARGING_APPROACH], 
-                0, 100, 
+                0, UI_CONFIG.CHARGING_MIX_TOTAL, 
                 default_pct, 
-                5, 
+                UI_CONFIG.CHARGING_MIX_STEP, 
                 key=f'cm_{idx}'
             )
-            charging_percentages[option[DataColumns.CHARGING_ID]] = pct / 100
+            charging_percentages[option[DataColumns.CHARGING_ID]] = pct / UI_CONFIG.CHARGING_MIX_TOTAL
             total_percentage += pct
         
-        if total_percentage != 100:
-            st.warning(f'Total allocation must equal 100% (current {total_percentage}%)')
+        if total_percentage != UI_CONFIG.CHARGING_MIX_TOTAL:
+            st.warning(f'Total allocation must equal {UI_CONFIG.CHARGING_MIX_TOTAL}% (current {total_percentage}%)')
             return None
         else:
             return charging_percentages
@@ -73,11 +80,13 @@ class ChargingConfigurationBuilder:
     
     def build(self) -> Dict[str, Any]:
         """Return charging configuration context."""
-        return {
+        result = {
             DataColumns.CHARGING_APPROACH: self.charging_approach,
             'charging_mix': self.charging_mix,
             'selected_charging': self.selected_charging
         }
+        logger.debug(f"ChargingConfigurationBuilder.build() returning: {result}")
+        return result
 
 
 class InfrastructureBuilder:
@@ -103,7 +112,10 @@ class InfrastructureBuilder:
         
         self.fleet_size = st.number_input(
             'Number of Vehicles Sharing Infrastructure', 
-            1, 1000, 1, 1
+            VALIDATION_LIMITS.MIN_FLEET_SIZE, 
+            VALIDATION_LIMITS.MAX_FLEET_SIZE, 
+            VALIDATION_LIMITS.MIN_FLEET_SIZE, 
+            VALIDATION_LIMITS.FLEET_SIZE_STEP
         )
         
         self.apply_incentives = st.checkbox('Apply Incentives', value=True)

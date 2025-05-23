@@ -8,7 +8,7 @@ Keeps implementation identical while reducing per-file line-count.
 
 from typing import Any, Dict
 
-import pandas as pd
+from tco_app.src import pd
 
 from .single_param import perform_sensitivity_analysis
 

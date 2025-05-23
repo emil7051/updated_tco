@@ -60,9 +60,9 @@ class TestTCOCalculationIntegration:
         assert diesel_results['social_tco']['social_tco_lifetime'] > diesel_results['tco']['npv_total_cost']
         
         # Test comparison metrics exist
-        assert 'total_cost_difference' in comparison
-        assert 'cost_per_km_difference' in comparison
-        assert 'emissions_savings' in comparison
+        assert 'upfront_cost_difference' in comparison
+        assert 'annual_operating_savings' in comparison
+        assert 'emission_savings_lifetime' in comparison
         
         # Test infrastructure costs are included for BEV
         assert 'infrastructure_costs' in bev_results
