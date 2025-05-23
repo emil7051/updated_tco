@@ -299,6 +299,16 @@ class CalculationOrchestrator:
             'diesel_results': diesel_ui_results,
             'comparison_metrics': final_comparison_metrics,
             
+            # Vehicle data and fees expected by sensitivity page
+            'bev_vehicle_data': bev_request.vehicle_data,
+            'diesel_vehicle_data': diesel_request.vehicle_data,
+            'bev_fees': bev_request.fees_data,
+            'diesel_fees': diesel_request.fees_data,
+            
+            # Charging and infrastructure options
+            'charging_options': bev_request.charging_options,
+            'infrastructure_options': bev_request.infrastructure_options,
+            
             # Pass through other data points the UI might expect
             'financial_params_with_ui': bev_request.financial_params,
             'battery_params_with_ui': bev_request.battery_params,
