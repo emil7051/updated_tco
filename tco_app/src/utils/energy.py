@@ -7,7 +7,12 @@ functions to guarantee a single, authoritative implementation for weighted
 charging-mix calculations.
 """
 
-from tco_app.src.utils.safe_operations import safe_division, safe_get_charging_option, safe_get_parameter, safe_iloc_zero
+from tco_app.src.utils.safe_operations import (
+    safe_division,
+    safe_get_charging_option,
+    safe_get_parameter,
+    safe_iloc_zero,
+)
 from tco_app.src.constants import DataColumns, ParameterKeys, EmissionStandard
 import logging
 
@@ -50,8 +55,10 @@ def weighted_electricity_price(
         Column names for the identifier and price respectively.
     """
     logger.debug(f"weighted_electricity_price called with charging_mix: {charging_mix}")
-    logger.debug(f"charging_mix type: {type(charging_mix)}, keys: {list(charging_mix.keys()) if charging_mix else 'None'}")
-    
+    logger.debug(
+        f"charging_mix type: {type(charging_mix)}, keys: {list(charging_mix.keys()) if charging_mix else 'None'}"
+    )
+
     if not charging_mix:
         return 0.0
 
@@ -61,7 +68,10 @@ def weighted_electricity_price(
         return 0.0
 
     # Normalise to 1.0 regardless of original scale.
-    normalised_mix: Dict[int | str, float] = {k: safe_division(v, total, context="v/total calculation") for k, v in charging_mix.items()}
+    normalised_mix: Dict[int | str, float] = {
+        k: safe_division(v, total, context="v/total calculation")
+        for k, v in charging_mix.items()
+    }
 
     # Map each id to its price.
     prices = charging_options.set_index(id_column)[price_column]
@@ -73,16 +83,21 @@ def weighted_electricity_price(
         try:
             price = float(prices.loc[cid])
         except KeyError as exc:
-            logger.error(f"Failed to find charging ID {cid} in prices. Available IDs: {prices.index.tolist()}")
+            logger.error(
+                f"Failed to find charging ID {cid} in prices. Available IDs: {prices.index.tolist()}"
+            )
             raise KeyError(
                 f"Charging option with ID {cid!r} not found in charging_options table."
             ) from exc
         weighted_price += price * weight
 
-    return weighted_price 
+    return weighted_price
 
 
-from ..constants import Drivetrain, FuelType  # noqa: E402  # Imported late to avoid circularity
+from ..constants import (
+    Drivetrain,
+    FuelType,
+)  # noqa: E402  # Imported late to avoid circularity
 
 
 def calculate_energy_costs(
@@ -107,13 +122,16 @@ def calculate_energy_costs(
             charging_option = safe_get_charging_option(charging_data, selected_charging)
             electricity_price = charging_option[DataColumns.PER_KWH_PRICE]
 
-        energy_cost_per_km = vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_price
+        energy_cost_per_km = (
+            vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_price
+        )
     else:
         diesel_price = safe_get_parameter(financial_params, ParameterKeys.DIESEL_PRICE)
-        energy_cost_per_km = vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_price
+        energy_cost_per_km = (
+            vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_price
+        )
 
     return energy_cost_per_km
-
 
 
 def calculate_emissions(
@@ -126,25 +144,27 @@ def calculate_emissions(
 
     if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
         electricity_ef_condition = (
-            (emission_factors[DataColumns.FUEL_TYPE.value] == FuelType.ELECTRICITY)
-            & (emission_factors[DataColumns.EMISSION_STANDARD.value] == EmissionStandard.GRID.value)
+            emission_factors[DataColumns.FUEL_TYPE.value] == FuelType.ELECTRICITY
+        ) & (
+            emission_factors[DataColumns.EMISSION_STANDARD.value]
+            == EmissionStandard.GRID.value
         )
         electricity_ef_row = safe_iloc_zero(
-            emission_factors, 
-            electricity_ef_condition, 
-            context="electricity emission factor"
+            emission_factors,
+            electricity_ef_condition,
+            context="electricity emission factor",
         )
         electricity_ef = electricity_ef_row[DataColumns.CO2_PER_UNIT.value]
         co2_per_km = vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_ef
     else:
         diesel_ef_condition = (
-            (emission_factors[DataColumns.FUEL_TYPE.value] == FuelType.DIESEL)
-            & (emission_factors[DataColumns.EMISSION_STANDARD.value] == EmissionStandard.EURO_IV_PLUS.value)
+            emission_factors[DataColumns.FUEL_TYPE.value] == FuelType.DIESEL
+        ) & (
+            emission_factors[DataColumns.EMISSION_STANDARD.value]
+            == EmissionStandard.EURO_IV_PLUS.value
         )
         diesel_ef_row = safe_iloc_zero(
-            emission_factors, 
-            diesel_ef_condition, 
-            context="diesel emission factor"
+            emission_factors, diesel_ef_condition, context="diesel emission factor"
         )
         diesel_ef = diesel_ef_row[DataColumns.CO2_PER_UNIT.value]
         co2_per_km = vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_ef
@@ -156,4 +176,4 @@ def calculate_emissions(
         "co2_per_km": co2_per_km,
         "annual_emissions": annual_emissions,
         "lifetime_emissions": lifetime_emissions,
-    } 
+    }

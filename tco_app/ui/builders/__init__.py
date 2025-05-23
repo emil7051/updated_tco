@@ -6,9 +6,9 @@ from .parameter_builder import ParameterInputBuilder
 from .charging_builder import ChargingConfigurationBuilder, InfrastructureBuilder
 
 __all__ = [
-    'ScenarioBuilder',
-    'VehicleSelectionBuilder', 
-    'ParameterInputBuilder',
-    'ChargingConfigurationBuilder',
-    'InfrastructureBuilder'
-] 
+    "ScenarioBuilder",
+    "VehicleSelectionBuilder",
+    "ParameterInputBuilder",
+    "ChargingConfigurationBuilder",
+    "InfrastructureBuilder",
+]

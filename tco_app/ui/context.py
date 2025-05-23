@@ -22,37 +22,38 @@ from tco_app.src.data_loading import load_data
 from tco_app.ui.context_builder import ContextDirector
 from tco_app.ui.calculation_orchestrator import CalculationOrchestrator
 
+
 def get_context() -> Dict[str, Any]:
     """Return cached modelling context using builder pattern."""
     print("Attempting to get context...")
-    
+
     # Basic cache – recompute when the user presses the Streamlit *rerun* button.
-    if 'ctx_cache' in st.session_state:
+    if "ctx_cache" in st.session_state:
         print("Returning cached context.")
-        return st.session_state['ctx_cache']
-    
+        return st.session_state["ctx_cache"]
+
     print("No cached context found, computing new context...")
-    
+
     # Load data
     print("Loading data...")
     data_tables = load_data()
     print("Data loaded successfully.")
-    
+
     # Build UI context using builder pattern
     print("Building UI context...")
     context_director = ContextDirector(data_tables)
     ui_context = context_director.build_ui_context()
     print("UI context built successfully.")
-    
+
     # Perform calculations
     print("Starting calculations...")
     calculation_orchestrator = CalculationOrchestrator(data_tables, ui_context)
     complete_context = calculation_orchestrator.perform_calculations()
-    
+
     # Show caption for active scenario
     st.caption(f'Scenario: {ui_context["scenario_meta"]["name"]}')
-    
+
     # Cache and return
-    st.session_state['ctx_cache'] = complete_context
+    st.session_state["ctx_cache"] = complete_context
     print("Context computed and cached.")
-    return complete_context 
+    return complete_context

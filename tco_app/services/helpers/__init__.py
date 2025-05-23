@@ -22,7 +22,9 @@ __all__ = [
 ]
 
 
-def get_residual_value_parameters(financial_params_df: pd.DataFrame) -> Tuple[float, float]:
+def get_residual_value_parameters(
+    financial_params_df: pd.DataFrame,
+) -> Tuple[float, float]:
     """Return the *(initial_dep, annual_dep)* depreciation percentages.
 
     The function provides a single source-of-truth for fetching the two
@@ -71,7 +73,10 @@ def convert_tco_result_to_model_runner_dict(
     clean.
     """
 
-    from tco_app.src.constants import DataColumns, Drivetrain  # Local import to avoid cycles
+    from tco_app.src.constants import (
+        DataColumns,
+        Drivetrain,
+    )  # Local import to avoid cycles
 
     # Construct the 'tco' sub-dictionary with final, post-infrastructure values
     final_tco_sub_dict: Dict[str, Any] = {
@@ -128,4 +133,4 @@ def convert_tco_result_to_model_runner_dict(
         "scenario": tco_result.scenario_meta,
         "charging_mix": request.parameters.charging_mix,
         "weighted_electricity_price": tco_result.weighted_electricity_price,
-    } 
+    }

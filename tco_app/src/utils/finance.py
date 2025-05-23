@@ -23,6 +23,7 @@ price_parity_year(bev_curve, diesel_curve, years=None)
 calculate_residual_value(vehicle_data, years, initial_depreciation, annual_depreciation)
     Return the residual value of a vehicle after *years* years.
 """
+
 from __future__ import annotations
 from tco_app.src.constants import DataColumns, ParameterKeys
 
@@ -37,7 +38,9 @@ __all__ = [
 ]
 
 
-def npv_constant(annual_cost: float, discount_rate: float, years: int) -> float:  # noqa: D401
+def npv_constant(
+    annual_cost: float, discount_rate: float, years: int
+) -> float:  # noqa: D401
     """Return the net present value of a constant yearly cost.
 
     The cash-flow is assumed to be paid at the end of each year.
@@ -122,7 +125,7 @@ def price_parity_year(
             # Linear interpolation between the two points.
             delta_bev = bev2 - bev1
             delta_diesel = diesel2 - diesel1
-            denominator = (delta_bev - delta_diesel)
+            denominator = delta_bev - delta_diesel
             if denominator == 0:  # Parallel over this segment; skip.
                 continue
             t = (diesel1 - bev1) / denominator
@@ -146,5 +149,7 @@ def calculate_residual_value(
     if years <= 0:
         return 0.0
 
-    value_after_initial = vehicle_data[DataColumns.MSRP_PRICE] * (1 - initial_depreciation)
-    return value_after_initial * ((1 - annual_depreciation) ** (years - 1)) 
+    value_after_initial = vehicle_data[DataColumns.MSRP_PRICE] * (
+        1 - initial_depreciation
+    )
+    return value_after_initial * ((1 - annual_depreciation) ** (years - 1))

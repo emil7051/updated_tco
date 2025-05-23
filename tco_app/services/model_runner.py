@@ -41,6 +41,7 @@ from tco_app.src.constants import Drivetrain
 # Public API
 # --------------------------------------------------------------------------------------
 
+
 def run_model(
     # vehicle specs & fees
     bev_vehicle_data: Any,
@@ -144,10 +145,10 @@ def run_model(
         bev_vehicle_data, battery_params_with_ui, truck_life_years, discount_rate
     )
     bev_npv_annual = calculate_npv(
-        bev_annual_costs['annual_operating_cost'], discount_rate, truck_life_years
+        bev_annual_costs["annual_operating_cost"], discount_rate, truck_life_years
     )
     diesel_npv_annual = calculate_npv(
-        diesel_annual_costs['annual_operating_cost'], discount_rate, truck_life_years
+        diesel_annual_costs["annual_operating_cost"], discount_rate, truck_life_years
     )
 
     # ------------------------------------------------------------------
@@ -198,7 +199,7 @@ def run_model(
     # Infrastructure integration (BEV only)
     # ------------------------------------------------------------------
     selected_infra_data = infrastructure_options[
-        infrastructure_options['infrastructure_id'] == selected_infrastructure
+        infrastructure_options["infrastructure_id"] == selected_infrastructure
     ].iloc[0]
 
     bev_charging_requirements = calculate_charging_requirements(
@@ -210,7 +211,7 @@ def run_model(
     infra_costs_with_incentives = apply_infrastructure_incentives(
         infrastructure_costs, incentives, apply_incentives
     )
-    infra_costs_with_incentives['fleet_size'] = fleet_size
+    infra_costs_with_incentives["fleet_size"] = fleet_size
 
     bev_tco_with_infra = integrate_infrastructure_with_tco(
         bev_tco, infra_costs_with_incentives, apply_incentives
@@ -220,57 +221,61 @@ def run_model(
     # Assemble results dicts (identical to legacy structure)
     # ------------------------------------------------------------------
     bev_results = {
-        'vehicle_data': bev_vehicle_data,
-        'fees': bev_fees,
-        'energy_cost_per_km': bev_energy_cost_per_km,
-        'annual_costs': bev_annual_costs,
-        'emissions': bev_emissions,
-        'acquisition_cost': bev_acquisition,
-        'residual_value': bev_residual,
-        'battery_replacement': bev_battery_replacement,
-        'npv_annual_cost': bev_npv_annual,
-        'tco': bev_tco_with_infra,
-        'externalities': bev_externalities,
-        'social_tco': calculate_social_tco(bev_tco_with_infra, bev_externalities),
-        'annual_kms': annual_kms,
-        'truck_life_years': truck_life_years,
-        'charging_requirements': bev_charging_requirements,
-        'infrastructure_costs': infra_costs_with_incentives,
-        'selected_infrastructure_description': selected_infra_data['infrastructure_description'],
-        'charging_options': charging_options,
-        'discount_rate': discount_rate,
-        'scenario': scenario_meta,
+        "vehicle_data": bev_vehicle_data,
+        "fees": bev_fees,
+        "energy_cost_per_km": bev_energy_cost_per_km,
+        "annual_costs": bev_annual_costs,
+        "emissions": bev_emissions,
+        "acquisition_cost": bev_acquisition,
+        "residual_value": bev_residual,
+        "battery_replacement": bev_battery_replacement,
+        "npv_annual_cost": bev_npv_annual,
+        "tco": bev_tco_with_infra,
+        "externalities": bev_externalities,
+        "social_tco": calculate_social_tco(bev_tco_with_infra, bev_externalities),
+        "annual_kms": annual_kms,
+        "truck_life_years": truck_life_years,
+        "charging_requirements": bev_charging_requirements,
+        "infrastructure_costs": infra_costs_with_incentives,
+        "selected_infrastructure_description": selected_infra_data[
+            "infrastructure_description"
+        ],
+        "charging_options": charging_options,
+        "discount_rate": discount_rate,
+        "scenario": scenario_meta,
     }
     if charging_mix:
-        bev_results['charging_mix'] = charging_mix
-        bev_results['weighted_electricity_price'] = weighted_electricity_price(charging_mix, charging_options)
+        bev_results["charging_mix"] = charging_mix
+        bev_results["weighted_electricity_price"] = weighted_electricity_price(
+            charging_mix, charging_options
+        )
 
     diesel_results = {
-        'vehicle_data': diesel_vehicle_data,
-        'fees': diesel_fees,
-        'energy_cost_per_km': diesel_energy_cost_per_km,
-        'annual_costs': diesel_annual_costs,
-        'emissions': diesel_emissions,
-        'acquisition_cost': diesel_acquisition,
-        'residual_value': diesel_residual,
-        'battery_replacement': 0,
-        'npv_annual_cost': diesel_npv_annual,
-        'tco': diesel_tco,
-        'externalities': diesel_externalities,
-        'social_tco': calculate_social_tco(diesel_tco, diesel_externalities),
-        'annual_kms': annual_kms,
-        'truck_life_years': truck_life_years,
-        'discount_rate': discount_rate,
-        'scenario': scenario_meta,
+        "vehicle_data": diesel_vehicle_data,
+        "fees": diesel_fees,
+        "energy_cost_per_km": diesel_energy_cost_per_km,
+        "annual_costs": diesel_annual_costs,
+        "emissions": diesel_emissions,
+        "acquisition_cost": diesel_acquisition,
+        "residual_value": diesel_residual,
+        "battery_replacement": 0,
+        "npv_annual_cost": diesel_npv_annual,
+        "tco": diesel_tco,
+        "externalities": diesel_externalities,
+        "social_tco": calculate_social_tco(diesel_tco, diesel_externalities),
+        "annual_kms": annual_kms,
+        "truck_life_years": truck_life_years,
+        "discount_rate": discount_rate,
+        "scenario": scenario_meta,
     }
 
     comparison_metrics = calculate_comparative_metrics(
         bev_results, diesel_results, annual_kms, truck_life_years
     )
-    bev_results['comparison'] = comparison_metrics
+    bev_results["comparison"] = comparison_metrics
 
     return {
-        'bev_results': bev_results,
-        'diesel_results': diesel_results,
-        'comparison_metrics': comparison_metrics,
-    } 
+        "bev_results": bev_results,
+        "diesel_results": diesel_results,
+        "comparison_metrics": comparison_metrics,
+    }

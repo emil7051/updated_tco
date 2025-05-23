@@ -10,8 +10,8 @@ from .externality import perform_externality_sensitivity
 from .metrics import calculate_comparative_metrics
 
 __all__ = [
-	'perform_sensitivity_analysis',
-	'calculate_tornado_data',
-	'perform_externality_sensitivity',
-	'calculate_comparative_metrics',
-] 
+    "perform_sensitivity_analysis",
+    "calculate_tornado_data",
+    "perform_externality_sensitivity",
+    "calculate_comparative_metrics",
+]

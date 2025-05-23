@@ -1,4 +1,5 @@
 """Unit tests for domain calculation delegation."""
+
 import math
 from tco_app.src import pd
 import pytest
@@ -34,7 +35,7 @@ def test_energy_cost_delegation(dummy_financial_params, dummy_charging_options):
         "vehicle_drivetrain": Drivetrain.BEV,
         "kwh_per100km": 18,
     }
-    
+
     expected = en_utils.calculate_energy_costs(
         vehicle_data,
         None,
@@ -43,7 +44,7 @@ def test_energy_cost_delegation(dummy_financial_params, dummy_charging_options):
         "C1",
         None,
     )
-    
+
     delegated = energy_cost_domain(
         vehicle_data,
         None,
@@ -52,7 +53,7 @@ def test_energy_cost_delegation(dummy_financial_params, dummy_charging_options):
         "C1",
         None,
     )
-    
+
     assert math.isclose(expected, delegated, rel_tol=1e-12)
 
 
@@ -62,10 +63,12 @@ def test_residual_value_delegation():
     years = 5
     initial_dep = 0.1
     annual_dep = 0.05
-    
-    expected = fin_utils.calculate_residual_value(vehicle_data, years, initial_dep, annual_dep)
+
+    expected = fin_utils.calculate_residual_value(
+        vehicle_data, years, initial_dep, annual_dep
+    )
     delegated = residual_domain(vehicle_data, years, initial_dep, annual_dep)
-    
+
     assert math.isclose(expected, delegated, rel_tol=1e-9)
 
 
@@ -78,7 +81,10 @@ def test_battery_replacement_delegation():
     battery_params = pd.DataFrame(
         [
             {"battery_description": "replacement_per_kwh_price", "default_value": 100},
-            {"battery_description": "degradation_annual_percent", "default_value": 0.05},
+            {
+                "battery_description": "degradation_annual_percent",
+                "default_value": 0.05,
+            },
             {"battery_description": "minimum_capacity_percent", "default_value": 0.7},
         ]
     )
@@ -86,9 +92,12 @@ def test_battery_replacement_delegation():
     rate = 0.07
 
     expected = battery_utils(vehicle_data, battery_params, life_years, rate)
-    
+
     # Import the domain function
-    from tco_app.src.utils.battery import calculate_battery_replacement as battery_domain
+    from tco_app.src.utils.battery import (
+        calculate_battery_replacement as battery_domain,
+    )
+
     delegated = battery_domain(vehicle_data, battery_params, life_years, rate)
-    
-    assert math.isclose(expected, delegated, rel_tol=1e-9) 
+
+    assert math.isclose(expected, delegated, rel_tol=1e-9)

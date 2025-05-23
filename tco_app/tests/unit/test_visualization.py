@@ -53,4 +53,4 @@ def test_emissions_chart_vehicle_type_labels():
 
     fig = create_emissions_chart(bev_results, diesel_results, truck_life_years=10)
     x_labels = _collect_unique_x_values(fig)
-    assert x_labels == {Drivetrain.BEV.value, Drivetrain.DIESEL.value} 
+    assert x_labels == {Drivetrain.BEV.value, Drivetrain.DIESEL.value}

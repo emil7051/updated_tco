@@ -105,7 +105,9 @@ class TCOResult:
     weighted_electricity_price: Optional[float] = None
 
     # Meta
-    calculation_timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
+    calculation_timestamp: str = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     scenario_meta: Dict[str, str] = field(default_factory=dict)
 
 
@@ -127,4 +129,6 @@ class ComparisonResult:
     bev_to_diesel_tco_ratio: Optional[float] = None
 
     # Meta
-    comparison_timestamp: str = field(default_factory=lambda: datetime.now().isoformat()) 
+    comparison_timestamp: str = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )

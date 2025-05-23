@@ -1,4 +1,5 @@
 """Unit tests for calculation utility functions."""
+
 import math
 from tco_app.src import pd
 import pytest
@@ -33,7 +34,9 @@ def dummy_charging_options():
         (Drivetrain.DIESEL, 0.6),  # 30 L/100 km × $2.00 = $0.60 per km
     ],
 )
-def test_calculate_energy_costs_utils(vehicle_drivetrain, expected, dummy_financial_params, dummy_charging_options):
+def test_calculate_energy_costs_utils(
+    vehicle_drivetrain, expected, dummy_financial_params, dummy_charging_options
+):
     """Test energy cost calculation utility function."""
     vehicle_data = {
         "vehicle_drivetrain": vehicle_drivetrain,
@@ -61,11 +64,21 @@ def test_calculate_emissions_utils_bev():
     }
     emission_factors = pd.DataFrame(
         [
-            {"fuel_type": "electricity", "emission_standard": "Grid", "co2_per_unit": 0.2},
-            {"fuel_type": "diesel", "emission_standard": "Euro IV+", "co2_per_unit": 2.7},
+            {
+                "fuel_type": "electricity",
+                "emission_standard": "Grid",
+                "co2_per_unit": 0.2,
+            },
+            {
+                "fuel_type": "diesel",
+                "emission_standard": "Euro IV+",
+                "co2_per_unit": 2.7,
+            },
         ]
     )
-    metrics = en.calculate_emissions(vehicle_data, emission_factors, annual_kms=50_000, truck_life_years=10)
+    metrics = en.calculate_emissions(
+        vehicle_data, emission_factors, annual_kms=50_000, truck_life_years=10
+    )
     assert math.isclose(metrics["co2_per_km"], 0.04, rel_tol=1e-9)
     assert math.isclose(metrics["annual_emissions"], 2_000, rel_tol=1e-9)
     assert math.isclose(metrics["lifetime_emissions"], 20_000, rel_tol=1e-9)
@@ -79,9 +92,9 @@ def test_calculate_residual_value_utils():
     annual_dep = 0.05
     expected = 200_000 * (1 - 0.1) * ((1 - 0.05) ** (years - 1))
     assert math.isclose(
-        fin.calculate_residual_value(vehicle_data, years, initial_dep, annual_dep), 
-        expected, 
-        rel_tol=1e-9
+        fin.calculate_residual_value(vehicle_data, years, initial_dep, annual_dep),
+        expected,
+        rel_tol=1e-9,
     )
 
 
@@ -94,7 +107,10 @@ def test_calculate_battery_replacement_utils():
     battery_params = pd.DataFrame(
         [
             {"battery_description": "replacement_per_kwh_price", "default_value": 100},
-            {"battery_description": "degradation_annual_percent", "default_value": 0.05},
+            {
+                "battery_description": "degradation_annual_percent",
+                "default_value": 0.05,
+            },
             {"battery_description": "minimum_capacity_percent", "default_value": 0.7},
         ]
     )
@@ -109,7 +125,9 @@ def test_calculate_battery_replacement_utils():
         expected = 400 * 100 / ((1 + rate) ** years_until)
 
     assert math.isclose(
-        bat.calculate_battery_replacement(vehicle_data, battery_params, life_years, rate),
+        bat.calculate_battery_replacement(
+            vehicle_data, battery_params, life_years, rate
+        ),
         expected,
         rel_tol=1e-9,
-    ) 
+    )

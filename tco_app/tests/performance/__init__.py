@@ -1,1 +1,1 @@
-"""Performance tests for TCO application optimisations.""" 
+"""Performance tests for TCO application optimisations."""

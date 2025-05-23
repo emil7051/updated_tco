@@ -1,1 +1,1 @@
-"""Streamlit multi-page app pages.""" 
+"""Streamlit multi-page app pages."""

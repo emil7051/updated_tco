@@ -1,1 +1,1 @@
-"""Domain unit tests package.""" 
+"""Domain unit tests package."""

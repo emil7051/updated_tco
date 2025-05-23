@@ -33,12 +33,14 @@ class CSVRepository:
     # ---------------------------------------------------------------------
 
     def list_tables(self) -> List[str]:
-        return [p.stem for p in self.root_dir.glob('*.csv')]
+        return [p.stem for p in self.root_dir.glob("*.csv")]
 
     def get(self, table_name: str) -> pd.DataFrame:
-        path = self.root_dir / f'{table_name}.csv'
+        path = self.root_dir / f"{table_name}.csv"
         if not path.exists():
-            raise FileNotFoundError(f'No table named "{table_name}" under {self.root_dir}')
+            raise FileNotFoundError(
+                f'No table named "{table_name}" under {self.root_dir}'
+            )
         return pd.read_csv(path)
 
 
@@ -50,12 +52,12 @@ class CSVRepository:
 def _default_repository() -> TableRepository:
     """Return a *TableRepository* inferred from environment or defaults."""
 
-    env_dir = os.getenv('TCO_DATA_DIR')
+    env_dir = os.getenv("TCO_DATA_DIR")
     if env_dir:
         base = Path(env_dir)
     else:
         # Keep parity with legacy path: <package_root>/data/tables
-        base = Path(__file__).resolve().parent.parent / 'data' / 'tables'
+        base = Path(__file__).resolve().parent.parent / "data" / "tables"
 
     return CSVRepository(base)
 

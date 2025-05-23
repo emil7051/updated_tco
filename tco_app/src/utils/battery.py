@@ -62,21 +62,26 @@ def calculate_battery_replacement(
         battery_params = pd.DataFrame(battery_params)
 
     if not isinstance(battery_params, pd.DataFrame):
-        raise TypeError("battery_params must be a pandas DataFrame or a list of dictionaries")
+        raise TypeError(
+            "battery_params must be a pandas DataFrame or a list of dictionaries"
+        )
 
     # Extract required parameters from the table – these rows should always be
     # present; if not, a KeyError will be raised which is **expected** and
     # should be caught upstream.
     replacement_cost_per_kwh = battery_params[
-        battery_params[DataColumns.BATTERY_DESCRIPTION.value] == ParameterKeys.REPLACEMENT_COST.value
+        battery_params[DataColumns.BATTERY_DESCRIPTION.value]
+        == ParameterKeys.REPLACEMENT_COST.value
     ].iloc[0][DataColumns.BATTERY_DEFAULT_VALUE.value]
 
     degradation_rate = battery_params[
-        battery_params[DataColumns.BATTERY_DESCRIPTION.value] == ParameterKeys.DEGRADATION_RATE.value
+        battery_params[DataColumns.BATTERY_DESCRIPTION.value]
+        == ParameterKeys.DEGRADATION_RATE.value
     ].iloc[0][DataColumns.BATTERY_DEFAULT_VALUE.value]
 
     min_capacity = battery_params[
-        battery_params[DataColumns.BATTERY_DESCRIPTION.value] == ParameterKeys.MINIMUM_CAPACITY.value
+        battery_params[DataColumns.BATTERY_DESCRIPTION.value]
+        == ParameterKeys.MINIMUM_CAPACITY.value
     ].iloc[0][DataColumns.BATTERY_DEFAULT_VALUE.value]
 
     # Determine when the battery will reach the minimum acceptable capacity.
@@ -89,9 +94,13 @@ def calculate_battery_replacement(
         return 0.0
 
     # Up-front replacement cost.
-    replacement_cost = vehicle_data[DataColumns.BATTERY_CAPACITY_KWH.value] * replacement_cost_per_kwh
+    replacement_cost = (
+        vehicle_data[DataColumns.BATTERY_CAPACITY_KWH.value] * replacement_cost_per_kwh
+    )
 
     # Discount the future replacement back to present value.
-    npv_replacement = replacement_cost / ((1 + discount_rate) ** years_until_replacement)
+    npv_replacement = replacement_cost / (
+        (1 + discount_rate) ** years_until_replacement
+    )
 
-    return npv_replacement 
+    return npv_replacement

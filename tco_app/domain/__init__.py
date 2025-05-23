@@ -10,11 +10,11 @@ so that callers can migrate incrementally.
 from importlib import import_module as _imp
 
 __all__ = [
-	'energy',
-	'finance',
-	'externalities',
-	'sensitivity',
+    "energy",
+    "finance",
+    "externalities",
+    "sensitivity",
 ]
 
 for _name in __all__:
-	_imp(f'tco_app.domain.{_name}') 
+    _imp(f"tco_app.domain.{_name}")
