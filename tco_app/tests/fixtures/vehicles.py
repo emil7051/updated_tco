@@ -16,8 +16,8 @@ def bev_vehicle_data():
             DataColumns.VEHICLE_MODEL: "Test BEV Model",
             DataColumns.PAYLOAD_T: 4.5,
             DataColumns.MSRP_PRICE: 150000,
-            DataColumns.RANGE_KM: 200,
-            DataColumns.BATTERY_CAPACITY_KWH: 100,
+            DataColumns.RANGE_KM_KM: 200,
+            DataColumns.BATTERY_CAPACITY_KWH_KWH: 100,
             DataColumns.KWH_PER100KM: 50,
             DataColumns.COMPARISON_PAIR_ID: "DSL001",
         }
@@ -35,7 +35,7 @@ def diesel_vehicle_data():
             DataColumns.VEHICLE_MODEL: "Test Diesel Model",
             DataColumns.PAYLOAD_T: 5.0,
             DataColumns.MSRP_PRICE: 100000,
-            DataColumns.RANGE_KM: 600,
+            DataColumns.RANGE_KM_KM: 600,
             DataColumns.LITRES_PER100KM: 25,
             DataColumns.COMPARISON_PAIR_ID: "BEV001",
         }
