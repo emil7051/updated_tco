@@ -1,5 +1,5 @@
 from tco_app.src import st
-from tco_app.src.constants import DataColumns, Drivetrain
+from tco_app.src.constants import DataColumns
 from tco_app.src.utils.pandas_helpers import to_scalar
 from tco_app.src.utils.safe_operations import safe_division
 
@@ -26,10 +26,10 @@ def display_summary_metrics(bev_results, diesel_results):
     
     with col1:
         with st.container():
-            st.markdown(f"### {bev_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}")
+            st.markdown(f"### ⚡ {bev_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}")
             
             # Vehicle details
-            st.markdown(f"**Vehicle Type:** {Drivetrain.BATTERY_ELECTRIC.value}")
+            st.markdown("**Vehicle Type:** Battery Electric")
             st.markdown(f"**Payload Capacity:** {bev_results['vehicle_data'][DataColumns.PAYLOAD_T]:.1f} tonnes")
             st.markdown(f"**Range:** {bev_results['vehicle_data'].get(DataColumns.RANGE_KM, 'N/A'):,.0f} km")
             
@@ -44,10 +44,10 @@ def display_summary_metrics(bev_results, diesel_results):
     
     with col2:
         with st.container():
-            st.markdown(f"### {diesel_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}")
+            st.markdown(f"### ⛽ {diesel_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}")
             
             # Vehicle details
-            st.markdown(f"**Vehicle Type:** {Drivetrain.DIESEL.value}")
+            st.markdown("**Vehicle Type:** Diesel")
             st.markdown(f"**Payload Capacity:** {diesel_results['vehicle_data'][DataColumns.PAYLOAD_T]:.1f} tonnes")
             st.markdown(f"**Range:** {diesel_results['vehicle_data'].get(DataColumns.RANGE_KM, 'N/A'):,.0f} km")
             
