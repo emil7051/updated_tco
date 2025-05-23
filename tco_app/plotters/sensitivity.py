@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+from tco_app.src.constants import DataColumns, ParameterKeys
 
 
 def create_sensitivity_chart(bev_results, diesel_results, parameter, param_range, recalculated_tcos):
@@ -36,7 +37,7 @@ def create_sensitivity_chart(bev_results, diesel_results, parameter, param_range
 	if parameter == 'Annual Distance (km)':
 		current_value = bev_results['annual_kms']
 	elif parameter == 'Diesel Price ($/L)':
-		current_value = diesel_results['vehicle_data'].get('diesel_price') if 'vehicle_data' in diesel_results else None
+		current_value = diesel_results['vehicle_data'].get(ParameterKeys.DIESEL_PRICE) if 'vehicle_data' in diesel_results else None
 	elif parameter == 'Vehicle Lifetime (years)':
 		current_value = bev_results['truck_life_years']
 	elif parameter == 'Discount Rate (%)':

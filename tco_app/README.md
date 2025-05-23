@@ -5,9 +5,9 @@ This Streamlit application provides a comprehensive Total Cost of Ownership (TCO
 ## Features
 
 - Compare battery electric (BEV) and diesel trucks across multiple dimensions
-- Customize scenarios, vehicle types, and operating parameters
-- Visualize cost breakdowns, emissions comparisons, and payback periods
-- Calculate key metrics including TCO per kilometer, emissions savings, and abatement costs
+- Customise scenarios, vehicle types, and operating parameters
+- Visualise cost breakdowns, emissions comparisons, and payback periods
+- Calculate key metrics including TCO per kilometre, emissions savings, and abatement costs
 - Apply various incentives and policy mechanisms
 - Export detailed results for further analysis
 
@@ -16,13 +16,12 @@ This Streamlit application provides a comprehensive Total Cost of Ownership (TCO
 ```text
  tco_app/
  │
- ├── main.py                 # Entry-point; thin Streamlit router
- ├── app.py                  # Legacy wrapper (deprecated; removed in v2)
+ ├── main.py                 # Entry-point; Streamlit multi-page router
  ├── ui/                     # Pure presentation layer (widgets & pages)
  │   ├── pages/              # Individual Streamlit pages
  │   └── components.py       # Shared UI widgets / controls
  │
- ├── domain/                 # Business-logic packages (NEW)
+ ├── domain/                 # Business-logic packages
  │   ├── energy.py           # Energy & charging helpers
  │   ├── finance.py          # Monetary / NPV helpers
  │   ├── battery.py          # Degradation & replacement economics
@@ -54,11 +53,8 @@ This Streamlit application provides a comprehensive Total Cost of Ownership (TCO
 ```bash
 pip install -r requirements.txt
 
-# Preferred: new multi-page interface
+# Run the application
 streamlit run tco_app/main.py
-
-# Fallback (deprecated)
-# streamlit run tco_app/app.py
 ```
 
 ## Data Sources

@@ -1,5 +1,7 @@
 from __future__ import annotations
+from tco_app.src.constants import DataColumns, ParameterKeys
 
+from tco_app.src.utils.safe_operations import safe_get_parameter
 """Multi-parameter tornado-chart helper extracted from the original monolith.
 Keeps implementation identical while reducing per-file line-count.
 """
@@ -48,8 +50,8 @@ def calculate_tornado_data(
 		},
 		'Diesel Price ($/L)': {
 			'range': [
-				financial_params[financial_params['finance_description'] == 'diesel_price'].iloc[0]['default_value'] * 0.8,
-				financial_params[financial_params['finance_description'] == 'diesel_price'].iloc[0]['default_value'] * 1.2,
+				safe_get_parameter(financial_params, ParameterKeys.DIESEL_PRICE) * 0.8,
+				safe_get_parameter(financial_params, ParameterKeys.DIESEL_PRICE) * 1.2,
 			],
 			'variation': 0.2,
 		},
@@ -64,8 +66,8 @@ def calculate_tornado_data(
 	}
 
 	base_electricity_price = charging_options[
-		charging_options['charging_id'] == selected_charging
-	].iloc[0]['per_kwh_price']
+		charging_options[DataColumns.CHARGING_ID] == selected_charging
+	].iloc[0][DataColumns.PER_KWH_PRICE]
 	if 'weighted_electricity_price' in bev_results:
 		base_electricity_price = bev_results['weighted_electricity_price']
 

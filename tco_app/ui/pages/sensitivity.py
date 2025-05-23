@@ -1,4 +1,5 @@
 import streamlit as st
+from tco_app.src.constants import DataColumns, ParameterKeys
 
 from tco_app.ui.context import get_context
 from tco_app.domain.sensitivity import perform_sensitivity_analysis
@@ -80,8 +81,8 @@ def render():
 				param_range.sort()
 		elif sensitivity_param == 'Diesel Price ($/L)':
 			diesel_base = financial_params_with_ui[
-				financial_params_with_ui['finance_description'] == 'diesel_price'
-			].iloc[0]['default_value']
+				financial_params_with_ui[DataColumns.FINANCE_DESCRIPTION] == ParameterKeys.DIESEL_PRICE
+			].iloc[0][DataColumns.FINANCE_DEFAULT_VALUE]
 			min_val = max(0.5, diesel_base * 0.7)
 			max_val = diesel_base * 1.3
 			step = (max_val - min_val) / (num_points - 1)
@@ -93,7 +94,7 @@ def render():
 			if 'weighted_electricity_price' in bev_results:
 				electricity_base = bev_results['weighted_electricity_price']
 			else:
-				electricity_base = charging_options[charging_options['charging_id'] == selected_charging].iloc[0]['per_kwh_price']
+				electricity_base = charging_options[charging_options[DataColumns.CHARGING_ID] == selected_charging].iloc[0][DataColumns.PER_KWH_PRICE]
 			min_val = max(0.05, electricity_base * 0.7)
 			max_val = electricity_base * 1.3
 			step = (max_val - min_val) / (num_points - 1)

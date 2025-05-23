@@ -40,4 +40,10 @@ Thumbs.db
 *.xlsx.bak
 
 # Logs
-*.log 
+*.log
+
+# Refactoring documentation
+refactoring/ 
+
+# Utility Scripts
+utility_scripts/

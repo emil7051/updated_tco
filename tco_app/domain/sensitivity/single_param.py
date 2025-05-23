@@ -1,5 +1,7 @@
 from __future__ import annotations
+from tco_app.src.constants import DataColumns, ParameterKeys
 
+from tco_app.src.utils.safe_operations import safe_division
 """Single-parameter sensitivity analysis helpers (extracted from the former
 `tco_app.domain.sensitivity` monolith to satisfy the 300-line file limit).
 
@@ -73,8 +75,8 @@ def perform_sensitivity_analysis(
 	for param_value in parameter_range:
 		current_annual_kms = annual_kms
 		current_diesel_price = financial_params_copy[
-			financial_params_copy['finance_description'] == 'diesel_price'
-		].iloc[0]['default_value']
+			financial_params_copy[DataColumns.FINANCE_DESCRIPTION] == ParameterKeys.DIESEL_PRICE
+		].iloc[0][DataColumns.FINANCE_DEFAULT_VALUE]
 		current_discount_rate = discount_rate
 		current_truck_life_years = truck_life_years
 		current_charging_mix = charging_mix
@@ -85,8 +87,8 @@ def perform_sensitivity_analysis(
 		elif parameter_name == 'Diesel Price ($/L)':
 			current_diesel_price = param_value
 			financial_params_copy.loc[
-				financial_params_copy['finance_description'] == 'diesel_price',
-				'default_value',
+				financial_params_copy[DataColumns.FINANCE_DESCRIPTION] == ParameterKeys.DIESEL_PRICE,
+				DataColumns.FINANCE_DEFAULT_VALUE,
 			] = param_value
 		elif parameter_name == 'Vehicle Lifetime (years)':
 			current_truck_life_years = param_value
@@ -94,13 +96,13 @@ def perform_sensitivity_analysis(
 			current_discount_rate = param_value / 100
 		elif parameter_name == 'Electricity Price ($/kWh)':
 			base_price = charging_options[
-				charging_options['charging_id'] == selected_charging
-			].iloc[0]['per_kwh_price']
+				charging_options[DataColumns.CHARGING_ID] == selected_charging
+			].iloc[0][DataColumns.PER_KWH_PRICE]
 			modified_charging_options = charging_options.copy()
 			for idx in modified_charging_options.index:
-				orig = charging_options.loc[idx, 'per_kwh_price']
-				modified_charging_options.loc[idx, 'per_kwh_price'] = param_value * (
-					orig / base_price
+				orig = charging_options.loc[idx, DataColumns.PER_KWH_PRICE]
+				modified_charging_options.loc[idx, DataColumns.PER_KWH_PRICE] = param_value * (
+					safe_division(orig, base_price, context="orig/base_price calculation")
 				)
 		else:
 			# Unsupported parameter name – skip
@@ -166,11 +168,11 @@ def perform_sensitivity_analysis(
 		)
 
 		initial_dep = financial_params_copy[
-			financial_params_copy['finance_description'] == 'initial_depreciation_percent'
-		].iloc[0]['default_value']
+			financial_params_copy[DataColumns.FINANCE_DESCRIPTION] == ParameterKeys.INITIAL_DEPRECIATION
+		].iloc[0][DataColumns.FINANCE_DEFAULT_VALUE]
 		annual_dep = financial_params_copy[
-			financial_params_copy['finance_description'] == 'annual_depreciation_percent'
-		].iloc[0]['default_value']
+			financial_params_copy[DataColumns.FINANCE_DESCRIPTION] == ParameterKeys.ANNUAL_DEPRECIATION
+		].iloc[0][DataColumns.FINANCE_DEFAULT_VALUE]
 
 		bev_residual = calculate_residual_value(
 			bev_vehicle_data,
@@ -231,7 +233,7 @@ def perform_sensitivity_analysis(
 
 		# --------------- Infrastructure ---------------
 		infra_data = infrastructure_options[
-			infrastructure_options['infrastructure_id'] == selected_infrastructure
+			infrastructure_options[DataColumns.INFRASTRUCTURE_ID] == selected_infrastructure
 		].iloc[0]
 		bev_charging_requirements = calculate_charging_requirements(
 			bev_vehicle_data,

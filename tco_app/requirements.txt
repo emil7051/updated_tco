@@ -7,3 +7,4 @@ Pillow>=10.0.0
 pytest-cov>=4.1.0
 ruff>=0.4
 black>=24.4
+numba>=0.58.0

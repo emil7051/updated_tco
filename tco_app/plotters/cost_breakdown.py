@@ -76,7 +76,7 @@ def create_annual_costs_chart(bev_results, diesel_results, truck_life_years):
 		if 'infrastructure_price_with_incentives' in bev_results['infrastructure_costs']:
 			bev_cumulative[0] += bev_results['infrastructure_costs']['infrastructure_price_with_incentives'] / bev_results['infrastructure_costs'].get('fleet_size', 1)
 		else:
-			bev_cumulative[0] += bev_results['infrastructure_costs']['infrastructure_price'] / bev_results['infrastructure_costs'].get('fleet_size', 1)
+			bev_cumulative[0] += bev_results['infrastructure_costs'][DataColumns.INFRASTRUCTURE_PRICE] / bev_results['infrastructure_costs'].get('fleet_size', 1)
 
 	for year in range(1, truck_life_years):
 		bev_annual = bev_results['annual_costs']['annual_operating_cost']
@@ -94,7 +94,7 @@ def create_annual_costs_chart(bev_results, diesel_results, truck_life_years):
 				if 'infrastructure_price_with_incentives' in bev_results['infrastructure_costs']:
 					bev_annual += bev_results['infrastructure_costs']['infrastructure_price_with_incentives'] / bev_results['infrastructure_costs'].get('fleet_size', 1)
 				else:
-					bev_annual += bev_results['infrastructure_costs']['infrastructure_price'] / bev_results['infrastructure_costs'].get('fleet_size', 1)
+					bev_annual += bev_results['infrastructure_costs'][DataColumns.INFRASTRUCTURE_PRICE] / bev_results['infrastructure_costs'].get('fleet_size', 1)
 
 		bev_cumulative.append(bev_cumulative[-1] + bev_annual)
 		diesel_cumulative.append(diesel_cumulative[-1] + diesel_annual)

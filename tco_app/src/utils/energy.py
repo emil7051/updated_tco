@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 """Utility helpers for energy-related calculations.
 
 These helpers are shared between UI layers (Streamlit) and deeper model
 functions to guarantee a single, authoritative implementation for weighted
 charging-mix calculations.
 """
-from __future__ import annotations
+
+from tco_app.src.utils.safe_operations import safe_division, safe_get_charging_option, safe_get_parameter, safe_iloc_zero
+from tco_app.src.constants import DataColumns, ParameterKeys
 
 from typing import Dict, Mapping
 
@@ -25,8 +29,8 @@ def weighted_electricity_price(
     charging_mix: Mapping[int | str, float],
     charging_options: pd.DataFrame,
     *,
-    id_column: str = "charging_id",
-    price_column: str = "per_kwh_price",
+    id_column: str = DataColumns.CHARGING_ID,
+    price_column: str = DataColumns.PER_KWH_PRICE,
 ) -> float:  # noqa: D401
     """Return the weighted average electricity price for a charging mix.
 
@@ -51,7 +55,7 @@ def weighted_electricity_price(
         return 0.0
 
     # Normalise to 1.0 regardless of original scale.
-    normalised_mix: Dict[int | str, float] = {k: v / total for k, v in charging_mix.items()}
+    normalised_mix: Dict[int | str, float] = {k: safe_division(v, total, context="v/total calculation") for k, v in charging_mix.items()}
 
     # Map each id to its price.
     prices = charging_options.set_index(id_column)[price_column]
@@ -86,22 +90,18 @@ def calculate_energy_costs(
     *calculations.py* so that future refactors can simply remove the old copy.
     """
 
-    if vehicle_data["vehicle_drivetrain"] == Drivetrain.BEV:
+    if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
         # Determine the electricity price either from a weighted mix or a single option.
         if charging_mix:
             electricity_price = weighted_electricity_price(charging_mix, charging_data)
         else:
-            charging_option = charging_data[charging_data["charging_id"] == selected_charging].iloc[0]
-            electricity_price = charging_option["per_kwh_price"]
+            charging_option = safe_get_charging_option(charging_data, selected_charging)
+            electricity_price = charging_option[DataColumns.PER_KWH_PRICE]
 
-        energy_cost_per_km = vehicle_data["kwh_per100km"] / 100 * electricity_price
+        energy_cost_per_km = vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_price
     else:
-        diesel_price = (
-            financial_params[financial_params["finance_description"] == "diesel_price"].iloc[0][
-                "default_value"
-            ]
-        )
-        energy_cost_per_km = vehicle_data["litres_per100km"] / 100 * diesel_price
+        diesel_price = safe_get_parameter(financial_params, ParameterKeys.DIESEL_PRICE)
+        energy_cost_per_km = vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_price
 
     return energy_cost_per_km
 
@@ -115,22 +115,30 @@ def calculate_emissions(
 ):
     """Return a dictionary with per-km, annual and lifetime CO₂ emissions."""
 
-    if vehicle_data["vehicle_drivetrain"] == Drivetrain.BEV:
-        electricity_ef = (
-            emission_factors[
-                (emission_factors["fuel_type"] == FuelType.ELECTRICITY)
-                & (emission_factors["emission_standard"] == "Grid")
-            ].iloc[0]["co2_per_unit"]
+    if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
+        electricity_ef_condition = (
+            (emission_factors["fuel_type"] == FuelType.ELECTRICITY)
+            & (emission_factors["emission_standard"] == "Grid")
         )
-        co2_per_km = vehicle_data["kwh_per100km"] / 100 * electricity_ef
+        electricity_ef_row = safe_iloc_zero(
+            emission_factors, 
+            electricity_ef_condition, 
+            context="electricity emission factor"
+        )
+        electricity_ef = electricity_ef_row["co2_per_unit"]
+        co2_per_km = vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_ef
     else:
-        diesel_ef = (
-            emission_factors[
-                (emission_factors["fuel_type"] == FuelType.DIESEL)
-                & (emission_factors["emission_standard"] == "Euro IV+")
-            ].iloc[0]["co2_per_unit"]
+        diesel_ef_condition = (
+            (emission_factors["fuel_type"] == FuelType.DIESEL)
+            & (emission_factors["emission_standard"] == "Euro IV+")
         )
-        co2_per_km = vehicle_data["litres_per100km"] / 100 * diesel_ef
+        diesel_ef_row = safe_iloc_zero(
+            emission_factors, 
+            diesel_ef_condition, 
+            context="diesel emission factor"
+        )
+        diesel_ef = diesel_ef_row["co2_per_unit"]
+        co2_per_km = vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_ef
 
     annual_emissions = co2_per_km * annual_kms
     lifetime_emissions = annual_emissions * truck_life_years

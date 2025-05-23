@@ -5,9 +5,11 @@ from typing import Dict, Any
 
 import pandas as pd
 
-from tco_app.src.constants import Drivetrain
+from tco_app.src.constants import DataColumns, ParameterKeys, Drivetrain
 from tco_app.src.utils.energy import weighted_electricity_price
-
+from tco_app.src.utils.safe_operations import (
+    safe_division, safe_get_charging_option, safe_get_parameter, safe_iloc_zero
+)
 __all__ = [
 	'weighted_electricity_price',
 	'calculate_energy_costs',
@@ -28,18 +30,16 @@ def calculate_energy_costs(
 	charging_mix: Dict[int, float] | None = None,
 ) -> float:  # noqa: D401
 	"""Return the energy cost per km for the supplied vehicle."""
-	if vehicle_data['vehicle_drivetrain'] == Drivetrain.BEV:
+	if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
 		if charging_mix and len(charging_mix) > 0:
 			electricity_price = weighted_electricity_price(charging_mix, charging_data)
 		else:
-			charging_option = charging_data[charging_data['charging_id'] == selected_charging].iloc[0]
-			electricity_price = charging_option['per_kwh_price']
-		energy_cost_per_km = vehicle_data['kwh_per100km'] / 100 * electricity_price
+			charging_option = safe_get_charging_option(charging_data, selected_charging)
+			electricity_price = charging_option[DataColumns.PER_KWH_PRICE]
+		energy_cost_per_km = vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_price
 	else:
-		diesel_price = financial_params[
-			financial_params['finance_description'] == 'diesel_price'
-		].iloc[0]['default_value']
-		energy_cost_per_km = vehicle_data['litres_per100km'] / 100 * diesel_price
+		diesel_price = safe_get_parameter(financial_params, ParameterKeys.DIESEL_PRICE)
+		energy_cost_per_km = vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_price
 	return energy_cost_per_km
 
 
@@ -50,18 +50,30 @@ def calculate_emissions(
 	truck_life_years: int,
 ) -> Dict[str, float]:  # noqa: D401
 	"""Return per-km, annual and lifetime CO₂-equivalent emissions."""
-	if vehicle_data['vehicle_drivetrain'] == Drivetrain.BEV:
-		electricity_ef = emission_factors[
-			(emission_factors['fuel_type'] == 'electricity')
+	if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
+		electricity_ef_condition = (
+			(emission_factors['fuel_type'] == 'electricity') 
 			& (emission_factors['emission_standard'] == 'Grid')
-		].iloc[0]['co2_per_unit']
-		co2_per_km = vehicle_data['kwh_per100km'] / 100 * electricity_ef
+		)
+		electricity_ef_row = safe_iloc_zero(
+			emission_factors, 
+			electricity_ef_condition, 
+			context="electricity emission factor"
+		)
+		electricity_ef = electricity_ef_row['co2_per_unit']
+		co2_per_km = vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_ef
 	else:
-		diesel_ef = emission_factors[
-			(emission_factors['fuel_type'] == 'diesel')
+		diesel_ef_condition = (
+			(emission_factors['fuel_type'] == 'diesel') 
 			& (emission_factors['emission_standard'] == 'Euro IV+')
-		].iloc[0]['co2_per_unit']
-		co2_per_km = vehicle_data['litres_per100km'] / 100 * diesel_ef
+		)
+		diesel_ef_row = safe_iloc_zero(
+			emission_factors, 
+			diesel_ef_condition, 
+			context="diesel emission factor"
+		)
+		diesel_ef = diesel_ef_row['co2_per_unit']
+		co2_per_km = vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_ef
 
 	annual_emissions = co2_per_km * annual_kms
 	lifetime_emissions = annual_emissions * truck_life_years
@@ -78,7 +90,7 @@ def calculate_charging_requirements(
 	infrastructure_option: pd.Series | dict | None = None,
 ) -> Dict[str, float]:  # noqa: D401
 	"""Estimate daily charging demand and utilisation metrics."""
-	if vehicle_data['vehicle_drivetrain'] != Drivetrain.BEV:
+	if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] != Drivetrain.BEV:
 		return {
 			'daily_distance': 0,
 			'daily_kwh_required': 0,
@@ -88,11 +100,11 @@ def calculate_charging_requirements(
 		}
 
 	daily_distance = annual_kms / 365
-	daily_kwh_required = daily_distance * vehicle_data['kwh_per100km'] / 100
+	daily_kwh_required = daily_distance * vehicle_data[DataColumns.KWH_PER100KM] / 100
 
 	charger_power = 80.0  # Default 80 kW DC fast charger
 	if infrastructure_option is not None:
-		description = infrastructure_option['infrastructure_description']
+		description = infrastructure_option[DataColumns.INFRASTRUCTURE_DESCRIPTION]
 		if 'kW' in description:
 			try:
 				charger_power = float(description.split('kW')[0].strip().split(' ')[-1])
@@ -100,10 +112,10 @@ def calculate_charging_requirements(
 				pass
 
 	charging_time_per_day = (
-		daily_kwh_required / charger_power if charger_power > 0 else 0
+		safe_division(daily_kwh_required, charger_power, context="daily_kwh_required/charger_power calculation") if charger_power > 0 else 0
 	)
 	max_vehicles_per_charger = (
-		24 / charging_time_per_day if charging_time_per_day > 0 else 0
+		safe_division(24, charging_time_per_day, context="24/charging_time_per_day calculation") if charging_time_per_day > 0 else 0
 	)
 
 	return {

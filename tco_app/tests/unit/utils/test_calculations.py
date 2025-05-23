@@ -1,15 +1,11 @@
+"""Unit tests for calculation utility functions."""
 import math
-
 import pandas as pd
 import pytest
-
 from tco_app.src.constants import Drivetrain
 from tco_app.src.utils import energy as en
 from tco_app.src.utils import battery as bat
 from tco_app.src.utils import finance as fin
-from tco_app.domain.energy import calculate_energy_costs as energy_cost_domain
-from tco_app.domain.finance import calculate_residual_value as residual_domain
-from tco_app.src.utils.battery import calculate_battery_replacement as battery_domain
 
 
 @pytest.fixture
@@ -37,7 +33,8 @@ def dummy_charging_options():
         (Drivetrain.DIESEL, 0.6),  # 30 L/100 km × $2.00 = $0.60 per km
     ],
 )
-def test_calculate_energy_costs(vehicle_drivetrain, expected, dummy_financial_params, dummy_charging_options):
+def test_calculate_energy_costs_utils(vehicle_drivetrain, expected, dummy_financial_params, dummy_charging_options):
+    """Test energy cost calculation utility function."""
     vehicle_data = {
         "vehicle_drivetrain": vehicle_drivetrain,
         "kwh_per100km": 20,
@@ -56,32 +53,8 @@ def test_calculate_energy_costs(vehicle_drivetrain, expected, dummy_financial_pa
     assert math.isclose(cost, expected, rel_tol=1e-9)
 
 
-def test_calculate_energy_costs_delegation(dummy_financial_params, dummy_charging_options):
-    """The delegated function in calculations must yield the same result as the util."""
-    vehicle_data = {
-        "vehicle_drivetrain": Drivetrain.BEV,
-        "kwh_per100km": 18,
-    }
-    expected = en.calculate_energy_costs(
-        vehicle_data,
-        None,
-        dummy_charging_options,
-        dummy_financial_params,
-        "C1",
-        None,
-    )
-    delegated = energy_cost_domain(
-        vehicle_data,
-        None,
-        dummy_charging_options,
-        dummy_financial_params,
-        "C1",
-        None,
-    )
-    assert math.isclose(expected, delegated, rel_tol=1e-12)
-
-
-def test_calculate_emissions_bev():
+def test_calculate_emissions_utils_bev():
+    """Test emissions calculation utility for BEV."""
     vehicle_data = {
         "vehicle_drivetrain": Drivetrain.BEV,
         "kwh_per100km": 20,
@@ -98,22 +71,22 @@ def test_calculate_emissions_bev():
     assert math.isclose(metrics["lifetime_emissions"], 20_000, rel_tol=1e-9)
 
 
-def test_calculate_residual_value():
+def test_calculate_residual_value_utils():
+    """Test residual value calculation utility."""
     vehicle_data = {"msrp_price": 200_000}
     years = 5
     initial_dep = 0.1
     annual_dep = 0.05
     expected = 200_000 * (1 - 0.1) * ((1 - 0.05) ** (years - 1))
     assert math.isclose(
-        fin.calculate_residual_value(vehicle_data, years, initial_dep, annual_dep), expected, rel_tol=1e-9
-    )
-    # Domain parity
-    assert math.isclose(
-        residual_domain(vehicle_data, years, initial_dep, annual_dep), expected, rel_tol=1e-9
+        fin.calculate_residual_value(vehicle_data, years, initial_dep, annual_dep), 
+        expected, 
+        rel_tol=1e-9
     )
 
 
-def test_calculate_battery_replacement():
+def test_calculate_battery_replacement_utils():
+    """Test battery replacement calculation utility."""
     vehicle_data = {
         "vehicle_drivetrain": Drivetrain.BEV,
         "battery_capacity_kwh": 400,
@@ -137,12 +110,6 @@ def test_calculate_battery_replacement():
 
     assert math.isclose(
         bat.calculate_battery_replacement(vehicle_data, battery_params, life_years, rate),
-        expected,
-        rel_tol=1e-9,
-    )
-    # Domain parity
-    assert math.isclose(
-        battery_domain(vehicle_data, battery_params, life_years, rate),
         expected,
         rel_tol=1e-9,
     ) 

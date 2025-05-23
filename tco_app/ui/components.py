@@ -1,15 +1,31 @@
-"""UI components for Streamlit pages (temporary proxy).
+"""UI components for Streamlit pages.
 
-Re-exports everything from the legacy `tco_app.src.ui_components` module so
-new code can import `tco_app.ui.components` while existing call-sites keep
-working. This file will eventually become the canonical implementation once
-all imports are migrated and the old module is removed.
+Exports all UI components for use across the application.
 """
 
-from importlib import import_module as _import_module
+# Import all UI components from their modules
+from tco_app.ui.metric_cards import (
+    display_metric_card,
+    display_comparison_metrics
+)
 
-_legacy = _import_module('tco_app.src.ui_components')
+from tco_app.ui.summary_displays import (
+    display_summary_metrics
+)
 
-__all__ = [name for name in dir(_legacy) if not name.startswith('_')]
+from tco_app.ui.calculation_orchestrator import (
+    CalculationOrchestrator
+)
 
-globals().update({name: getattr(_legacy, name) for name in __all__}) 
+from tco_app.ui.context_builder import (
+    ContextDirector
+)
+
+# Define what gets exported when someone does "from tco_app.ui.components import *"
+__all__ = [
+    'display_metric_card',
+    'display_comparison_metrics',
+    'display_summary_metrics',
+    'CalculationOrchestrator',
+    'ContextDirector'
+] 

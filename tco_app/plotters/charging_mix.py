@@ -1,4 +1,5 @@
 import plotly.express as px
+from tco_app.src.constants import DataColumns, ParameterKeys
 import plotly.graph_objects as go
 
 from tco_app.src.utils.energy import weighted_electricity_price
@@ -15,11 +16,11 @@ def create_charging_mix_chart(bev_results):
 	for charging_id, pct in bev_results['charging_mix'].items():
 		if pct > 0:
 			option = bev_results['charging_options'].loc[
-				bev_results['charging_options']['charging_id'] == charging_id
+				bev_results['charging_options'][DataColumns.CHARGING_ID] == charging_id
 			].iloc[0]
-			labels.append(option['charging_approach'])
+			labels.append(option[DataColumns.CHARGING_APPROACH])
 			values.append(pct * 100)
-			prices.append(option['per_kwh_price'])
+			prices.append(option[DataColumns.PER_KWH_PRICE])
 
 	hover_text = [f'{l}: {v:.1f}%<br>Price: ${p:.2f}/kWh' for l, v, p in zip(labels, values, prices)]
 

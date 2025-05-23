@@ -24,6 +24,7 @@ calculate_residual_value(vehicle_data, years, initial_depreciation, annual_depre
     Return the residual value of a vehicle after *years* years.
 """
 from __future__ import annotations
+from tco_app.src.constants import DataColumns, ParameterKeys
 
 from math import inf
 from typing import Iterable, List, Sequence, Any
@@ -145,5 +146,5 @@ def calculate_residual_value(
     if years <= 0:
         return 0.0
 
-    value_after_initial = vehicle_data["msrp_price"] * (1 - initial_depreciation)
+    value_after_initial = vehicle_data[DataColumns.MSRP_PRICE] * (1 - initial_depreciation)
     return value_after_initial * ((1 - annual_depreciation) ** (years - 1)) 

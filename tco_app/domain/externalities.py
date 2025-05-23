@@ -1,5 +1,7 @@
 from __future__ import annotations
+from tco_app.src.constants import DataColumns, ParameterKeys
 
+from tco_app.src.utils.safe_operations import safe_division
 """Externalities domain – emissions & societal cost helpers."""
 
 from typing import Dict, Any, Union
@@ -8,6 +10,7 @@ import pandas as pd
 
 from tco_app.domain.energy import calculate_emissions  # Reuse shared impl
 from tco_app.domain.finance import calculate_npv
+from tco_app.src.utils.pandas_helpers import to_scalar
 
 __all__ = [
 	'calculate_emissions',
@@ -28,8 +31,8 @@ def calculate_externalities(
 	truck_life_years: int,
 	discount_rate: float,
 ) -> Dict[str, Any]:
-	vehicle_class = vehicle_data['vehicle_type']
-	drivetrain = vehicle_data['vehicle_drivetrain']
+	vehicle_class = vehicle_data[DataColumns.VEHICLE_TYPE]
+	drivetrain = vehicle_data[DataColumns.VEHICLE_DRIVETRAIN]
 	vehicle_externalities = externalities_data[
 		(externalities_data['vehicle_class'] == vehicle_class)
 		& (externalities_data['drivetrain'] == drivetrain)
@@ -70,14 +73,7 @@ def calculate_externalities(
 	}
 
 
-def _to_scalar(value: Union[int, float, pd.Series]) -> float:
-	"""Return numeric scalar from possible Pandas scalar/Series."""
-	if isinstance(value, pd.Series):
-		if value.empty:
-			return 0.0
-		# Assume first element represents intended scalar
-		return float(value.iloc[0])
-	return float(value)
+
 
 
 def calculate_social_tco(
@@ -85,27 +81,27 @@ def calculate_social_tco(
 	externality_metrics: Dict[str, Any],
 ) -> Dict[str, Any]:
 	social_lifetime = (
-		_to_scalar(tco_metrics['npv_total_cost'])
-		+ _to_scalar(externality_metrics['npv_externality'])
+		to_scalar(tco_metrics['npv_total_cost'])
+		+ to_scalar(externality_metrics['npv_externality'])
 	)
-	annual_kms = _to_scalar(tco_metrics.get('annual_kms', 0))
-	truck_life_years = _to_scalar(tco_metrics.get('truck_life_years', 0))
-	payload_t = _to_scalar(tco_metrics.get('payload_t', 0))
+	annual_kms = to_scalar(tco_metrics.get('annual_kms', 0))
+	truck_life_years = to_scalar(tco_metrics.get('truck_life_years', 0))
+	payload_t = to_scalar(tco_metrics.get(DataColumns.PAYLOAD_T, 0))
 
 	social_per_km = 0.0
 	social_per_tonne_km = 0.0
 	if annual_kms and truck_life_years:
 		total_kms = annual_kms * truck_life_years
-		social_per_km = social_lifetime / total_kms
+		social_per_km = safe_division(social_lifetime, total_kms, context="social_lifetime/total_kms calculation")
 		if payload_t:
-			social_per_tonne_km = social_per_km / payload_t
+			social_per_tonne_km = safe_division(social_per_km, payload_t, context="social_per_km/payload_t calculation")
 
 	return {
 		'social_tco_lifetime': social_lifetime,
 		'social_tco_per_km': social_per_km,
 		'social_tco_per_tonne_km': social_per_tonne_km,
 		'externality_percentage': (
-			_to_scalar(externality_metrics['npv_externality']) / social_lifetime * 100
+			to_scalar(externality_metrics['npv_externality']) / social_lifetime * 100
 		) if social_lifetime != 0 else 0,
 	}
 
@@ -164,10 +160,10 @@ def calculate_social_benefit_metrics(
 	total_benefits = annual_operating_savings + annual_externality_savings
 	
 	npv_benefits = calculate_npv(total_benefits, discount_rate, truck_life_years)
-	bcr = npv_benefits / bev_premium if bev_premium else float('inf')
+	bcr = safe_division(npv_benefits, bev_premium, context="npv_benefits/bev_premium calculation") if bev_premium else float('inf')
 
 	if total_benefits:
-		simple_payback = bev_premium / total_benefits
+		simple_payback = safe_division(bev_premium, total_benefits, context="bev_premium/total_benefits calculation")
 		cum_benefits = 0.0
 		payback_disc = truck_life_years
 		for year in range(1, truck_life_years + 1):

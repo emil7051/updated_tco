@@ -1,13 +1,20 @@
 [run]
+source = tco_app
 omit =
-	*/tco_app/ui/*
-	*/tco_app/plotters/*
-	*/tco_app/main.py
-	*/tco_app/app.py
-	*/tco_app/src/calculations.py
-	*/tco_app/src/data_loading.py
-	*/tco_app/src/ui_components.py
-	*/tco_app/ui/context.py
-	*/tco_app/domain/sensitivity/*
-	*/tco_app/domain/finance_payload.py
-	*/tco_app/services/* 
+    */tests/*
+    */ui/pages/*  # UI pages tested separately
+    */plotters/*  # Visual components tested manually
+    
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    
+precision = 2
+show_missing = True
+
+[html]
+directory = htmlcov 

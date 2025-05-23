@@ -2,6 +2,7 @@ import plotly.graph_objects as go
 from tco_app.src.constants import Drivetrain
 
 
+from tco_app.src.utils.safe_operations import safe_division
 def create_key_metrics_chart(bev_results, diesel_results):
 	"""Create a radar chart comparing key performance metrics."""
 	infrastructure_cost_per_km = 0
@@ -11,7 +12,7 @@ def create_key_metrics_chart(bev_results, diesel_results):
 		else:
 			infra_npv = bev_results['infrastructure_costs']['npv_per_vehicle']
 		total_kms = bev_results['annual_kms'] * bev_results['truck_life_years']
-		infrastructure_cost_per_km = infra_npv / total_kms if total_kms > 0 else 0
+		infrastructure_cost_per_km = safe_division(infra_npv, total_kms, context="infra_npv/total_kms calculation") if total_kms > 0 else 0
 
 	metrics = {
 		'TCO per km': [bev_results['tco']['tco_per_km'], diesel_results['tco']['tco_per_km']],
@@ -30,7 +31,7 @@ def create_key_metrics_chart(bev_results, diesel_results):
 	diesel_values = [metrics[c][1] for c in categories]
 	# Normalise each metric to its maximum
 	normalised = {
-		c: [v / max(bev_values[i], diesel_values[i]) for v in metrics[c]]
+		c: [safe_division(v, max, context="v/max calculation")(bev_values[i], diesel_values[i]) for v in metrics[c]]
 		for i, c in enumerate(categories)
 	}
 	bev_norm = [normalised[c][0] for c in categories]

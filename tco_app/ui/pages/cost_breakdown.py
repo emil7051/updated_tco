@@ -6,7 +6,7 @@ from tco_app.plotters import (
 	create_charging_mix_chart,
 	create_annual_costs_chart,
 )
-from tco_app.src.constants import Drivetrain
+from tco_app.src.constants import Drivetrain, DataColumns
 
 
 def render():
@@ -27,11 +27,11 @@ def render():
 
 	# Infrastructure + charging requirements
 	bev_vehicle_data = bev_results['vehicle_data']
-	if bev_vehicle_data['vehicle_drivetrain'] == Drivetrain.BEV:
+	if bev_vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
 		st.subheader('Infrastructure Costs')
 		infra_col1, infra_col2 = st.columns(2)
 		with infra_col1:
-			st.metric('Infrastructure Capital Cost', f"${bev_results['infrastructure_costs']['infrastructure_price']:,.0f}")
+			st.metric('Infrastructure Capital Cost', f"${bev_results['infrastructure_costs'][DataColumns.INFRASTRUCTURE_PRICE]:,.0f}")
 			st.metric('Annual Maintenance', f"${bev_results['infrastructure_costs']['annual_maintenance']:,.0f}/year")
 			st.metric('Cost Per Vehicle', f"${bev_results['infrastructure_costs']['npv_per_vehicle']:,.0f}")
 		with infra_col2:
