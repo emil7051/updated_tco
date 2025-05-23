@@ -95,6 +95,17 @@ def render():
 				electricity_base = bev_results['weighted_electricity_price']
 			else:
 				electricity_base = charging_options[charging_options[DataColumns.CHARGING_ID] == selected_charging].iloc[0][DataColumns.PER_KWH_PRICE]
+			
+			# Handle case where electricity_base might be None or not found
+			if electricity_base is None or not isinstance(electricity_base, (int, float)):
+				# Try to get from charging options as fallback
+				try:
+					electricity_base = charging_options[charging_options[DataColumns.CHARGING_ID] == selected_charging].iloc[0][DataColumns.PER_KWH_PRICE]
+					if electricity_base is None or not isinstance(electricity_base, (int, float)):
+						electricity_base = 0.20  # Default fallback value
+				except (IndexError, KeyError):
+					electricity_base = 0.20  # Default fallback value
+			
 			min_val = max(0.05, electricity_base * 0.7)
 			max_val = electricity_base * 1.3
 			step = (max_val - min_val) / (num_points - 1)
