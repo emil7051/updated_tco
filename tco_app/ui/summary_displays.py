@@ -1,5 +1,5 @@
 from tco_app.src import st
-from tco_app.src.constants import Drivetrain, DataColumns
+from tco_app.src.constants import DataColumns, Drivetrain
 from tco_app.src.utils.pandas_helpers import to_scalar
 from tco_app.src.utils.safe_operations import safe_division
 
@@ -15,110 +15,47 @@ def display_summary_metrics(bev_results, diesel_results):
     savings = diesel_npv - bev_npv
     
     if savings > 0:
-        insight_html = f"""
-        <div class="insight-card">
-            <h3 style="margin-top: 0;"> Electric Vehicle Delivers Lower Total Cost</h3>
-            <div class="savings-amount">${savings:,.0f}</div>
-            <div class="savings-description">
-                Total savings over vehicle lifetime compared to diesel
-            </div>
-        </div>
-        """
-        st.markdown(insight_html, unsafe_allow_html=True)
+        st.success(f"💡 **Electric Vehicle Delivers Lower Total Cost**")
+        st.info(f"**${savings:,.0f}** total savings over vehicle lifetime compared to diesel")
+    else:
+        st.warning(f"⚠️ **Diesel Vehicle Has Lower Total Cost**")
+        st.info(f"Electric vehicle costs **${abs(savings):,.0f}** more over vehicle lifetime")
     
     # Vehicle comparison cards
     col1, col2 = st.columns(2)
     
     with col1:
-        bev_tco_km = to_scalar(bev_results['tco']['tco_per_km'])
-        bev_tco_tkm = to_scalar(bev_results['tco']['tco_per_tonne_km'])
-        bev_annual = to_scalar(bev_results['annual_costs']['annual_operating_cost'])
-        
-        bev_html = f"""
-        <div class="vehicle-card electric">
-            <h5><span class="vehicle-icon">E</span> {bev_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}</h5>
+        with st.container():
+            st.markdown(f"### {bev_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}")
             
-            <div class="data-row">
-                <span class="data-label">Vehicle Type</span>
-                <span class="data-value">Battery Electric</span>
-            </div>
+            # Vehicle details
+            st.markdown(f"**Vehicle Type:** {Drivetrain.BATTERY_ELECTRIC.value}")
+            st.markdown(f"**Payload Capacity:** {bev_results['vehicle_data'][DataColumns.PAYLOAD_T]:.1f} tonnes")
+            st.markdown(f"**Range:** {bev_results['vehicle_data'].get(DataColumns.RANGE_KM, 'N/A'):,.0f} km")
             
-            <div class="data-row">
-                <span class="data-label">Payload Capacity</span>
-                <span class="data-value">{bev_results['vehicle_data'][DataColumns.PAYLOAD_T]} tonnes</span>
-            </div>
-            
-            <div class="data-row">
-                <span class="data-label">Range</span>
-                <span class="data-value">{bev_results['vehicle_data'].get(DataColumns.RANGE_KM, 'N/A')} km</span>
-            </div>
-            
-            <div class="data-row highlight">
-                <span class="data-label">Lifetime TCO</span>
-                <span class="data-value">${bev_npv:,.0f}</span>
-            </div>
-            
-            <div class="data-row">
-                <span class="data-label">Cost per km</span>
-                <span class="data-value">${bev_tco_km:.2f}</span>
-            </div>
-            
-            <div class="data-row">
-                <span class="data-label">Cost per tonne-km</span>
-                <span class="data-value">${bev_tco_tkm:.3f}</span>
-            </div>
-            
-            <div class="data-row">
-                <span class="data-label">Annual Operating Cost</span>
-                <span class="data-value">${bev_annual:,.0f}</span>
-            </div>
-        </div>
-        """
-        st.markdown(bev_html, unsafe_allow_html=True)
+            # TCO metrics
+            st.markdown(f"**Lifetime TCO:** ${bev_npv:,.0f}")
+            bev_tco_km = to_scalar(bev_results['tco']['tco_per_km'])
+            st.markdown(f"**Cost per km:** ${bev_tco_km:.2f}")
+            bev_tco_tkm = to_scalar(bev_results['tco']['tco_per_tonne_km'])
+            st.markdown(f"**Cost per tonne-km:** ${bev_tco_tkm:.3f}")
+            bev_annual = to_scalar(bev_results['annual_costs']['annual_operating_cost'])
+            st.markdown(f"**Annual Operating Cost:** ${bev_annual:,.0f}")
     
     with col2:
-        diesel_tco_km = to_scalar(diesel_results['tco']['tco_per_km'])
-        diesel_tco_tkm = to_scalar(diesel_results['tco']['tco_per_tonne_km'])
-        diesel_annual = to_scalar(diesel_results['annual_costs']['annual_operating_cost'])
-        
-        diesel_html = f"""
-        <div class="vehicle-card diesel">
-            <h5><span class="vehicle-icon">D</span> {diesel_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}</h5>
+        with st.container():
+            st.markdown(f"### {diesel_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}")
             
-            <div class="data-row">
-                <span class="data-label">Vehicle Type</span>
-                <span class="data-value">Diesel</span>
-            </div>
+            # Vehicle details
+            st.markdown(f"**Vehicle Type:** {Drivetrain.DIESEL.value}")
+            st.markdown(f"**Payload Capacity:** {diesel_results['vehicle_data'][DataColumns.PAYLOAD_T]:.1f} tonnes")
+            st.markdown(f"**Range:** {diesel_results['vehicle_data'].get(DataColumns.RANGE_KM, 'N/A'):,.0f} km")
             
-            <div class="data-row">
-                <span class="data-label">Payload Capacity</span>
-                <span class="data-value">{diesel_results['vehicle_data'][DataColumns.PAYLOAD_T]} tonnes</span>
-            </div>
-            
-            <div class="data-row">
-                <span class="data-label">Range</span>
-                <span class="data-value">{diesel_results['vehicle_data'].get(DataColumns.RANGE_KM, 'N/A')} km</span>
-            </div>
-            
-            <div class="data-row highlight">
-                <span class="data-label">Lifetime TCO</span>
-                <span class="data-value">${diesel_npv:,.0f}</span>
-            </div>
-            
-            <div class="data-row">
-                <span class="data-label">Cost per km</span>
-                <span class="data-value">${diesel_tco_km:.2f}</span>
-            </div>
-            
-            <div class="data-row">
-                <span class="data-label">Cost per tonne-km</span>
-                <span class="data-value">${diesel_tco_tkm:.3f}</span>
-            </div>
-            
-            <div class="data-row">
-                <span class="data-label">Annual Operating Cost</span>
-                <span class="data-value">${diesel_annual:,.0f}</span>
-            </div>
-        </div>
-        """
-        st.markdown(diesel_html, unsafe_allow_html=True)
+            # TCO metrics
+            st.markdown(f"**Lifetime TCO:** ${diesel_npv:,.0f}")
+            diesel_tco_km = to_scalar(diesel_results['tco']['tco_per_km'])
+            st.markdown(f"**Cost per km:** ${diesel_tco_km:.2f}")
+            diesel_tco_tkm = to_scalar(diesel_results['tco']['tco_per_tonne_km'])
+            st.markdown(f"**Cost per tonne-km:** ${diesel_tco_tkm:.3f}")
+            diesel_annual = to_scalar(diesel_results['annual_costs']['annual_operating_cost'])
+            st.markdown(f"**Annual Operating Cost:** ${diesel_annual:,.0f}")
