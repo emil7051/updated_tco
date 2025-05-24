@@ -49,11 +49,16 @@ class DataColumns(str, Enum):
     VEHICLE_TYPE = "vehicle_type"
     VEHICLE_DRIVETRAIN = "vehicle_drivetrain"
     VEHICLE_MODEL = "vehicle_model"
+    VEHICLE_NAME = "vehicle_model"  # Alias for backward compatibility
     BODY_TYPE = "body_type"  # Vehicle body type (e.g., Articulated, Rigid)
     PAYLOAD_T = "payload_t"
+    PAYLOAD_TONNES = "payload_t"  # Alias for backward compatibility
     MSRP_PRICE = "msrp_price"
+    VEHICLE_PRICE = "msrp_price"  # Alias for backward compatibility
     RANGE_KM = "range_km"
+    MAX_ANNUAL_DISTANCE_KM = "max_annual_distance_km"  # Maximum annual distance
     BATTERY_CAPACITY_KWH = "battery_capacity_kwh"
+    VEHICLE_BATTERY_CAPACITY_KWH = "battery_capacity_kwh"  # Alias for backward compatibility
     BATTERY_EFFICIENCY = "battery_efficiency"  # Battery charging/discharging efficiency
     KWH_PER100KM = "kwh_per100km"
     LITRES_PER100KM = "litres_per100km"
@@ -62,6 +67,7 @@ class DataColumns(str, Enum):
     # Charging options
     CHARGING_ID = "charging_id"
     CHARGING_APPROACH = "charging_approach"
+    CHARGING_NAME = "charging_name"  # Human-readable charging option name
     PER_KWH_PRICE = "per_kwh_price"
 
     # Infrastructure
@@ -70,6 +76,10 @@ class DataColumns(str, Enum):
     INFRASTRUCTURE_PRICE = "infrastructure_price"
     SERVICE_LIFE_YEARS = "service_life_years"
     MAINTENANCE_PERCENT = "maintenance_percent"
+    CHARGER_POWER = "charger_power"  # Charger power in kW
+    CHARGER_EFFICIENCY = "charger_efficiency"  # Charging efficiency (0-1)
+    UTILIZATION_HOURS = "utilization_hours"  # Daily utilization hours
+    ANNUAL_MAINTENANCE_COST = "annual_maintenance_cost"  # Annual maintenance cost for infrastructure
 
     # Emissions
     FUEL_TYPE = "fuel_type"
@@ -106,6 +116,11 @@ class DataColumns(str, Enum):
     SCENARIO_NAME = "scenario_name"
     SCENARIO_DESCRIPTION = "scenario_description"
 
+    # Externalities
+    VEHICLE_CLASS = "vehicle_class"
+    POLLUTANT_TYPE = "pollutant_type"
+    COST_PER_KM = "cost_per_km"
+
 
 @unique
 class ParameterKeys(str, Enum):
@@ -117,11 +132,19 @@ class ParameterKeys(str, Enum):
     CARBON_PRICE = "carbon_price"
     INITIAL_DEPRECIATION = "initial_depreciation_percent"
     ANNUAL_DEPRECIATION = "annual_depreciation_percent"
+    ROAD_USER_CHARGE = "road_user_charge"
+    ANNUAL_INSURANCE_COST = "annual_insurance_cost"
+    ANNUAL_TYRE_COST = "annual_tyre_cost"
+    ANNUAL_MAINTENANCE_COST = "annual_maintenance_cost"
+    ANNUAL_REGISTRATION_COST = "annual_registration_cost"
 
     # Battery parameters
     REPLACEMENT_COST = "replacement_per_kwh_price"
+    BATTERY_PRICE_PER_KWH = "battery_price_per_kwh"
     DEGRADATION_RATE = "degradation_annual_percent"
+    BATTERY_ANNUAL_DECAY_RATE = "battery_annual_decay_rate"
     MINIMUM_CAPACITY = "minimum_capacity_percent"
+    BATTERY_MIN_SOH = "battery_min_soh"
     RECYCLING_VALUE = "recycling_value_percent"
 
     # Operating parameters
