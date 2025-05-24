@@ -14,7 +14,8 @@ This document presents the results of running static analysis tools (vulture, js
   - Multiple unused variables in `services/dtos.py` (npv_infrastructure_cost, emissions fields)
   - Unused method `_convert_tco_result_to_model_runner_dict` in tco_calculation_service.py
   - Unused configuration constants in `src/config.py`
-  - Unused functions in `services/data_cache.py` (cached_vehicle_lookup)
+  - ~~Unused functions in `services/data_cache.py` (cached_vehicle_lookup)~~
+  - Dead code removed: `cached_vehicle_lookup` has been deleted from `services/data_cache.py`
   - Unused class `EnergyCalculator` in `ui/calculations/energy_calculations.py`
 
 ### 2. JSCPD - Code Duplication (1.74% duplication)
