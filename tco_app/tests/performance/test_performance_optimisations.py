@@ -1,6 +1,7 @@
 """Performance tests for Work Package 8 optimisations."""
 
 import time
+import logging
 from tco_app.src import np
 from tco_app.src import pd
 import pytest
@@ -13,6 +14,8 @@ from tco_app.src.utils.calculation_optimisations import (
 )
 from tco_app.domain.finance import calculate_npv, calculate_npv_optimised
 from tco_app.src.constants import DataColumns
+
+logger = logging.getLogger(__name__)
 
 
 class TestNPVPerformance:
@@ -41,8 +44,8 @@ class TestNPVPerformance:
         # Results should be approximately equal
         assert abs(result_original - result_optimised) < 1.0
 
-        print(f"Original NPV time: {original_time:.4f}s")
-        print(f"Optimised NPV time: {optimised_time:.4f}s")
+        logger.info("Original NPV time: %.4fs", original_time)
+        logger.info("Optimised NPV time: %.4fs", optimised_time)
 
         # For small calculations, optimised might not be faster due to overhead
         # This test just ensures both work correctly
@@ -58,7 +61,11 @@ class TestNPVPerformance:
 
         assert result > 0
         assert execution_time < 1.0  # Should complete in under 1 second
-        print(f"Fast NPV (1000 years): {execution_time:.4f}s, Result: ${result:,.2f}")
+        logger.info(
+            "Fast NPV (1000 years): %.4fs, Result: $%s",
+            execution_time,
+            f"{result:,.2f}",
+        )
 
 
 class TestVehicleLookupPerformance:
@@ -107,8 +114,8 @@ class TestVehicleLookupPerformance:
         assert len(individual_results) == len(batch_result)
         assert len(batch_result) == len(vehicle_ids_to_lookup)
 
-        print(f"Individual lookups time: {individual_time:.4f}s")
-        print(f"Batch lookup time: {batch_time:.4f}s")
+        logger.info("Individual lookups time: %.4fs", individual_time)
+        logger.info("Batch lookup time: %.4fs", batch_time)
 
         # Batch should be faster for multiple lookups
         if len(vehicle_ids_to_lookup) > 3:
@@ -142,8 +149,8 @@ class TestVectorisedOperations:
             np.array(loop_result), vectorised_result, decimal=2
         )
 
-        print(f"Loop-based calculation: {loop_time:.4f}s")
-        print(f"Vectorised calculation: {vectorised_time:.4f}s")
+        logger.info("Loop-based calculation: %.4fs", loop_time)
+        logger.info("Vectorised calculation: %.4fs", vectorised_time)
 
         # Vectorised should be faster
         assert vectorised_time <= loop_time
@@ -182,8 +189,8 @@ class TestCachePerformance:
 
         assert result1 == result2 == 84
 
-        print(f"Cache miss time: {first_call_time:.4f}s")
-        print(f"Cache hit time: {second_call_time:.4f}s")
+        logger.info("Cache miss time: %.4fs", first_call_time)
+        logger.info("Cache hit time: %.4fs", second_call_time)
 
         # Cache hit should be significantly faster
         assert second_call_time < first_call_time * 0.5
@@ -191,7 +198,7 @@ class TestCachePerformance:
 
 def test_overall_calculation_performance():
     """Integration test showing overall performance improvement potential."""
-    print("\n=== Work Package 8 Performance Summary ===")
+    logger.info("\n=== Work Package 8 Performance Summary ===")
 
     # Simulate a complex calculation workflow
     start_time = time.time()
@@ -213,10 +220,10 @@ def test_overall_calculation_performance():
 
     total_time = time.time() - start_time
 
-    print(f"Total optimised calculation time: {total_time:.4f}s")
-    print(f"NPV result: ${npv_result:,.2f}")
-    print(f"Annual costs array length: {len(annual_costs)}")
-    print(f"Vehicles found: {len(vehicles)}")
+    logger.info("Total optimised calculation time: %.4fs", total_time)
+    logger.info("NPV result: $%s", f"{npv_result:,.2f}")
+    logger.info("Annual costs array length: %d", len(annual_costs))
+    logger.info("Vehicles found: %d", len(vehicles))
 
     assert total_time < 1.0  # Should complete quickly
     assert npv_result > 0
