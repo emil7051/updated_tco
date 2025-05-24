@@ -19,15 +19,18 @@ def calculate_comparative_metrics(
 ) -> Dict[str, Any]:
     """Return parity & abatement KPIs for BEV vs diesel (unchanged logic)."""
 
-    upfront_diff = bev_results["acquisition_cost"] - diesel_results["acquisition_cost"]
+    # Initial acquisition costs
+    bev_initial_cost = bev_results["acquisition_cost"]
+    diesel_initial_cost = diesel_results["acquisition_cost"]
+    
     annual_savings = (
         diesel_results["annual_costs"]["annual_operating_cost"]
         - bev_results["annual_costs"]["annual_operating_cost"]
     )
 
     years = list(range(1, truck_life_years + 1))
-    bev_cum: List[float] = [bev_results["acquisition_cost"]]
-    diesel_cum: List[float] = [diesel_results["acquisition_cost"]]
+    bev_cum: List[float] = [bev_initial_cost]
+    diesel_cum: List[float] = [diesel_initial_cost]
 
     if "infrastructure_costs" in bev_results:
         infra_price = (
@@ -41,7 +44,12 @@ def calculate_comparative_metrics(
 
         # Allocate infrastructure CAPEX on a per-vehicle basis and add to the
         # upfront cash-flow for the BEV.
-        bev_cum[0] += infra_price / float(fleet_size)
+        infrastructure_cost_per_vehicle = infra_price / float(fleet_size)
+        bev_cum[0] += infrastructure_cost_per_vehicle
+        bev_initial_cost += infrastructure_cost_per_vehicle
+
+    # Calculate upfront difference after infrastructure costs are included
+    upfront_diff = bev_initial_cost - diesel_initial_cost
 
     for year in range(1, truck_life_years):
         bev_annual = bev_results["annual_costs"]["annual_operating_cost"]

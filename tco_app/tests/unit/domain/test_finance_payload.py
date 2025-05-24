@@ -1,6 +1,7 @@
 """Unit tests for finance payload module."""
 
 import pytest
+import pandas as pd
 from tco_app.domain.finance_payload import calculate_payload_penalty_costs
 
 
@@ -41,9 +42,15 @@ class TestPayloadPenalty:
             "truck_life_years": 10,
         }
 
-        standard_financial_params = {
-            # Add standard financial params here
-        }
+        # Create basic financial params DataFrame
+        standard_financial_params = pd.DataFrame([
+            {"finance_description": "diesel_price", "default_value": 2.0},
+            {"finance_description": "discount_rate_percent", "default_value": 0.07},
+            {"finance_description": "freight_value_per_tonne", "default_value": 120},
+            {"finance_description": "driver_cost_hourly", "default_value": 35},
+            {"finance_description": "avg_trip_distance", "default_value": 100},
+            {"finance_description": "avg_loadunload_time", "default_value": 1},
+        ])
 
         penalty = calculate_payload_penalty_costs(
             bev_results, diesel_results, standard_financial_params
@@ -86,9 +93,15 @@ class TestPayloadPenalty:
             "truck_life_years": 10,
         }
 
-        standard_financial_params = {
-            # Add standard financial params here
-        }
+        # Create basic financial params DataFrame with payload penalty parameters
+        standard_financial_params = pd.DataFrame([
+            {"finance_description": "diesel_price", "default_value": 2.0},
+            {"finance_description": "discount_rate_percent", "default_value": 0.07},
+            {"finance_description": "freight_value_per_tonne", "default_value": 120},
+            {"finance_description": "driver_cost_hourly", "default_value": 35},
+            {"finance_description": "avg_trip_distance", "default_value": 100},
+            {"finance_description": "avg_loadunload_time", "default_value": 1},
+        ])
 
         penalty = calculate_payload_penalty_costs(
             bev_results, diesel_results, standard_financial_params

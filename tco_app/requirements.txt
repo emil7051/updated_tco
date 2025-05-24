@@ -4,6 +4,7 @@ numpy>=1.21.0
 plotly>=5.0.0
 openpyxl>=3.0.0
 Pillow>=9.0.0
+pytest>=7.0.0
 pytest-cov>=4.0.0
 ruff>=0.0.280
 black>=22.0.0

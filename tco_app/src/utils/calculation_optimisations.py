@@ -36,19 +36,25 @@ def vectorised_annual_costs(
     """
     factor = 1.0 + growth_rate
 
-    # For small vectors NumPy's overhead is negligible compared to the gains
-    # from vectorised arithmetic, so stick with a fully-vectorised approach.
-    if years <= 256:
+    # For very small vectors, use pure Python to avoid NumPy overhead
+    if years <= 100:
+        result = []
+        for year in range(years):
+            cost = base_cost * (factor ** year)
+            result.append(cost)
+        return np.array(result)
+
+    # For medium vectors, use NumPy pre-allocation with direct calculation for precision
+    elif years <= 1000:
+        out = np.empty(years, dtype=float)
+        for i in range(years):
+            out[i] = base_cost * (factor ** i)
+        return out
+
+    # For large vectors, NumPy vectorisation becomes beneficial
+    else:
         exponents = np.arange(years, dtype=float)
         return base_cost * np.power(factor, exponents)
-
-    # Fallback to NumPy for large vectors – pre-allocate and fill via cumulative
-    # multiplication (cheaper than np.power).
-    out = np.empty(years, dtype=float)
-    out[0] = base_cost
-    for i in range(1, years):
-        out[i] = out[i - 1] * factor
-    return out
 
 
 def batch_vehicle_lookup(
