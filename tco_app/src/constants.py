@@ -9,6 +9,7 @@ class Drivetrain(str, Enum):
 
     BEV = "BEV"
     DIESEL = "Diesel"
+    PHEV = "PHEV"  # Plug-in Hybrid Electric Vehicle
     ALL = "All"
 
 
@@ -48,10 +49,12 @@ class DataColumns(str, Enum):
     VEHICLE_TYPE = "vehicle_type"
     VEHICLE_DRIVETRAIN = "vehicle_drivetrain"
     VEHICLE_MODEL = "vehicle_model"
+    BODY_TYPE = "body_type"  # Vehicle body type (e.g., Articulated, Rigid)
     PAYLOAD_T = "payload_t"
     MSRP_PRICE = "msrp_price"
     RANGE_KM = "range_km"
     BATTERY_CAPACITY_KWH = "battery_capacity_kwh"
+    BATTERY_EFFICIENCY = "battery_efficiency"  # Battery charging/discharging efficiency
     KWH_PER100KM = "kwh_per100km"
     LITRES_PER100KM = "litres_per100km"
     COMPARISON_PAIR_ID = "comparison_pair_id"
@@ -72,6 +75,26 @@ class DataColumns(str, Enum):
     FUEL_TYPE = "fuel_type"
     EMISSION_STANDARD = "emission_standard"
     CO2_PER_UNIT = "co2_per_unit"
+    GRID_EMISSION_FACTOR = "grid_emission_factor"
+    DIESEL_EMISSION_FACTOR = "diesel_emission_factor"
+
+    # Fees and registration
+    REGISTRATION_ANNUAL_PRICE = "registration_annual_price"
+    REGISTRATION_UPFRONT_PRICE = "registration_upfront_price"
+    INSURANCE_ANNUAL_PRICE = "insurance_annual_price"
+    INSURANCE = "insurance"  # Legacy alias for INSURANCE_ANNUAL_PRICE
+    MAINTENANCE_ANNUAL_PRICE = "maintenance_annual_price"
+
+    # Financial parameters (legacy compatibility)
+    DISCOUNT_RATE = "discount_rate"
+    DIESEL_PRICE = "diesel_price"
+    TRUCK_LIFE = "truck_life"
+    ANNUAL_KMS = "annual_kms"
+    RESIDUAL_VALUE_PCT = "residual_value_pct"
+
+    # Maintenance parameters
+    MAINTENANCE_BASE_COST = "maintenance_base_cost"
+    MAINTENANCE_COST_PER_KM = "maintenance_cost_per_km"
 
     # Incentives
     INCENTIVE_FLAG = "incentive_flag"

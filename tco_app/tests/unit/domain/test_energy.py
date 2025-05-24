@@ -9,7 +9,7 @@ from tco_app.domain.energy import (
     calculate_emissions,
     calculate_charging_requirements,
 )
-from tco_app.src.constants import DataColumns, Drivetrain
+from tco_app.src.constants import DataColumns, Drivetrain, ParameterKeys
 from tco_app.tests.fixtures.vehicles import (
     bev_vehicle_data,
     diesel_vehicle_data,
@@ -84,6 +84,7 @@ class TestEnergyCalculations:
             DataColumns.VEHICLE_ID: "phev_truck",
             DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.PHEV,
             DataColumns.LITRES_PER100KM: 20.0,  # L/100km
+            DataColumns.KWH_PER100KM: 15.0,  # kWh/100km for electric mode
             DataColumns.BATTERY_CAPACITY_KWH: 30.0,
             DataColumns.RANGE_KM: 50.0,  # 50km electric range
         })
@@ -97,8 +98,9 @@ class TestEnergyCalculations:
             DataColumns.PER_KWH_PRICE: [0.25],
         })
         
-        financial = pd.Series({
-            DataColumns.DIESEL_PRICE: 2.0,
+        financial = pd.DataFrame({
+            DataColumns.FINANCE_DESCRIPTION: [ParameterKeys.DIESEL_PRICE],
+            DataColumns.FINANCE_DEFAULT_VALUE: [2.0],
         })
         
         # PHEV should use combination of electric and diesel
@@ -131,7 +133,10 @@ class TestEnergyCalculations:
             DataColumns.PER_KWH_PRICE: [0.25],
         })
         
-        financial = pd.Series({DataColumns.DIESEL_PRICE: 2.0})
+        financial = pd.DataFrame({
+            DataColumns.FINANCE_DESCRIPTION: [ParameterKeys.DIESEL_PRICE],
+            DataColumns.FINANCE_DEFAULT_VALUE: [2.0],
+        })
         
         cost = calculate_energy_costs(
             bev_with_efficiency,

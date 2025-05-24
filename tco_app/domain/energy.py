@@ -42,6 +42,28 @@ def calculate_energy_costs(
         energy_cost_per_km = (
             vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_price
         )
+    elif vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.PHEV:
+        # PHEV uses both electricity and diesel
+        # Get electricity price
+        if charging_mix and len(charging_mix) > 0:
+            electricity_price = weighted_electricity_price(charging_mix, charging_data)
+        else:
+            charging_option = safe_get_charging_option(charging_data, selected_charging)
+            electricity_price = charging_option[DataColumns.PER_KWH_PRICE]
+        
+        # Get diesel price
+        diesel_price = safe_get_parameter(financial_params, ParameterKeys.DIESEL_PRICE)
+        
+        # Calculate electric range ratio (assuming electric range is used first)
+        electric_range = vehicle_data.get(DataColumns.RANGE_KM, 50)  # Default 50km if not specified
+        # Assume typical daily driving of 100km, so electric portion is electric_range/100
+        electric_ratio = min(electric_range / 100, 1.0)
+        diesel_ratio = 1.0 - electric_ratio
+        
+        # Calculate combined cost
+        electric_cost = vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_price * electric_ratio
+        diesel_cost = vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_price * diesel_ratio
+        energy_cost_per_km = electric_cost + diesel_cost
     else:
         diesel_price = safe_get_parameter(financial_params, ParameterKeys.DIESEL_PRICE)
         energy_cost_per_km = (

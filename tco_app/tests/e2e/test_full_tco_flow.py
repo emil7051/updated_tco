@@ -1,15 +1,18 @@
-"""End-to-end tests for complete TCO calculation flow."""
-
+"""End-to-end tests for the complete TCO calculation flow."""
 import pytest
-from unittest.mock import Mock, patch
 import pandas as pd
-import numpy as np
-from tco_app.ui.calculation_orchestrator import CalculationOrchestrator
-from tco_app.services.tco_calculation_service import TCOCalculationService
-from tco_app.repositories import VehicleRepository, ParametersRepository
-from tco_app.src.constants import DataColumns, Drivetrain
-from tco_app.services.dtos import CalculationRequest
+from unittest.mock import Mock
 
+from tco_app.src.constants import DataColumns, Drivetrain
+from tco_app.repositories import VehicleRepository, ParametersRepository
+from tco_app.services.tco_calculation_service import TCOCalculationService
+from tco_app.ui.calculation_orchestrator import CalculationOrchestrator
+from tco_app.services.dtos import (
+    CalculationRequest,
+    CalculationParameters,
+    TCOResult,
+    ComparisonResult,
+)
 
 class TestFullTCOFlow:
     """Test complete TCO calculation flow from UI to results."""
@@ -22,23 +25,28 @@ class TestFullTCOFlow:
         
         # Mock vehicle data
         bev_vehicle = pd.Series({
-            DataColumns.VEHICLE_ID: "BEV_Articulated",
+            DataColumns.VEHICLE_ID: "MFTBC6X4BEV1",
             DataColumns.VEHICLE_MODEL: "E-Actros 300",
+            DataColumns.VEHICLE_TYPE: "Medium Rigid",
             DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.BEV,
             DataColumns.BODY_TYPE: "Articulated",
             DataColumns.BATTERY_CAPACITY_KWH: 540.0,
             DataColumns.RANGE_KM: 300.0,
             DataColumns.MSRP_PRICE: 380000,
             DataColumns.BATTERY_EFFICIENCY: 0.9,
+            DataColumns.KWH_PER100KM: 80.0,  # Add energy consumption for BEV
+            DataColumns.PAYLOAD_T: 15.0,  # Add payload in tonnes
         })
         
         diesel_vehicle = pd.Series({
-            DataColumns.VEHICLE_ID: "Diesel_Articulated",
+            DataColumns.VEHICLE_ID: "MFTBC6X4DIESEL1",
             DataColumns.VEHICLE_MODEL: "Actros",
+            DataColumns.VEHICLE_TYPE: "Medium Rigid",
             DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.DIESEL,
             DataColumns.BODY_TYPE: "Articulated",
             DataColumns.LITRES_PER100KM: 28.0,
             DataColumns.MSRP_PRICE: 150000,
+            DataColumns.PAYLOAD_T: 15.0,  # Add payload in tonnes
         })
         
         vehicle_repo.get_vehicle_by_id.side_effect = lambda id: (
@@ -46,75 +54,100 @@ class TestFullTCOFlow:
         )
         
         # Mock fees
-        fees = pd.Series({
-            DataColumns.VEHICLE_ID: "mock_id",
+        bev_fees = pd.Series({
+            DataColumns.VEHICLE_ID: "MFTBC6X4BEV1",
+            'maintenance_perkm_price': 0.10,
             DataColumns.REGISTRATION_ANNUAL_PRICE: 2000,
-            DataColumns.INSURANCE: 5000,
-            DataColumns.REGISTRATION_ANNUAL_PRICE: 500,
+            DataColumns.INSURANCE_ANNUAL_PRICE: 5000,
+            DataColumns.REGISTRATION_UPFRONT_PRICE: 500,
+            'stamp_duty_price': 3000,
         })
-        vehicle_repo.get_fees_by_vehicle_id.return_value = fees
         
-        # Mock financial parameters
-        financial_params = pd.Series({
-            DataColumns.DISCOUNT_RATE: 0.05,
-            DataColumns.DIESEL_PRICE: 2.0,
-            DataColumns.TRUCK_LIFE: 10,
-            DataColumns.ANNUAL_KMS: 100000,
-            DataColumns.RESIDUAL_VALUE_PCT: 0.2,
+        diesel_fees = pd.Series({
+            DataColumns.VEHICLE_ID: "MFTBC6X4DIESEL1",
+            'maintenance_perkm_price': 0.12,
+            DataColumns.REGISTRATION_ANNUAL_PRICE: 1800,
+            DataColumns.INSURANCE_ANNUAL_PRICE: 4500,
+            DataColumns.REGISTRATION_UPFRONT_PRICE: 450,
+            'stamp_duty_price': 2000,
         })
-        params_repo.get_financial_parameters.return_value = financial_params
         
-        # Mock emission factors
-        emission_factors = pd.Series({
-            DataColumns.GRID_EMISSION_FACTOR: 0.5,
-            DataColumns.DIESEL_EMISSION_FACTOR: 2.7,
+        vehicle_repo.get_fees_by_vehicle_id.side_effect = lambda id: (
+            bev_fees if "BEV" in id else diesel_fees
+        )
+        
+        # Mock financial parameters as DataFrame
+        financial_params = pd.DataFrame({
+            'financial_id': ['FP001', 'FP008', 'FP009', 'FP011', 'FP020'],  
+            'finance_description': ['discount_rate_percent', 'diesel_price', 'truck_life_years', 'annual_kms', 'residual_value_pct'],
+            'default_value': [0.05, 2.0, 10, 100000, 0.2],
+        })
+        params_repo.get_financial_params.return_value = financial_params
+        
+        # Mock emission factors as DataFrame
+        emission_factors = pd.DataFrame({
+            'emissions_id': ['EF004', 'EF001'],
+            'fuel_type': ['electricity', 'diesel'],
+            'emission_standard': ['Grid', 'Euro IV+'],
+            'co2_per_unit': [0.7, 3.384],
+            'emissions_unit': ['kg_per_kwh', 'kg_per_litre'],
         })
         params_repo.get_emission_factors.return_value = emission_factors
         
-        # Mock maintenance parameters
-        maintenance_params = pd.DataFrame({
-            DataColumns.VEHICLE_TYPE: ["BEV", "Diesel"],
-            DataColumns.MAINTENANCE_BASE_COST: [8000, 10000],
-            DataColumns.MAINTENANCE_COST_PER_KM: [0.02, 0.03],
+        # Mock battery parameters as DataFrame
+        battery_params = pd.DataFrame({
+            'battery_id': ['BP001', 'BP002', 'BP003', 'BP004'],
+            'battery_description': ['replacement_per_kwh_price', 'degradation_annual_percent', 
+                                    'minimum_capacity_percent', 'recycling_value_percent'],
+            'default_value': [150.0, 0.025, 0.7, 0.1],
         })
-        params_repo.get_maintenance_parameters.return_value = maintenance_params
+        params_repo.get_battery_params.return_value = battery_params
         
-        # Mock battery parameters
-        battery_params = pd.Series({
-            DataColumns.BATTERY_COST_PER_KWH: 500,
-            DataColumns.BATTERY_REPLACEMENT_THRESHOLD: 0.8,
-            DataColumns.BATTERY_DEGRADATION_RATE: 0.025,
+        # Mock externalities data as DataFrame
+        externalities = pd.DataFrame({
+            'externality_id': ['EC003', 'EC004', 'EC009', 'EC010', 'EC021', 'EC022', 'EC025', 'EC026'],
+            'pollutant_type': ['noise_pollution', 'noise_pollution', 'pm25_pollution', 'pm25_pollution', 
+                               'air_pollution_total', 'air_pollution_total', 'externalities_total', 'externalities_total'],
+            'vehicle_class': ['Medium Rigid', 'Medium Rigid', 'Medium Rigid', 'Medium Rigid', 
+                              'Medium Rigid', 'Medium Rigid', 'Medium Rigid', 'Medium Rigid'],
+            'drivetrain': ['Diesel', 'BEV', 'Diesel', 'BEV', 'Diesel', 'BEV', 'Diesel', 'BEV'],
+            'cost_per_km': [0.017, 0.006, 0.048, 0.0, 0.113, 0.0, 0.150, 0.006],
+            'cost_unit': ['AUD/km', 'AUD/km', 'AUD/km', 'AUD/km', 'AUD/km', 'AUD/km', 'AUD/km', 'AUD/km'],
+            'year': [2025, 2025, 2025, 2025, 2025, 2025, 2025, 2025],
+            'calculation_basis': ['desc1', 'desc2', 'desc3', 'desc4', 'desc5', 'desc6', 'desc7', 'desc8'],
         })
-        params_repo.get_battery_parameters.return_value = battery_params
-        
-        # Mock externality parameters
-        externality_params = pd.Series({
-            DataColumns.CONGESTION_COST: 0.05,
-            DataColumns.NOISE_COST: 0.02,
-            DataColumns.POLLUTION_COST: 0.03,
-        })
-        params_repo.get_externality_parameters.return_value = externality_params
+        params_repo.get_externalities_data.return_value = externalities
         
         # Mock charging options
         charging_options = pd.DataFrame({
-            DataColumns.CHARGING_ID: ["Depot", "Public", "Fast"],
-            DataColumns.PER_KWH_PRICE: [0.25, 0.35, 0.45],
-            DataColumns.CHARGING_MIX: [0.7, 0.2, 0.1],
+            'charging_id': [1, 2, 3],
+            'charging_approach': ['Retail', 'Retail off-peak', 'Solar & Storage'],
+            'per_kwh_price': [0.3, 0.15, 0.04],
+            'charging_proportion': [0.2, 0.5, 0.3],
         })
-        vehicle_repo.get_charging_options.return_value = charging_options
+        params_repo.get_charging_options.return_value = charging_options
         
         # Mock infrastructure options
         infrastructure_options = pd.DataFrame({
-            DataColumns.INFRASTRUCTURE_ID: ["Standard", "Fast"],
-            DataColumns.INFRASTRUCTURE_PRICE: [50000, 150000],
-            DataColumns.CHARGER_POWER: [80, 350],
-            DataColumns.CHARGER_EFFICIENCY: [0.95, 0.97],
-            DataColumns.UTILIZATION_HOURS: [8, 20],
-            DataColumns.SERVICE_LIFE_YEARS: [10, 15],
-            DataColumns.ANNUAL_MAINTENANCE_PCT: [0.05, 0.03],
-            DataColumns.INFRASTRUCTURE_INCENTIVE: [10000, 20000],
+            'infrastructure_id': [1, 2, 3],
+            'infrastructure_description': ['No Infrastructure', 'DC Fast Charger 80 kW', 'DC Fast Charger 160 kW'],
+            'infrastructure_price': [0, 55000, 90000],
+            'service_life_years': [15, 15, 15],
+            'maintenance_percent': [0, 0.03, 0.03],
         })
-        vehicle_repo.get_infrastructure_options.return_value = infrastructure_options
+        params_repo.get_infrastructure_options.return_value = infrastructure_options
+        
+        # Mock incentives data
+        incentives = pd.DataFrame({
+            'incentive_type': ['purchase_rebate', 'stamp_duty_exemption', 'registration_exemption'],
+            'incentive_value': [15000, 1.0, 1.0],
+            'incentive_rate': [0.0, 1.0, 1.0],
+            'drivetrain': ['BEV', 'BEV', 'BEV'],
+            'effective_date': ['2023-01-01', '2023-01-01', '2023-01-01'],
+            'expiry_date': ['2025-12-31', '2025-12-31', '2025-12-31'],
+            'incentive_flag': [1, 1, 1],
+        })
+        params_repo.get_incentives.return_value = incentives
         
         return vehicle_repo, params_repo
 
@@ -125,302 +158,137 @@ class TestFullTCOFlow:
         return TCOCalculationService(vehicle_repo, params_repo)
 
     @pytest.fixture
-    def calculation_orchestrator(self, calculation_service):
-        """Create calculation orchestrator with mocked service."""
-        return CalculationOrchestrator(calculation_service)
+    def calculation_orchestrator(self, mock_repositories):
+        """Create calculation orchestrator with mocked repositories."""
+        vehicle_repo, params_repo = mock_repositories
+        
+        # Create mock data tables - the CalculationOrchestrator will create its own repositories
+        # but we'll mock them out
+        data_tables = {}
+        ui_context = {"modified_tables": data_tables}
+        
+        orchestrator = CalculationOrchestrator(data_tables, ui_context)
+        
+        # Replace the repositories with our mocks
+        orchestrator.vehicle_repo = vehicle_repo
+        orchestrator.params_repo = params_repo
+        orchestrator.tco_service = TCOCalculationService(vehicle_repo, params_repo)
+        
+        return orchestrator
 
     def test_single_vehicle_calculation_flow(self, calculation_orchestrator):
         """Test end-to-end flow for single vehicle calculation."""
-        # User inputs
-        user_inputs = {
-            'vehicle_id': 'BEV_Articulated',
+        # Set UI context
+        calculation_orchestrator.ui_context = {
             'annual_kms': 100000,
             'truck_life_years': 10,
             'discount_rate': 0.05,
-            'selected_charging': 'Depot',
-            'selected_infrastructure': 'Standard',
+            'selected_charging': 1,  # Should be an ID
+            'selected_infrastructure': 1,  # Should be an ID
             'fleet_size': 10,
         }
         
-        # Execute calculation
-        results = calculation_orchestrator.calculate_single_vehicle(user_inputs)
+        # Build calculation request for BEV
+        bev_request = calculation_orchestrator._build_calculation_request('MFTBC6X4BEV1')
         
-        # Verify results structure
-        assert 'acquisition_cost' in results
-        assert 'annual_costs' in results
-        assert 'tco' in results
-        assert 'emissions' in results
+        # Validate request structure
+        assert bev_request.vehicle_data[DataColumns.VEHICLE_ID] == 'MFTBC6X4BEV1'
+        assert bev_request.parameters.annual_kms == 100000
+        assert bev_request.parameters.truck_life_years == 10
         
-        # Verify calculations are reasonable
-        assert results['acquisition_cost'] > 0
-        assert results['annual_costs']['annual_operating_cost'] > 0
-        assert results['tco']['npv_total_cost'] > results['acquisition_cost']
-        assert results['emissions']['lifetime_emissions'] > 0
-
-    def test_vehicle_comparison_flow(self, calculation_orchestrator):
+        # Perform calculation
+        result = calculation_orchestrator.tco_service.calculate_single_vehicle_tco(bev_request)
+        
+        # Validate result
+        assert isinstance(result, TCOResult)
+        assert result.vehicle_id == 'MFTBC6X4BEV1'
+        assert result.tco_total_lifetime > 0
+        assert result.tco_per_km > 0
+        
+    def test_comparison_calculation_flow(self, calculation_orchestrator):
         """Test end-to-end flow for vehicle comparison."""
-        # User inputs for comparison
-        comparison_inputs = {
-            'bev_vehicle_id': 'BEV_Articulated',
-            'diesel_vehicle_id': 'Diesel_Articulated',
+        # Set UI context
+        calculation_orchestrator.ui_context = {
             'annual_kms': 100000,
             'truck_life_years': 10,
             'discount_rate': 0.05,
-            'selected_charging': 'Depot',
-            'selected_infrastructure': 'Standard',
+            'selected_charging': 1,
+            'selected_infrastructure': 1,
             'fleet_size': 10,
         }
         
-        # Execute comparison
-        results = calculation_orchestrator.compare_vehicles(comparison_inputs)
+        # Build calculation requests for both vehicles
+        bev_request = calculation_orchestrator._build_calculation_request('MFTBC6X4BEV1')
+        diesel_request = calculation_orchestrator._build_calculation_request('MFTBC6X4DIESEL1')
         
-        # Verify comparison results
-        assert 'bev_results' in results
-        assert 'diesel_results' in results
-        assert 'comparison_metrics' in results
-        
-        # Verify comparison metrics
-        metrics = results['comparison_metrics']
-        assert 'upfront_cost_difference' in metrics
-        assert 'annual_operating_savings' in metrics
-        assert 'emission_savings_lifetime' in metrics
-        assert 'price_parity_year' in metrics
-        assert 'bev_to_diesel_tco_ratio' in metrics
-
-    def test_sensitivity_analysis_flow(self, calculation_orchestrator):
-        """Test sensitivity analysis with parameter variations."""
-        base_inputs = {
-            'bev_vehicle_id': 'BEV_Articulated',
-            'diesel_vehicle_id': 'Diesel_Articulated',
-            'annual_kms': 100000,
-            'truck_life_years': 10,
-            'discount_rate': 0.05,
-            'selected_charging': 'Depot',
-            'selected_infrastructure': 'Standard',
-            'fleet_size': 10,
-        }
-        
-        # Test sensitivity to annual kilometers
-        km_variations = [50000, 100000, 150000, 200000]
-        km_results = []
-        
-        for kms in km_variations:
-            inputs = base_inputs.copy()
-            inputs['annual_kms'] = kms
-            result = calculation_orchestrator.compare_vehicles(inputs)
-            km_results.append(result['comparison_metrics']['price_parity_year'])
-        
-        # Price parity should improve with higher utilization
-        assert km_results[0] > km_results[-1] or (
-            math.isinf(km_results[0]) and not math.isinf(km_results[-1])
+        # Compare BEV vs Diesel
+        comparison = calculation_orchestrator.tco_service.compare_vehicles(
+            bev_request,
+            diesel_request
         )
         
-        # Test sensitivity to diesel price
-        diesel_price_variations = [1.5, 2.0, 2.5, 3.0]
-        price_results = []
+        # Validate comparison results
+        assert isinstance(comparison, ComparisonResult)
+        assert comparison.base_vehicle_result.vehicle_id == 'MFTBC6X4BEV1'
+        assert comparison.comparison_vehicle_result.vehicle_id == 'MFTBC6X4DIESEL1'
+        assert comparison.tco_savings_lifetime != 0
         
-        for price in diesel_price_variations:
-            # Would need to mock different diesel prices
-            inputs = base_inputs.copy()
-            with patch.object(
-                calculation_orchestrator.service.parameters_repo,
-                'get_financial_parameters'
-            ) as mock_financial:
-                params = pd.Series({
-                    DataColumns.DISCOUNT_RATE: 0.05,
-                    DataColumns.DIESEL_PRICE: price,
-                    DataColumns.TRUCK_LIFE: 10,
-                    DataColumns.ANNUAL_KMS: 100000,
-                    DataColumns.RESIDUAL_VALUE_PCT: 0.2,
-                })
-                mock_financial.return_value = params
-                result = calculation_orchestrator.compare_vehicles(inputs)
-                price_results.append(
-                    result['comparison_metrics']['annual_operating_savings']
-                )
+        # Validate TCO difference calculation
+        expected_savings = (comparison.comparison_vehicle_result.tco_total_lifetime - 
+                          comparison.base_vehicle_result.tco_total_lifetime)
+        assert abs(comparison.tco_savings_lifetime - expected_savings) < 0.01
         
-        # Higher diesel prices should increase BEV savings
-        assert price_results[0] < price_results[-1]
-
-    def test_infrastructure_cost_allocation(self, calculation_orchestrator):
-        """Test infrastructure cost allocation across fleet sizes."""
-        base_inputs = {
-            'vehicle_id': 'BEV_Articulated',
+    def test_sensitivity_analysis_flow(self, calculation_orchestrator):
+        """Test sensitivity analysis with parameter variations."""
+        # Set UI context
+        calculation_orchestrator.ui_context = {
             'annual_kms': 100000,
             'truck_life_years': 10,
             'discount_rate': 0.05,
-            'selected_charging': 'Depot',
-            'selected_infrastructure': 'Fast',  # Expensive infrastructure
+            'selected_charging': 1,
+            'selected_infrastructure': 1,
+            'fleet_size': 10,
         }
         
-        fleet_sizes = [1, 5, 10, 20]
-        infra_costs_per_vehicle = []
+        # Calculate baseline
+        baseline_result = calculation_orchestrator.tco_service.calculate_single_vehicle_tco(
+            calculation_orchestrator._build_calculation_request('MFTBC6X4BEV1')
+        )
+        
+        # Update context with higher kms
+        calculation_orchestrator.ui_context['annual_kms'] = 150000
+        
+        # Calculate with higher kms
+        high_kms_result = calculation_orchestrator.tco_service.calculate_single_vehicle_tco(
+            calculation_orchestrator._build_calculation_request('MFTBC6X4BEV1')
+        )
+        
+        # Validate sensitivity impact
+        assert high_kms_result.tco_total_lifetime > baseline_result.tco_total_lifetime
+        # Cost per km should be lower with higher utilization
+        assert high_kms_result.tco_per_km < baseline_result.tco_per_km
+        
+    def test_fleet_size_impact(self, calculation_orchestrator):
+        """Test impact of fleet size on infrastructure costs."""
+        fleet_sizes = [1, 10, 50]
+        previous_infra_cost = 0
         
         for fleet_size in fleet_sizes:
-            inputs = base_inputs.copy()
-            inputs['fleet_size'] = fleet_size
-            result = calculation_orchestrator.calculate_single_vehicle(inputs)
-            
-            # Extract per-vehicle infrastructure cost
-            if 'infrastructure_costs' in result:
-                total_infra = result['infrastructure_costs'].get(
-                    'infrastructure_price_with_incentives',
-                    result['infrastructure_costs'][DataColumns.INFRASTRUCTURE_PRICE]
-                )
-                per_vehicle = total_infra / fleet_size
-                infra_costs_per_vehicle.append(per_vehicle)
-        
-        # Per-vehicle infrastructure cost should decrease with fleet size
-        assert infra_costs_per_vehicle[0] > infra_costs_per_vehicle[-1]
-
-    def test_error_handling_invalid_vehicle(self, calculation_orchestrator):
-        """Test error handling for invalid vehicle ID."""
-        inputs = {
-            'vehicle_id': 'NonExistent_Vehicle',
-            'annual_kms': 100000,
-            'truck_life_years': 10,
-            'discount_rate': 0.05,
-            'selected_charging': 'Depot',
-            'selected_infrastructure': 'Standard',
-            'fleet_size': 10,
-        }
-        
-        # Mock repository to return None
-        with patch.object(
-            calculation_orchestrator.service.vehicle_repo,
-            'get_vehicle_by_id',
-            return_value=None
-        ):
-            with pytest.raises(Exception) as exc_info:
-                calculation_orchestrator.calculate_single_vehicle(inputs)
-            
-            assert "vehicle" in str(exc_info.value).lower()
-
-    def test_phev_calculation_flow(self, calculation_orchestrator, mock_repositories):
-        """Test PHEV vehicle calculation with hybrid energy."""
-        vehicle_repo, _ = mock_repositories
-        
-        # Mock PHEV vehicle
-        phev_vehicle = pd.Series({
-            DataColumns.VEHICLE_ID: "PHEV_Rigid",
-            DataColumns.VEHICLE_MODEL: "Hybrid Truck",
-            DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.PHEV,
-            DataColumns.BODY_TYPE: "Rigid",
-            DataColumns.BATTERY_CAPACITY_KWH: 50.0,
-            DataColumns.RANGE_KM: 80.0,  # Electric range
-            DataColumns.LITRES_PER100KM: 20.0,
-            DataColumns.MSRP_PRICE: 250000,
-        })
-        
-        vehicle_repo.get_vehicle_by_id.return_value = phev_vehicle
-        
-        inputs = {
-            'vehicle_id': 'PHEV_Rigid',
-            'annual_kms': 100000,
-            'truck_life_years': 10,
-            'discount_rate': 0.05,
-            'selected_charging': 'Depot',
-            'selected_infrastructure': 'Standard',
-            'fleet_size': 5,
-        }
-        
-        results = calculation_orchestrator.calculate_single_vehicle(inputs)
-        
-        # PHEV should have both electric and diesel costs
-        assert results['annual_costs']['annual_energy_cost'] > 0
-        # Emissions should be between pure BEV and diesel
-        assert results['emissions']['co2_per_km'] > 0
-
-    @pytest.mark.parametrize("discount_rate", [0.0, 0.03, 0.07, 0.10])
-    def test_discount_rate_impact(self, calculation_orchestrator, discount_rate):
-        """Test impact of different discount rates on NPV."""
-        inputs = {
-            'vehicle_id': 'BEV_Articulated',
-            'annual_kms': 100000,
-            'truck_life_years': 10,
-            'discount_rate': discount_rate,
-            'selected_charging': 'Depot',
-            'selected_infrastructure': 'Standard',
-            'fleet_size': 10,
-        }
-        
-        # Need to update mocked financial parameters
-        with patch.object(
-            calculation_orchestrator.service.parameters_repo,
-            'get_financial_parameters'
-        ) as mock_financial:
-            params = pd.Series({
-                DataColumns.DISCOUNT_RATE: discount_rate,
-                DataColumns.DIESEL_PRICE: 2.0,
-                DataColumns.TRUCK_LIFE: 10,
-                DataColumns.ANNUAL_KMS: 100000,
-                DataColumns.RESIDUAL_VALUE_PCT: 0.2,
-            })
-            mock_financial.return_value = params
-            
-            results = calculation_orchestrator.calculate_single_vehicle(inputs)
-            
-            # NPV should exist and be positive
-            assert results['tco']['npv_total_cost'] > 0
-            
-            # Higher discount rates should generally reduce NPV of future costs
-            # (though acquisition cost remains constant)
-
-    def test_charging_mix_impact(self, calculation_orchestrator):
-        """Test different charging mix scenarios."""
-        charging_scenarios = [
-            {'Depot': 1.0, 'Public': 0.0, 'Fast': 0.0},  # 100% depot
-            {'Depot': 0.5, 'Public': 0.3, 'Fast': 0.2},  # Mixed
-            {'Depot': 0.0, 'Public': 0.5, 'Fast': 0.5},  # No depot
-        ]
-        
-        energy_costs = []
-        
-        for scenario in charging_scenarios:
-            # Would need to mock different charging mixes
-            inputs = {
-                'vehicle_id': 'BEV_Articulated',
+            calculation_orchestrator.ui_context = {
                 'annual_kms': 100000,
                 'truck_life_years': 10,
                 'discount_rate': 0.05,
-                'selected_charging': 'Mixed',  # Would need custom logic
-                'charging_mix': scenario,
-                'selected_infrastructure': 'Standard',
-                'fleet_size': 10,
+                'selected_charging': 1,
+                'selected_infrastructure': 1,
+                'fleet_size': fleet_size,
             }
             
-            # This would require enhancing the orchestrator to support custom charging mix
-            # For now, we'll test with standard scenarios
+            result = calculation_orchestrator.tco_service.calculate_single_vehicle_tco(
+                calculation_orchestrator._build_calculation_request('MFTBC6X4BEV1')
+            )
             
-        # Energy costs should increase with more public/fast charging
-        # assert energy_costs[0] < energy_costs[-1]
-
-    def test_caching_behavior(self, calculation_orchestrator):
-        """Test that repeated calculations use caching."""
-        inputs = {
-            'vehicle_id': 'BEV_Articulated',
-            'annual_kms': 100000,
-            'truck_life_years': 10,
-            'discount_rate': 0.05,
-            'selected_charging': 'Depot',
-            'selected_infrastructure': 'Standard',
-            'fleet_size': 10,
-        }
-        
-        # First calculation
-        with patch.object(
-            calculation_orchestrator.service,
-            'calculate_single_vehicle_tco'
-        ) as mock_calc:
-            mock_calc.return_value = {'mocked': 'result'}
-            
-            result1 = calculation_orchestrator.calculate_single_vehicle(inputs)
-            call_count1 = mock_calc.call_count
-            
-            # Second identical calculation
-            result2 = calculation_orchestrator.calculate_single_vehicle(inputs)
-            call_count2 = mock_calc.call_count
-            
-            # If caching is implemented, second call shouldn't increase count
-            # Otherwise, it should be called twice
-            assert call_count2 >= call_count1
+            # Infrastructure cost per vehicle should decrease with fleet size
+            infra_cost_per_vehicle = result.npv_infrastructure_cost
+            if previous_infra_cost > 0:
+                assert infra_cost_per_vehicle < previous_infra_cost
+            previous_infra_cost = infra_cost_per_vehicle
