@@ -3,13 +3,11 @@
 from tco_app.src import (
     pd,
     logging,
-    lru_cache,
     hashlib,
     json,
     Any,
     Dict,
     Optional,
-    Tuple,
     PERFORMANCE_CONFIG,
 )
 
@@ -107,20 +105,6 @@ class DataCache:
 data_cache = DataCache()
 
 
-@lru_cache(maxsize=PERFORMANCE_CONFIG.LRU_CACHE_SIZE)
-def cached_vehicle_lookup(vehicle_id: str) -> Optional[Dict[str, Any]]:
-    """Cached vehicle lookup by ID.
-
-    Args:
-        vehicle_id: Vehicle ID to lookup
-
-    Returns:
-        Vehicle data as dictionary
-    """
-    # This will be called with actual DataFrame in wrapper
-    pass
-
-
 def get_vehicle_with_cache(vehicle_models: pd.DataFrame, vehicle_id: str) -> pd.Series:
     """Get vehicle with caching.
 
@@ -131,8 +115,6 @@ def get_vehicle_with_cache(vehicle_models: pd.DataFrame, vehicle_id: str) -> pd.
     Returns:
         Vehicle data as Series
     """
-    # Create stable hash of DataFrame
-    df_hash = hash(tuple(vehicle_models.columns) + tuple(vehicle_models.shape))
 
     # Use cached lookup
     @data_cache.cache_dataframe_lookup
