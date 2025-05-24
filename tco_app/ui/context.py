@@ -16,37 +16,39 @@ maintainability and testability.
 from __future__ import annotations
 from tco_app.src import Dict, Any
 
-from tco_app.src import st
+from tco_app.src import st, logging
 
 from tco_app.src.data_loading import load_data
 from tco_app.ui.context_builder import ContextDirector
 from tco_app.ui.calculation_orchestrator import CalculationOrchestrator
 
+logger = logging.getLogger(__name__)
+
 
 def get_context() -> Dict[str, Any]:
     """Return cached modelling context using builder pattern."""
-    print("Attempting to get context...")
+    logger.info("Attempting to get context...")
 
     # Basic cache – recompute when the user presses the Streamlit *rerun* button.
     if "ctx_cache" in st.session_state:
-        print("Returning cached context.")
+        logger.info("Returning cached context.")
         return st.session_state["ctx_cache"]
 
-    print("No cached context found, computing new context...")
+    logger.info("No cached context found, computing new context...")
 
     # Load data
-    print("Loading data...")
+    logger.debug("Loading data...")
     data_tables = load_data()
-    print("Data loaded successfully.")
+    logger.debug("Data loaded successfully.")
 
     # Build UI context using builder pattern
-    print("Building UI context...")
+    logger.info("Building UI context...")
     context_director = ContextDirector(data_tables)
     ui_context = context_director.build_ui_context()
-    print("UI context built successfully.")
+    logger.debug("UI context built successfully.")
 
     # Perform calculations
-    print("Starting calculations...")
+    logger.info("Starting calculations...")
     calculation_orchestrator = CalculationOrchestrator(data_tables, ui_context)
     complete_context = calculation_orchestrator.perform_calculations()
 
@@ -55,5 +57,5 @@ def get_context() -> Dict[str, Any]:
 
     # Cache and return
     st.session_state["ctx_cache"] = complete_context
-    print("Context computed and cached.")
+    logger.info("Context computed and cached.")
     return complete_context
