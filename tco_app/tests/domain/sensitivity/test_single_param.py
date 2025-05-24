@@ -231,7 +231,7 @@ def test_perform_sensitivity_analysis_diesel_price(
     # Calls are [BEV_val1, Diesel_val1, BEV_val2, Diesel_val2 ...]
     for i, val in enumerate(sensitivity_values):
         diesel_energy_call_args = mock_calc_fns["energy"].call_args_list[i*2 + 1][0]
-        fp_arg_for_diesel_call = diesel_energy_call_args[2] # financial_params is the 3rd arg (index 2)
+        fp_arg_for_diesel_call = diesel_energy_call_args[3] # financial_params is the 4th arg (index 3)
         modified_price = fp_arg_for_diesel_call[fp_arg_for_diesel_call[DataColumns.FINANCE_DESCRIPTION.value] == ParameterKeys.DIESEL_PRICE.value][DataColumns.FINANCE_DEFAULT_VALUE.value].iloc[0]
         assert modified_price == val
 
@@ -271,7 +271,7 @@ def test_perform_sensitivity_analysis_electricity_price(
 
     for i, val in enumerate(sensitivity_values):
         bev_energy_call_args = mock_calc_fns["energy"].call_args_list[i*2][0]
-        charging_options_arg_for_bev_call = bev_energy_call_args[1] # charging_options is 2nd arg (index 1)
+        charging_options_arg_for_bev_call = bev_energy_call_args[2] # charging_options is 3rd arg (index 2)
         
         # Check if all prices in charging_options_arg_for_bev_call are scaled correctly
         for idx in charging_options_arg_for_bev_call.index:

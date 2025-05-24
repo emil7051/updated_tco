@@ -68,10 +68,9 @@ def perform_sensitivity_analysis(
     """
     results: List[Dict[str, Any]] = []
 
-    financial_params_copy = financial_params.copy()
-    battery_params_copy = battery_params.copy()
-
     for param_value in parameter_range:
+        financial_params_copy = financial_params.copy()
+        battery_params_copy = battery_params.copy()
         current_annual_kms = annual_kms
         current_discount_rate = discount_rate
         current_truck_life_years = truck_life_years
