@@ -59,6 +59,9 @@ streamlit run tco_app/app.py
 - `tco_app/data/tables/`: CSV data files with vehicle and cost information
 - `tco_app/assets/`: CSS and visual assets
 
+## Naming Map
+A mapping of legacy identifiers to updated names is maintained in `documentation/naming_map.csv`.
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
