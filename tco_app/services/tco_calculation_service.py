@@ -378,13 +378,6 @@ class TCOCalculationService:
 
         return tco_per_km, tco_per_tonne_km
 
-    def _convert_tco_result_to_model_runner_dict(
-        self, tco_result: TCOResult, request: CalculationRequest
-    ) -> Dict[str, Any]:
-        """Thin proxy to :pyfunc:`tco_app.services.helpers.convert_tco_result_to_model_runner_dict`."""
-
-        return convert_tco_result_to_model_runner_dict(tco_result, request)
-
     def compare_vehicles(
         self,
         base_vehicle_request: CalculationRequest,
