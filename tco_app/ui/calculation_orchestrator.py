@@ -5,10 +5,12 @@ from tco_app.src.constants import DataColumns, ParameterKeys, Drivetrain
 
 from tco_app.services.tco_calculation_service import (
     TCOCalculationService,
-    CalculationRequest,
-    CalculationParameters,
     ComparisonResult,
     TCOResult,
+)
+from tco_app.services.dtos import (
+    CalculationRequest,
+    CalculationParameters,
 )
 from tco_app.repositories import VehicleRepository, ParametersRepository
 from tco_app.src.exceptions import VehicleNotFoundError, CalculationError
