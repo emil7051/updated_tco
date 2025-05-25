@@ -52,6 +52,73 @@ class TestExternalitiesDomain:
             }
         }
 
+    def test_helper_delegation_detailed(self, monkeypatch):
+        vehicle = pd.Series({
+            DataColumns.VEHICLE_TYPE: "Rigid",
+            DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.BEV,
+        })
+        ext_df = pd.DataFrame({
+            "vehicle_class": ["Rigid"],
+            "drivetrain": [Drivetrain.BEV],
+            "pollutant_type": ["CO2e"],
+            "cost_per_km": [0.1],
+        })
+
+        called = {}
+
+        def fake_detailed(v, d, a, t, r):
+            called["detailed"] = True
+            return 0.1, {}
+
+        def fake_proxy(*args, **kwargs):
+            called["proxy"] = True
+            return 0.0, {}
+
+        monkeypatch.setattr(
+            "tco_app.domain.externalities._compute_detailed_externalities",
+            fake_detailed,
+        )
+        monkeypatch.setattr(
+            "tco_app.domain.externalities._compute_co2_proxy",
+            fake_proxy,
+        )
+
+        calculate_externalities(vehicle, ext_df, 100, 5, 0.0)
+
+        assert called.get("detailed") is True
+        assert called.get("proxy") is None
+
+    def test_helper_delegation_proxy(self, monkeypatch):
+        vehicle = pd.Series({
+            DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.DIESEL,
+            DataColumns.LITRES_PER100KM: 30,
+        })
+        factors = pd.DataFrame({"fuel_type": ["diesel"], "co2_per_unit": [2.5]})
+
+        called = {}
+
+        def fake_detailed(*args, **kwargs):
+            called["detailed"] = True
+            return 0.0, {}
+
+        def fake_proxy(v, d, a, t, r):
+            called["proxy"] = True
+            return 0.1, {}
+
+        monkeypatch.setattr(
+            "tco_app.domain.externalities._compute_detailed_externalities",
+            fake_detailed,
+        )
+        monkeypatch.setattr(
+            "tco_app.domain.externalities._compute_co2_proxy",
+            fake_proxy,
+        )
+
+        calculate_externalities(vehicle, factors, 100, 5, 0.0)
+
+        assert called.get("proxy") is True
+        assert called.get("detailed") is None
+
     def test_calculate_social_tco_metrics(self):
         tco_metrics = {
             "npv_total_cost": 100000,
