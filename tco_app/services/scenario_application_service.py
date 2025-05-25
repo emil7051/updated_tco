@@ -5,7 +5,7 @@ from tco_app.src import logging
 from tco_app.src import pd
 from dataclasses import dataclass
 
-from tco_app.src.constants import DataColumns, ParameterKeys
+from tco_app.src.constants import DataColumns
 from tco_app.src.exceptions import ScenarioError
 
 logger = logging.getLogger(__name__)
@@ -199,7 +199,7 @@ class ScenarioApplicationService:
                     )
                 else:
                     logger.warning(
-                        f"Financial parameter 'diesel_price' not found for diesel_default_price"
+                        "Financial parameter 'diesel_price' not found for diesel_default_price"
                     )
             else:
                 logger.warning(f"Financial parameter '{mod.parameter_name}' not found")

@@ -4,12 +4,10 @@ from tco_app.src import Dict, Any, Optional
 from tco_app.src import pd
 from tco_app.src import st
 from tco_app.src import VALIDATION_LIMITS, UI_CONFIG
+from tco_app.src.constants import DataColumns
 import logging
 
 logger = logging.getLogger(__name__)
-
-from tco_app.src.constants import DataColumns
-
 
 class ChargingConfigurationBuilder:
     """Builds charging configuration context."""

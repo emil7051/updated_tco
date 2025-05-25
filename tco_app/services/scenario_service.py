@@ -12,10 +12,7 @@ import warnings
 from tco_app.src import pd
 from tco_app.src import st
 
-from tco_app.services.scenario_application_service import (
-    ScenarioApplicationService,
-    ScenarioModification,
-)
+from tco_app.services.scenario_application_service import ScenarioApplicationService
 
 __all__ = [
     "apply_scenario_parameters",

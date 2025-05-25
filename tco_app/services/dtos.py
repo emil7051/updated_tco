@@ -4,8 +4,9 @@ This module contains the dataclasses used to structure input and output
 data for the TCO calculation service, promoting type safety and clear interfaces.
 """
 
-from enum import Enum
-from tco_app.src import pd, dataclass, field, datetime, Any, Dict, Optional
+from dataclasses import dataclass, field
+from typing import Dict, Optional
+from tco_app.src import pd, datetime, Any
 
 from tco_app.src.constants import DataColumns, Drivetrain
 

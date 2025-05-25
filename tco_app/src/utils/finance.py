@@ -25,7 +25,7 @@ calculate_residual_value(vehicle_data, years, initial_depreciation, annual_depre
 """
 
 from __future__ import annotations
-from tco_app.src.constants import DataColumns, ParameterKeys
+from tco_app.src.constants import DataColumns
 
 from math import inf
 from typing import Iterable, List, Sequence, Any

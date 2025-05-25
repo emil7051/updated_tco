@@ -1,6 +1,6 @@
 """Safe operations for DataFrame access and calculations."""
 
-from typing import Any, Optional, Union, List
+from typing import Any, Union, List
 from tco_app.src import pd
 from tco_app.src import logging
 

@@ -1,5 +1,5 @@
 import plotly.graph_objects as go
-from tco_app.src.constants import DataColumns, ParameterKeys
+from tco_app.src.constants import ParameterKeys
 
 
 def create_sensitivity_chart(

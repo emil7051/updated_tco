@@ -22,7 +22,7 @@ def calculate_comparative_metrics(
     # Initial acquisition costs
     bev_initial_cost = bev_results["acquisition_cost"]
     diesel_initial_cost = diesel_results["acquisition_cost"]
-    
+
     annual_savings = (
         diesel_results["annual_costs"]["annual_operating_cost"]
         - bev_results["annual_costs"]["annual_operating_cost"]

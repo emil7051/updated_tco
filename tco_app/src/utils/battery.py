@@ -10,12 +10,8 @@ from __future__ import annotations
 import math
 from typing import Union, List
 
-import pandas as pd
-
 from tco_app.src import pd
-
 from tco_app.src.constants import DataColumns, Drivetrain, ParameterKeys
-from tco_app.src.utils.safe_operations import safe_get_parameter
 
 __all__ = [
     "calculate_battery_replacement",

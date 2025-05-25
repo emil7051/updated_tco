@@ -17,7 +17,6 @@ from tco_app.src import pd
 
 from tco_app.domain.energy import (
     calculate_energy_costs,
-    calculate_charging_requirements,
 )
 from tco_app.domain.finance import (
     calculate_annual_costs,
@@ -29,7 +28,6 @@ from tco_app.domain.finance import (
     apply_infrastructure_incentives,
     integrate_infrastructure_with_tco,
 )
-from tco_app.domain.externalities import calculate_externalities
 from tco_app.src.utils.battery import calculate_battery_replacement
 
 __all__ = ["perform_sensitivity_analysis"]

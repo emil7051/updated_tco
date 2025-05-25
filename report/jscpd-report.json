@@ -1,0 +1,1425 @@
+{
+  "statistics": {
+    "detectionDate": "2025-05-24T07:26:10.974Z",
+    "formats": {
+      "python": {
+        "sources": {
+          "tco_app/tests/unit/domain/sensitivity/test_metrics.py": {
+            "lines": 327,
+            "tokens": 2189,
+            "sources": 1,
+            "clones": 8,
+            "duplicatedLines": 140,
+            "duplicatedTokens": 820,
+            "percentage": 42.81,
+            "percentageTokens": 37.46,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/utils/test_safe_parameters.py": {
+            "lines": 124,
+            "tokens": 849,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/utils/test_safe_operations.py": {
+            "lines": 11,
+            "tokens": 0,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/utils/test_safe_lookup.py": {
+            "lines": 97,
+            "tokens": 780,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/utils/test_safe_integration.py": {
+            "lines": 62,
+            "tokens": 381,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/utils/test_safe_calculations.py": {
+            "lines": 93,
+            "tokens": 659,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/utils/test_residual_value_helper.py": {
+            "lines": 35,
+            "tokens": 276,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/utils/test_calculations.py": {
+            "lines": 132,
+            "tokens": 921,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 35,
+            "duplicatedTokens": 201,
+            "percentage": 26.52,
+            "percentageTokens": 21.82,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/utils/test_calculation_optimisations.py": {
+            "lines": 252,
+            "tokens": 1791,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/ui/test_pages.py": {
+            "lines": 148,
+            "tokens": 1139,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/services/test_scenario_application_service.py": {
+            "lines": 339,
+            "tokens": 2184,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/services/test_data_cache.py": {
+            "lines": 152,
+            "tokens": 1139,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/domain/test_finance_payload.py": {
+            "lines": 109,
+            "tokens": 803,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 26,
+            "duplicatedTokens": 272,
+            "percentage": 23.85,
+            "percentageTokens": 33.87,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/domain/test_finance.py": {
+            "lines": 424,
+            "tokens": 2652,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/domain/test_calculation_delegation.py": {
+            "lines": 102,
+            "tokens": 664,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 35,
+            "duplicatedTokens": 201,
+            "percentage": 34.31,
+            "percentageTokens": 30.27,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/domain/sensitivity/test_single_param.py": {
+            "lines": 307,
+            "tokens": 2894,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/domain/sensitivity/test_externality.py": {
+            "lines": 191,
+            "tokens": 1759,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/pages/sensitivity.py": {
+            "lines": 178,
+            "tokens": 1520,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/pages/home.py": {
+            "lines": 23,
+            "tokens": 130,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/pages/cost_breakdown.py": {
+            "lines": 86,
+            "tokens": 545,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/builders/vehicle_builder.py": {
+            "lines": 69,
+            "tokens": 509,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/builders/scenario_builder.py": {
+            "lines": 55,
+            "tokens": 402,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/builders/parameter_builder.py": {
+            "lines": 97,
+            "tokens": 662,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/builders/charging_builder.py": {
+            "lines": 151,
+            "tokens": 1096,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/builders/__init__.py": {
+            "lines": 13,
+            "tokens": 69,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/test_visualization.py": {
+            "lines": 55,
+            "tokens": 419,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/unit/test_exceptions.py": {
+            "lines": 156,
+            "tokens": 975,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/regression/test_golden.py": {
+            "lines": 132,
+            "tokens": 1062,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/performance/test_performance_optimisations.py": {
+            "lines": 236,
+            "tokens": 1697,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/integration/test_tco_calculation.py": {
+            "lines": 407,
+            "tokens": 2562,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 19,
+            "duplicatedTokens": 98,
+            "percentage": 4.67,
+            "percentageTokens": 3.83,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/fixtures/vehicles.py": {
+            "lines": 239,
+            "tokens": 1302,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 19,
+            "duplicatedTokens": 98,
+            "percentage": 7.95,
+            "percentageTokens": 7.53,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/fixtures/__init__.py": {
+            "lines": 32,
+            "tokens": 125,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/e2e/test_full_tco_flow.py": {
+            "lines": 293,
+            "tokens": 2424,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/utils/safe_operations.py": {
+            "lines": 186,
+            "tokens": 838,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/utils/pandas_helpers.py": {
+            "lines": 95,
+            "tokens": 607,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/utils/finance.py": {
+            "lines": 154,
+            "tokens": 759,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/utils/energy.py": {
+            "lines": 178,
+            "tokens": 1023,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/utils/data_access.py": {
+            "lines": 97,
+            "tokens": 655,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/utils/calculation_optimisations.py": {
+            "lines": 184,
+            "tokens": 969,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/utils/battery.py": {
+            "lines": 105,
+            "tokens": 513,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/services/helpers/__init__.py": {
+            "lines": 135,
+            "tokens": 779,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/domain/sensitivity/tornado.py": {
+            "lines": 113,
+            "tokens": 874,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 11,
+            "duplicatedTokens": 104,
+            "percentage": 9.73,
+            "percentageTokens": 11.9,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/domain/sensitivity/single_param.py": {
+            "lines": 266,
+            "tokens": 1467,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 11,
+            "duplicatedTokens": 104,
+            "percentage": 4.14,
+            "percentageTokens": 7.09,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/domain/sensitivity/metrics.py": {
+            "lines": 120,
+            "tokens": 1045,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/domain/sensitivity/externality.py": {
+            "lines": 84,
+            "tokens": 588,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/domain/sensitivity/__init__.py": {
+            "lines": 16,
+            "tokens": 71,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/summary_displays.py": {
+            "lines": 82,
+            "tokens": 522,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/metric_cards.py": {
+            "lines": 132,
+            "tokens": 756,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/context_builder.py": {
+            "lines": 74,
+            "tokens": 496,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/context.py": {
+            "lines": 60,
+            "tokens": 307,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/components.py": {
+            "lines": 21,
+            "tokens": 88,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/ui/calculation_orchestrator.py": {
+            "lines": 389,
+            "tokens": 2720,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/tests/conftest.py": {
+            "lines": 13,
+            "tokens": 75,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/imports.py": {
+            "lines": 62,
+            "tokens": 237,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/exceptions.py": {
+            "lines": 56,
+            "tokens": 371,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/data_loading.py": {
+            "lines": 82,
+            "tokens": 489,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/constants.py": {
+            "lines": 184,
+            "tokens": 925,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/config.py": {
+            "lines": 127,
+            "tokens": 672,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/src/__init__.py": {
+            "lines": 77,
+            "tokens": 298,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/services/tco_calculation_service.py": {
+            "lines": 481,
+            "tokens": 2944,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/services/scenario_service.py": {
+            "lines": 106,
+            "tokens": 686,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/services/scenario_application_service.py": {
+            "lines": 301,
+            "tokens": 2086,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/services/dtos.py": {
+            "lines": 133,
+            "tokens": 839,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/services/data_cache.py": {
+            "lines": 125,
+            "tokens": 970,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/services/__init__.py": {
+            "lines": 19,
+            "tokens": 64,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/plotters/tornado.py": {
+            "lines": 62,
+            "tokens": 507,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/plotters/sensitivity.py": {
+            "lines": 130,
+            "tokens": 1109,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/plotters/payload.py": {
+            "lines": 145,
+            "tokens": 1050,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/plotters/key_metrics.py": {
+            "lines": 97,
+            "tokens": 729,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/plotters/emissions.py": {
+            "lines": 52,
+            "tokens": 394,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/plotters/cost_breakdown.py": {
+            "lines": 190,
+            "tokens": 1671,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/plotters/charging_mix.py": {
+            "lines": 73,
+            "tokens": 534,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/plotters/__init__.py": {
+            "lines": 18,
+            "tokens": 112,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/domain/finance_payload.py": {
+            "lines": 137,
+            "tokens": 913,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/domain/finance.py": {
+            "lines": 408,
+            "tokens": 2912,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 20,
+            "duplicatedTokens": 164,
+            "percentage": 4.9,
+            "percentageTokens": 5.63,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/domain/externalities.py": {
+            "lines": 297,
+            "tokens": 2145,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/domain/energy.py": {
+            "lines": 163,
+            "tokens": 1295,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/domain/__init__.py": {
+            "lines": 19,
+            "tokens": 64,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/repositories.py": {
+            "lines": 90,
+            "tokens": 727,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/main.py": {
+            "lines": 44,
+            "tokens": 243,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 11309,
+          "tokens": 76717,
+          "sources": 80,
+          "clones": 10,
+          "duplicatedLines": 158,
+          "duplicatedTokens": 1031,
+          "percentage": 1.4,
+          "percentageTokens": 1.34,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "css": {
+        "sources": {
+          "tco_app/assets/styles.css": {
+            "lines": 637,
+            "tokens": 3855,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 637,
+          "tokens": 3855,
+          "sources": 1,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "markdown": {
+        "sources": {
+          "tco_app/requirements.txt": {
+            "lines": 10,
+            "tokens": 20,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "tco_app/README.md": {
+            "lines": 90,
+            "tokens": 646,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 100,
+          "tokens": 666,
+          "sources": 2,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      }
+    },
+    "total": {
+      "lines": 12046,
+      "tokens": 81238,
+      "sources": 83,
+      "clones": 10,
+      "duplicatedLines": 158,
+      "duplicatedTokens": 1031,
+      "percentage": 1.31,
+      "percentageTokens": 1.27,
+      "newDuplicatedLines": 0,
+      "newClones": 0
+    }
+  },
+  "duplicates": [
+    {
+      "format": "python",
+      "lines": 18,
+      "fragment": "}\n        \n        diesel_results = {\n            'acquisition_cost': 150000,\n            'residual_value': 30000,\n            'annual_costs': {'annual_operating_cost': 75000},\n            'emissions': {'lifetime_emissions': 938000},\n            'tco': {'npv_total_cost': 850000},\n        }\n\n        metrics = calculate_comparative_metrics(\n            bev_results=bev_results,\n            diesel_results=diesel_results,\n            annual_kms=100000,\n            truck_life_years=10\n        )\n\n        # The battery replacement should affect the price parity year",
+      "tokens": 0,
+      "firstFile": {
+        "name": "tco_app/tests/unit/domain/sensitivity/test_metrics.py",
+        "start": 161,
+        "end": 178,
+        "startLoc": {
+          "line": 161,
+          "column": 9,
+          "position": 1058
+        },
+        "endLoc": {
+          "line": 178,
+          "column": 62,
+          "position": 1159
+        }
+      },
+      "secondFile": {
+        "name": "tco_app/tests/unit/domain/sensitivity/test_metrics.py",
+        "start": 130,
+        "end": 147,
+        "startLoc": {
+          "line": 130,
+          "column": 9,
+          "position": 841
+        },
+        "endLoc": {
+          "line": 147,
+          "column": 86,
+          "position": 942
+        }
+      }
+    },
+    {
+      "format": "python",
+      "lines": 19,
+      "fragment": ",\n        }\n        \n        diesel_results = {\n            'acquisition_cost': 150000,\n            'residual_value': 30000,\n            'annual_costs': {'annual_operating_cost': 75000},\n            'emissions': {'lifetime_emissions': 938000},\n            'tco': {'npv_total_cost': 850000},\n        }\n\n        metrics = calculate_comparative_metrics(\n            bev_results=bev_results,\n            diesel_results=diesel_results,\n            annual_kms=100000,\n            truck_life_years=10\n        )\n\n        # Price parity should be infinity if never reached",
+      "tokens": 0,
+      "firstFile": {
+        "name": "tco_app/tests/unit/domain/sensitivity/test_metrics.py",
+        "start": 217,
+        "end": 235,
+        "startLoc": {
+          "line": 217,
+          "column": 2,
+          "position": 1450
+        },
+        "endLoc": {
+          "line": 235,
+          "column": 51,
+          "position": 1554
+        }
+      },
+      "secondFile": {
+        "name": "tco_app/tests/unit/domain/sensitivity/test_metrics.py",
+        "start": 160,
+        "end": 147,
+        "startLoc": {
+          "line": 160,
+          "column": 7,
+          "position": 1055
+        },
+        "endLoc": {
+          "line": 147,
+          "column": 86,
+          "position": 942
+        }
+      }
+    },
+    {
+      "format": "python",
+      "lines": 19,
+      "fragment": "}\n        }\n        \n        diesel_results = {\n            'acquisition_cost': 150000,\n            'residual_value': 30000,\n            'annual_costs': {'annual_operating_cost': 75000},\n            'emissions': {'lifetime_emissions': 938000},\n            'tco': {'npv_total_cost': 850000},\n        }\n\n        metrics = calculate_comparative_metrics(\n            bev_results=bev_results,\n            diesel_results=diesel_results,\n            annual_kms=100000,\n            truck_life_years=10\n        )\n\n        # With infrastructure replacement at year 5, price parity should be delayed",
+      "tokens": 0,
+      "firstFile": {
+        "name": "tco_app/tests/unit/domain/sensitivity/test_metrics.py",
+        "start": 252,
+        "end": 270,
+        "startLoc": {
+          "line": 252,
+          "column": 13,
+          "position": 1688
+        },
+        "endLoc": {
+          "line": 270,
+          "column": 76,
+          "position": 1792
+        }
+      },
+      "secondFile": {
+        "name": "tco_app/tests/unit/domain/sensitivity/test_metrics.py",
+        "start": 129,
+        "end": 147,
+        "startLoc": {
+          "line": 129,
+          "column": 13,
+          "position": 838
+        },
+        "endLoc": {
+          "line": 147,
+          "column": 86,
+          "position": 942
+        }
+      }
+    },
+    {
+      "format": "python",
+      "lines": 18,
+      "fragment": "}\n        \n        diesel_results = {\n            'acquisition_cost': 150000,\n            'residual_value': 30000,\n            'annual_costs': {'annual_operating_cost': 75000},\n            'emissions': {'lifetime_emissions': 938000},\n            'tco': {'npv_total_cost': 850000},\n        }\n\n        metrics = calculate_comparative_metrics(\n            bev_results=bev_results,\n            diesel_results=diesel_results,\n            annual_kms=100000,\n            truck_life_years=10\n        )\n\n        # Should handle negative NPV correctly",
+      "tokens": 0,
+      "firstFile": {
+        "name": "tco_app/tests/unit/domain/sensitivity/test_metrics.py",
+        "start": 310,
+        "end": 327,
+        "startLoc": {
+          "line": 310,
+          "column": 9,
+          "position": 2076
+        },
+        "endLoc": {
+          "line": 327,
+          "column": 39,
+          "position": 2177
+        }
+      },
+      "secondFile": {
+        "name": "tco_app/tests/unit/domain/sensitivity/test_metrics.py",
+        "start": 130,
+        "end": 147,
+        "startLoc": {
+          "line": 130,
+          "column": 9,
+          "position": 841
+        },
+        "endLoc": {
+          "line": 147,
+          "column": 86,
+          "position": 942
+        }
+      }
+    },
+    {
+      "format": "python",
+      "lines": 14,
+      "fragment": "standard_financial_params = pd.DataFrame([\n            {\"finance_description\": \"diesel_price\", \"default_value\": 2.0},\n            {\"finance_description\": \"discount_rate_percent\", \"default_value\": 0.07},\n            {\"finance_description\": \"freight_value_per_tonne\", \"default_value\": 120},\n            {\"finance_description\": \"driver_cost_hourly\", \"default_value\": 35},\n            {\"finance_description\": \"avg_trip_distance\", \"default_value\": 100},\n            {\"finance_description\": \"avg_loadunload_time\", \"default_value\": 1},\n        ])\n\n        penalty = calculate_payload_penalty_costs(\n            bev_results, diesel_results, standard_financial_params\n        )\n\n        assert penalty[\"has_penalty\"] is True",
+      "tokens": 0,
+      "firstFile": {
+        "name": "tco_app/tests/unit/domain/test_finance_payload.py",
+        "start": 97,
+        "end": 110,
+        "startLoc": {
+          "line": 97,
+          "column": 9,
+          "position": 665
+        },
+        "endLoc": {
+          "line": 110,
+          "column": 5,
+          "position": 801
+        }
+      },
+      "secondFile": {
+        "name": "tco_app/tests/unit/domain/test_finance_payload.py",
+        "start": 46,
+        "end": 59,
+        "startLoc": {
+          "line": 46,
+          "column": 9,
+          "position": 275
+        },
+        "endLoc": {
+          "line": 59,
+          "column": 6,
+          "position": 411
+        }
+      }
+    },
+    {
+      "format": "python",
+      "lines": 19,
+      "fragment": "@pytest.fixture\ndef dummy_financial_params():\n    return pd.DataFrame(\n        [\n            {\"finance_description\": \"diesel_price\", \"default_value\": 2.0},\n        ]\n    )\n\n\n@pytest.fixture\ndef dummy_charging_options():\n    return pd.DataFrame(\n        [\n            {\"charging_id\": \"C1\", \"per_kwh_price\": 0.25},\n        ]\n    )\n\n\ndef",
+      "tokens": 0,
+      "firstFile": {
+        "name": "tco_app/tests/unit/domain/test_calculation_delegation.py",
+        "start": 14,
+        "end": 32,
+        "startLoc": {
+          "line": 14,
+          "column": 1,
+          "position": 117
+        },
+        "endLoc": {
+          "line": 32,
+          "column": 4,
+          "position": 207
+        }
+      },
+      "secondFile": {
+        "name": "tco_app/tests/unit/utils/test_calculations.py",
+        "start": 12,
+        "end": 30,
+        "startLoc": {
+          "line": 12,
+          "column": 1,
+          "position": 83
+        },
+        "endLoc": {
+          "line": 30,
+          "column": 8,
+          "position": 173
+        }
+      }
+    },
+    {
+      "format": "python",
+      "lines": 18,
+      "fragment": "vehicle_data = {\n        \"vehicle_drivetrain\": Drivetrain.BEV,\n        \"battery_capacity_kwh\": 400,\n    }\n    battery_params = pd.DataFrame(\n        [\n            {\"battery_description\": \"replacement_per_kwh_price\", \"default_value\": 100},\n            {\n                \"battery_description\": \"degradation_annual_percent\",\n                \"default_value\": 0.05,\n            },\n            {\"battery_description\": \"minimum_capacity_percent\", \"default_value\": 0.7},\n        ]\n    )\n    life_years = 8\n    rate = 0.07\n\n    expected",
+      "tokens": 0,
+      "firstFile": {
+        "name": "tco_app/tests/unit/domain/test_calculation_delegation.py",
+        "start": 77,
+        "end": 94,
+        "startLoc": {
+          "line": 77,
+          "column": 5,
+          "position": 466
+        },
+        "endLoc": {
+          "line": 94,
+          "column": 9,
+          "position": 577
+        }
+      },
+      "secondFile": {
+        "name": "tco_app/tests/unit/utils/test_calculations.py",
+        "start": 103,
+        "end": 120,
+        "startLoc": {
+          "line": 103,
+          "column": 5,
+          "position": 691
+        },
+        "endLoc": {
+          "line": 120,
+          "column": 61,
+          "position": 802
+        }
+      }
+    },
+    {
+      "format": "python",
+      "lines": 20,
+      "fragment": "return pd.DataFrame(\n        [\n            {\n                \"vehicle_class\": \"Articulated\",\n                \"drivetrain\": Drivetrain.BEV,\n                \"pollutant_type\": \"externalities_total\",\n                \"cost_per_km\": 0.03,\n            },\n            {\n                \"vehicle_class\": \"Articulated\",\n                \"drivetrain\": Drivetrain.DIESEL,\n                \"pollutant_type\": \"externalities_total\",\n                \"cost_per_km\": 0.07,\n            },\n        ]\n    )\n\n\n@pytest.fixture\ndef standard_infrastructure_options",
+      "tokens": 0,
+      "firstFile": {
+        "name": "tco_app/tests/fixtures/vehicles.py",
+        "start": 182,
+        "end": 201,
+        "startLoc": {
+          "line": 182,
+          "column": 5,
+          "position": 991
+        },
+        "endLoc": {
+          "line": 201,
+          "column": 32,
+          "position": 1089
+        }
+      },
+      "secondFile": {
+        "name": "tco_app/tests/integration/test_tco_calculation.py",
+        "start": 199,
+        "end": 215,
+        "startLoc": {
+          "line": 199,
+          "column": 9,
+          "position": 1245
+        },
+        "endLoc": {
+          "line": 215,
+          "column": 11,
+          "position": 1341
+        }
+      }
+    },
+    {
+      "format": "python",
+      "lines": 12,
+      "fragment": ": pd.DataFrame,\n    emission_factors: pd.DataFrame,\n    incentives: pd.DataFrame,\n    selected_charging: Any,\n    selected_infrastructure: Any,\n    annual_kms: int,\n    truck_life_years: int,\n    discount_rate: float,\n    fleet_size: int,\n    charging_mix: Dict[int, float] | None = None,\n    apply_incentives: bool = True,\n) -> List",
+      "tokens": 0,
+      "firstFile": {
+        "name": "tco_app/domain/sensitivity/single_param.py",
+        "start": 52,
+        "end": 63,
+        "startLoc": {
+          "line": 52,
+          "column": 15,
+          "position": 282
+        },
+        "endLoc": {
+          "line": 63,
+          "column": 5,
+          "position": 386
+        }
+      },
+      "secondFile": {
+        "name": "tco_app/domain/sensitivity/tornado.py",
+        "start": 29,
+        "end": 40,
+        "startLoc": {
+          "line": 29,
+          "column": 23,
+          "position": 152
+        },
+        "endLoc": {
+          "line": 40,
+          "column": 5,
+          "position": 256
+        }
+      }
+    },
+    {
+      "format": "python",
+      "lines": 11,
+      "fragment": "and vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV\n    ):\n        active = incentives_data[\n            (incentives_data[\"incentive_flag\"] == 1)\n            & (\n                (incentives_data[\"drivetrain\"] == Drivetrain.BEV)\n                | (incentives_data[\"drivetrain\"] == Drivetrain.ALL)\n            )\n        ]\n\n        purchase_rebate",
+      "tokens": 0,
+      "firstFile": {
+        "name": "tco_app/domain/finance.py",
+        "start": 190,
+        "end": 200,
+        "startLoc": {
+          "line": 190,
+          "column": 9,
+          "position": 1263
+        },
+        "endLoc": {
+          "line": 200,
+          "column": 16,
+          "position": 1345
+        }
+      },
+      "secondFile": {
+        "name": "tco_app/domain/finance.py",
+        "start": 99,
+        "end": 109,
+        "startLoc": {
+          "line": 99,
+          "column": 9,
+          "position": 587
+        },
+        "endLoc": {
+          "line": 109,
+          "column": 23,
+          "position": 669
+        }
+      }
+    }
+  ]
+}

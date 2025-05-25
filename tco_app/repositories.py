@@ -5,8 +5,7 @@ These repositories will provide an abstraction layer for accessing data,
 initially from in-memory DataFrames, but could be adapted for other sources.
 """
 
-from tco_app.src import logging
-from tco_app.src import pd, Dict, Any
+from tco_app.src import pd, Dict
 from tco_app.src.exceptions import (
     VehicleNotFoundError,
 )  # Assuming this exception exists
@@ -24,7 +23,7 @@ class VehicleRepository:
             or "vehicle_id" not in self.vehicle_models_df.columns
         ):
             raise VehicleNotFoundError(
-                f"Vehicle models data is empty or 'vehicle_id' column is missing."
+                "Vehicle models data is empty or 'vehicle_id' column is missing."
             )
 
         vehicle_data = self.vehicle_models_df[

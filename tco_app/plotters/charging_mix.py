@@ -30,8 +30,8 @@ def create_charging_mix_chart(bev_results):
             prices.append(option[DataColumns.PER_KWH_PRICE])
 
     hover_text = [
-        f"{l}: {v:.1f}%<br>Price: ${p:.2f}/kWh"
-        for l, v, p in zip(labels, values, prices)
+        f"{label}: {v:.1f}%<br>Price: ${p:.2f}/kWh"
+        for label, v, p in zip(labels, values, prices)
     ]
 
     fig = go.Figure(

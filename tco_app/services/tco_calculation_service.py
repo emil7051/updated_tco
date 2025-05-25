@@ -1,6 +1,6 @@
 """Consolidated TCO Calculation Service."""
 
-from tco_app.src import pd, logging, dataclass, field, datetime, Dict, Any, Optional
+from tco_app.src import logging, Dict, Any
 
 from tco_app.repositories import VehicleRepository, ParametersRepository  # Added
 
@@ -26,7 +26,6 @@ from tco_app.src.utils.energy import weighted_electricity_price  # Used by model
 
 # NEW: centralised DTOs
 from tco_app.services.dtos import (
-    CalculationParameters,
     CalculationRequest,
     TCOResult,
     ComparisonResult,

@@ -72,9 +72,7 @@ def render():
         )
 
         st.markdown(
-            """
-			Values below 1.0 indicate BEV is more cost-effective. The gap between the lines shows the economic impact of payload limitations at higher utilisation.
-			"""
+            """Values below 1.0 indicate BEV is more cost-effective. The gap between the lines shows the economic impact of payload limitations at higher utilisation."""
         )
     else:
         if sensitivity_param == "Annual Distance (km)":

@@ -58,7 +58,9 @@ class DataColumns(str, Enum):
     RANGE_KM = "range_km"
     MAX_ANNUAL_DISTANCE_KM = "max_annual_distance_km"  # Maximum annual distance
     BATTERY_CAPACITY_KWH = "battery_capacity_kwh"
-    VEHICLE_BATTERY_CAPACITY_KWH = "battery_capacity_kwh"  # Alias for backward compatibility
+    VEHICLE_BATTERY_CAPACITY_KWH = (
+        "battery_capacity_kwh"  # Alias for backward compatibility
+    )
     BATTERY_EFFICIENCY = "battery_efficiency"  # Battery charging/discharging efficiency
     KWH_PER100KM = "kwh_per100km"
     LITRES_PER100KM = "litres_per100km"
@@ -79,7 +81,9 @@ class DataColumns(str, Enum):
     CHARGER_POWER = "charger_power"  # Charger power in kW
     CHARGER_EFFICIENCY = "charger_efficiency"  # Charging efficiency (0-1)
     UTILIZATION_HOURS = "utilization_hours"  # Daily utilization hours
-    ANNUAL_MAINTENANCE_COST = "annual_maintenance_cost"  # Annual maintenance cost for infrastructure
+    ANNUAL_MAINTENANCE_COST = (
+        "annual_maintenance_cost"  # Annual maintenance cost for infrastructure
+    )
 
     # Emissions
     FUEL_TYPE = "fuel_type"

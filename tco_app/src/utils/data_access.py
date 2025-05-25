@@ -1,6 +1,6 @@
 """Data access utilities for structured DataFrames."""
 
-from typing import Any, Optional, Dict
+from typing import Any, Dict
 from tco_app.src.constants import DataColumns, ParameterKeys
 from tco_app.src import pd
 from .pandas_helpers import get_parameter_value

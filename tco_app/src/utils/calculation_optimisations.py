@@ -42,10 +42,24 @@ def vectorised_annual_costs(
 
     factor = 1.0 + growth_rate
 
-    # Use Python's pow for accuracy. Cache ensures performance for repeat calls.
-    result = [base_cost * (factor**i) for i in range(years)]
-
-    result_array = np.array(result, dtype=float)
+    # For very small vectors, use pure Python to avoid NumPy overhead
+    if years <= 100:
+        result = []
+        for year in range(years):
+            cost = base_cost * (factor**year)
+            result.append(cost)
+        result_array = np.array(result)
+    # For medium vectors, use NumPy pre-allocation with direct calculation for precision
+    elif years <= 1000:
+        out = np.empty(years, dtype=float)
+        for i in range(years):
+            out[i] = base_cost * (factor**i)
+        result_array = out
+    # For large vectors, NumPy vectorisation becomes beneficial
+    else:
+        exponents = np.arange(years, dtype=float)
+        result_array = base_cost * np.power(factor, exponents)
+    
     _VECTORISED_CACHE[key] = result_array
     return result_array
 

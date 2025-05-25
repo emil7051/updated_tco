@@ -126,12 +126,13 @@ def _smoke_render(module_path: str) -> None:
     # Mock the re-exported streamlit from tco_app.src
     import tco_app.src.imports as _imports
     import tco_app.src as _src
-    
+
     # Replace the imported streamlit with our stub
     _imports.st = sys.modules["streamlit"]
     _src.st = sys.modules["streamlit"]
-    
+
     import importlib
+
     module = importlib.import_module(module_path)
     assert hasattr(module, "render")
     module.render()

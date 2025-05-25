@@ -1,6 +1,5 @@
 from tco_app.src import st
 from tco_app.src.utils.pandas_helpers import to_scalar
-from tco_app.src.utils.safe_operations import safe_division
 
 
 def display_metric_card(title, value, unit, tooltip=None, metric_type=None):

@@ -1,7 +1,6 @@
 from tco_app.src import st
 from tco_app.src.constants import DataColumns
 from tco_app.src.utils.pandas_helpers import to_scalar
-from tco_app.src.utils.safe_operations import safe_division
 
 
 def display_summary_metrics(bev_results, diesel_results):
@@ -19,12 +18,12 @@ def display_summary_metrics(bev_results, diesel_results):
     savings = diesel_npv - bev_npv
 
     if savings > 0:
-        st.success("💡 **Electric Vehicle Delivers Lower Total Cost**")
+        st.success(" **Electric Vehicle Delivers Lower Total Cost**")
         st.info(
             f"**${savings:,.0f}** total savings over vehicle lifetime compared to diesel"
         )
     else:
-        st.warning("⚠️ **Diesel Vehicle Has Lower Total Cost**")
+        st.warning(" **Diesel Vehicle Has Lower Total Cost**")
         st.info(
             f"Electric vehicle costs **${abs(savings):,.0f}** more over vehicle lifetime"
         )
@@ -35,7 +34,7 @@ def display_summary_metrics(bev_results, diesel_results):
     with col1:
         with st.container():
             st.markdown(
-                f"### ⚡ {bev_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}"
+                f"### {bev_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}"
             )
 
             # Vehicle details
@@ -59,7 +58,7 @@ def display_summary_metrics(bev_results, diesel_results):
     with col2:
         with st.container():
             st.markdown(
-                f"### ⛽ {diesel_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}"
+                f"### {diesel_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}"
             )
 
             # Vehicle details

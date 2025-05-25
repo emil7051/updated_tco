@@ -5,6 +5,7 @@ from tco_app.src.constants import DataColumns, Drivetrain
 import plotly.express as px
 import plotly.graph_objects as go
 
+
 def create_cost_breakdown_chart(bev_results, diesel_results):
     """Create a stacked bar chart showing cost breakdown"""
     # Prepare data for BEV
