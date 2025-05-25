@@ -3,7 +3,12 @@
 import pytest
 import math
 from unittest.mock import Mock
-from tco_app.domain.sensitivity.metrics import calculate_comparative_metrics
+from tco_app.domain.sensitivity.metrics import (
+    calculate_comparative_metrics,
+    adjust_upfront_costs,
+    accumulate_operating_costs,
+    compute_price_parity,
+)
 from tco_app.src.constants import DataColumns
 
 
@@ -332,3 +337,48 @@ class TestCalculateComparativeMetrics:
 
         # Should handle negative NPV correctly
         assert metrics["bev_to_diesel_tco_ratio"] < 0
+
+
+class TestMetricHelpers:
+    """Unit tests for newly extracted helper functions."""
+
+    def test_adjust_upfront_costs_with_infra(self):
+        bev_results = {
+            "acquisition_cost": 380000,
+            "infrastructure_costs": {
+                DataColumns.INFRASTRUCTURE_PRICE: 50000,
+                "infrastructure_price_with_incentives": 40000,
+                "fleet_size": 10,
+            },
+        }
+        diesel_results = {"acquisition_cost": 150000}
+
+        bev_initial, diesel_initial, diff = adjust_upfront_costs(
+            bev_results, diesel_results
+        )
+
+        assert bev_initial == 380000 + 4000
+        assert diesel_initial == 150000
+        assert diff == (380000 + 4000) - 150000
+
+    def test_operating_costs_and_parity(self):
+        bev_results = {
+            "acquisition_cost": 200000,
+            "residual_value": 40000,
+            "annual_costs": {"annual_operating_cost": 20000},
+        }
+        diesel_results = {
+            "acquisition_cost": 100000,
+            "residual_value": 20000,
+            "annual_costs": {"annual_operating_cost": 30000},
+        }
+
+        bev_cum, diesel_cum = accumulate_operating_costs(
+            bev_results, diesel_results, 10
+        )
+        years = list(range(1, 11))
+        parity = compute_price_parity(bev_cum, diesel_cum, years)
+
+        assert bev_cum[-1] == 340000
+        assert diesel_cum[-1] == 350000
+        assert pytest.approx(parity, rel=1e-3) == 9.666666666666666
