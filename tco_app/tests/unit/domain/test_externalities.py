@@ -52,6 +52,26 @@ class TestExternalitiesDomain:
             }
         }
 
+    def test_calculate_externalities_fallback_table_bev(self):
+        vehicle = pd.Series({
+            DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.BEV,
+            DataColumns.KWH_PER100KM: 50,
+        })
+        factors = pd.DataFrame({"fuel_type": ["electricity"], "co2_per_unit": [2.0]})
+
+        res = calculate_externalities(vehicle, factors, 10000, 5, 0.0)
+
+        expected_per_km = 50 * 2.0 / 1000
+        assert math.isclose(res["externality_per_km"], expected_per_km)
+        assert res["breakdown"] == {
+            "CO2e": {
+                "cost_per_km": expected_per_km,
+                "annual_cost": expected_per_km * 10000,
+                "lifetime_cost": expected_per_km * 10000 * 5,
+                "npv_cost": expected_per_km * 10000 * 5,
+            }
+        }
+
     def test_helper_delegation_detailed(self, monkeypatch):
         vehicle = pd.Series({
             DataColumns.VEHICLE_TYPE: "Rigid",
