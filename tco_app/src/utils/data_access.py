@@ -41,13 +41,6 @@ class ParameterRepository:
         self._cache[key] = value
         return value
 
-    def get_all(self) -> Dict[str, Any]:
-        """Get all parameters as a dictionary."""
-        return dict(zip(self.df[self.key_column], self.df[self.value_column]))
-
-    def clear_cache(self) -> None:
-        """Clear the internal cache."""
-        self._cache.clear()
 
 
 class FinancialParameters(ParameterRepository):
