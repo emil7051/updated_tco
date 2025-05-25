@@ -22,12 +22,127 @@ class ScenarioModification:
     vehicle_drivetrain: str = "All"
 
 
+class ModifierBase:
+    """Base class for all modification handlers."""
+
+    def apply(self, table: pd.DataFrame, mod: ScenarioModification) -> None:
+        raise NotImplementedError
+
+
+class FinancialParamModifier(ModifierBase):
+    """Handler for financial parameter modifications."""
+
+    def apply(self, table: pd.DataFrame, mod: ScenarioModification) -> None:
+        mask = table[DataColumns.FINANCE_DESCRIPTION] == mod.parameter_name
+        if mask.any():
+            table.loc[mask, DataColumns.FINANCE_DEFAULT_VALUE] = mod.parameter_value
+            logger.debug(
+                f"Applied financial parameter: {mod.parameter_name} = {mod.parameter_value}"
+            )
+        else:
+            if mod.parameter_name == "diesel_default_price":
+                mask = table[DataColumns.FINANCE_DESCRIPTION] == "diesel_price"
+                if mask.any():
+                    table.loc[mask, DataColumns.FINANCE_DEFAULT_VALUE] = mod.parameter_value
+                    logger.debug(
+                        f"Applied diesel_default_price to diesel_price: {mod.parameter_value}"
+                    )
+                else:
+                    logger.warning(
+                        "Financial parameter 'diesel_price' not found for diesel_default_price"
+                    )
+            else:
+                logger.warning(f"Financial parameter '{mod.parameter_name}' not found")
+
+
+class BatteryParamModifier(ModifierBase):
+    """Handler for battery parameter modifications."""
+
+    def apply(self, table: pd.DataFrame, mod: ScenarioModification) -> None:
+        mask = table[DataColumns.BATTERY_DESCRIPTION] == mod.parameter_name
+        if mask.any():
+            table.loc[mask, DataColumns.BATTERY_DEFAULT_VALUE] = mod.parameter_value
+            logger.debug(
+                f"Applied battery parameter: {mod.parameter_name} = {mod.parameter_value}"
+            )
+        else:
+            logger.warning(f"Battery parameter '{mod.parameter_name}' not found")
+
+
+class VehicleModifier(ModifierBase):
+    """Handler for vehicle model modifications."""
+
+    def apply(self, table: pd.DataFrame, mod: ScenarioModification) -> None:
+        mask = table[DataColumns.VEHICLE_DRIVETRAIN] == mod.vehicle_drivetrain
+        if mod.vehicle_type != "All":
+            mask &= table[DataColumns.VEHICLE_TYPE] == mod.vehicle_type
+
+        if not mask.any():
+            logger.warning(
+                f"No vehicles found for type '{mod.vehicle_type}' and drivetrain '{mod.vehicle_drivetrain}'"
+            )
+            return
+
+        if mod.parameter_name == "msrp_price_modifier":
+            for idx in table[mask].index:
+                original_value = table.at[idx, DataColumns.MSRP_PRICE]
+                table.at[idx, DataColumns.MSRP_PRICE] = original_value * mod.parameter_value
+        elif mod.parameter_name == "kwh_per100km_modifier":
+            for idx in table[mask].index:
+                original_value = table.at[idx, DataColumns.KWH_PER100KM]
+                table.at[idx, DataColumns.KWH_PER100KM] = original_value * mod.parameter_value
+        elif mod.parameter_name == "range_km_modifier":
+            for idx in table[mask].index:
+                original_value = table.at[idx, DataColumns.RANGE_KM]
+                table.at[idx, DataColumns.RANGE_KM] = original_value * mod.parameter_value
+        else:
+            logger.warning(f"Unknown vehicle modifier: {mod.parameter_name}")
+            return
+
+        logger.debug(
+            f"Applied vehicle modifier {mod.parameter_name} = {mod.parameter_value} to {mask.sum()} vehicles"
+        )
+
+
+class IncentiveModifier(ModifierBase):
+    """Handler for incentive modifications."""
+
+    def apply(self, table: pd.DataFrame, mod: ScenarioModification) -> None:
+        if "." not in mod.parameter_name:
+            logger.warning(f"Invalid incentive parameter format: {mod.parameter_name}")
+            return
+
+        incentive_type, incentive_field = mod.parameter_name.split(".", 1)
+
+        mask = table["incentive_type"] == incentive_type
+        if mod.vehicle_type != "All":
+            mask &= table["vehicle_type"] == mod.vehicle_type
+        if mod.vehicle_drivetrain != "All":
+            mask &= table["drivetrain"] == mod.vehicle_drivetrain
+
+        if mask.any():
+            for idx in table[mask].index:
+                table.at[idx, incentive_field] = mod.parameter_value
+            logger.debug(
+                f"Applied incentive {incentive_type}.{incentive_field} = {mod.parameter_value} to {mask.sum()} incentive entries"
+            )
+        else:
+            logger.warning(
+                f"No matching incentive for {incentive_type} VT={mod.vehicle_type} DR={mod.vehicle_drivetrain}"
+            )
+
 class ScenarioApplicationService:
     """Service for applying scenario modifications to data tables."""
 
     def __init__(self):
         """Initialise scenario application service."""
         self.applied_modifications = []
+        self.handlers = {
+            "financial_params": FinancialParamModifier(),
+            "battery_params": BatteryParamModifier(),
+            "vehicle_models": VehicleModifier(),
+            "incentives": IncentiveModifier(),
+        }
 
     def parse_scenario_params(
         self, scenario_params: pd.DataFrame
@@ -163,135 +278,12 @@ class ScenarioApplicationService:
             raise ScenarioError(f"Table '{mod.table_name}' not found in data tables")
 
         table = tables[mod.table_name]
-
-        # Route to appropriate handler
-        if mod.table_name == "financial_params":
-            self._apply_financial_param(table, mod)
-        elif mod.table_name == "battery_params":
-            self._apply_battery_param(table, mod)
-        elif mod.table_name == "vehicle_models":
-            self._apply_vehicle_modifier(table, mod)
-        elif mod.table_name == "incentives":
-            self._apply_incentive_modifier(table, mod)
+        handler = self.handlers.get(mod.table_name)
+        if handler:
+            handler.apply(table, mod)
         else:
             logger.warning(f"No handler for table '{mod.table_name}'")
 
-    def _apply_financial_param(
-        self, table: pd.DataFrame, mod: ScenarioModification
-    ) -> None:
-        """Apply modification to financial parameters."""
-        mask = table[DataColumns.FINANCE_DESCRIPTION] == mod.parameter_name
-        if mask.any():
-            table.loc[mask, DataColumns.FINANCE_DEFAULT_VALUE] = mod.parameter_value
-            logger.debug(
-                f"Applied financial parameter: {mod.parameter_name} = {mod.parameter_value}"
-            )
-        else:
-            # Handle special case for diesel_default_price -> diesel_price mapping
-            if mod.parameter_name == "diesel_default_price":
-                mask = table[DataColumns.FINANCE_DESCRIPTION] == "diesel_price"
-                if mask.any():
-                    table.loc[mask, DataColumns.FINANCE_DEFAULT_VALUE] = (
-                        mod.parameter_value
-                    )
-                    logger.debug(
-                        f"Applied diesel_default_price to diesel_price: {mod.parameter_value}"
-                    )
-                else:
-                    logger.warning(
-                        "Financial parameter 'diesel_price' not found for diesel_default_price"
-                    )
-            else:
-                logger.warning(f"Financial parameter '{mod.parameter_name}' not found")
-
-    def _apply_battery_param(
-        self, table: pd.DataFrame, mod: ScenarioModification
-    ) -> None:
-        """Apply modification to battery parameters."""
-        mask = table[DataColumns.BATTERY_DESCRIPTION] == mod.parameter_name
-        if mask.any():
-            table.loc[mask, DataColumns.BATTERY_DEFAULT_VALUE] = mod.parameter_value
-            logger.debug(
-                f"Applied battery parameter: {mod.parameter_name} = {mod.parameter_value}"
-            )
-        else:
-            logger.warning(f"Battery parameter '{mod.parameter_name}' not found")
-
-    def _apply_vehicle_modifier(
-        self, table: pd.DataFrame, mod: ScenarioModification
-    ) -> None:
-        """Apply modification to vehicle models."""
-        # Build mask for target vehicles
-        mask = table[DataColumns.VEHICLE_DRIVETRAIN] == mod.vehicle_drivetrain
-        if mod.vehicle_type != "All":
-            mask &= table[DataColumns.VEHICLE_TYPE] == mod.vehicle_type
-
-        if not mask.any():
-            logger.warning(
-                f"No vehicles found for type '{mod.vehicle_type}' and drivetrain '{mod.vehicle_drivetrain}'"
-            )
-            return
-
-        # Apply modifier based on parameter name
-        if mod.parameter_name == "msrp_price_modifier":
-            for idx in table[mask].index:
-                original_value = table.at[idx, DataColumns.MSRP_PRICE]
-                table.at[idx, DataColumns.MSRP_PRICE] = (
-                    original_value * mod.parameter_value
-                )
-
-        elif mod.parameter_name == "kwh_per100km_modifier":
-            for idx in table[mask].index:
-                original_value = table.at[idx, DataColumns.KWH_PER100KM]
-                table.at[idx, DataColumns.KWH_PER100KM] = (
-                    original_value * mod.parameter_value
-                )
-
-        elif mod.parameter_name == "range_km_modifier":
-            for idx in table[mask].index:
-                original_value = table.at[idx, DataColumns.RANGE_KM]
-                table.at[idx, DataColumns.RANGE_KM] = (
-                    original_value * mod.parameter_value
-                )
-
-        else:
-            logger.warning(f"Unknown vehicle modifier: {mod.parameter_name}")
-            return
-
-        logger.debug(
-            f"Applied vehicle modifier {mod.parameter_name} = {mod.parameter_value} "
-            f"to {mask.sum()} vehicles"
-        )
-
-    def _apply_incentive_modifier(
-        self, table: pd.DataFrame, mod: ScenarioModification
-    ) -> None:
-        """Apply modification to incentives."""
-        if "." not in mod.parameter_name:
-            logger.warning(f"Invalid incentive parameter format: {mod.parameter_name}")
-            return
-
-        incentive_type, incentive_field = mod.parameter_name.split(".", 1)
-
-        # Build mask for target incentives
-        mask = table["incentive_type"] == incentive_type
-        if mod.vehicle_type != "All":
-            mask &= table["vehicle_type"] == mod.vehicle_type
-        if mod.vehicle_drivetrain != "All":
-            mask &= table["drivetrain"] == mod.vehicle_drivetrain
-
-        if mask.any():
-            for idx in table[mask].index:
-                table.at[idx, incentive_field] = mod.parameter_value
-            logger.debug(
-                f"Applied incentive {incentive_type}.{incentive_field} = {mod.parameter_value} "
-                f"to {mask.sum()} incentive entries"
-            )
-        else:
-            logger.warning(
-                f"No matching incentive for {incentive_type} "
-                f"VT={mod.vehicle_type} DR={mod.vehicle_drivetrain}"
-            )
 
     def get_applied_modifications(self) -> List[ScenarioModification]:
         """Get list of modifications that were applied."""

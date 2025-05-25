@@ -7,9 +7,99 @@ from dataclasses import asdict
 from tco_app.services.scenario_application_service import (
     ScenarioApplicationService,
     ScenarioModification,
+    FinancialParamModifier,
+    BatteryParamModifier,
+    VehicleModifier,
+    IncentiveModifier,
 )
 from tco_app.src.constants import DataColumns
 from tco_app.src.exceptions import ScenarioError
+
+
+@pytest.fixture
+def sample_data_tables():
+    """Create sample data tables for testing."""
+    financial_params = pd.DataFrame(
+        [
+            {"finance_description": "diesel_price", "default_value": 2.0},
+            {"finance_description": "discount_rate_percent", "default_value": 0.07},
+        ]
+    )
+
+    battery_params = pd.DataFrame(
+        [
+            {
+                "battery_description": "replacement_per_kwh_price",
+                "default_value": 100.0,
+            },
+            {
+                "battery_description": "degradation_annual_percent",
+                "default_value": 0.05,
+            },
+        ]
+    )
+
+    vehicle_models = pd.DataFrame(
+        [
+            {
+                "vehicle_id": "BEV1",
+                "vehicle_type": "Articulated",
+                "vehicle_drivetrain": "BEV",
+                "msrp_price": 300000,
+                "kwh_per100km": 100,
+                "range_km": 400,
+            },
+            {
+                "vehicle_id": "DIESEL1",
+                "vehicle_type": "Articulated",
+                "vehicle_drivetrain": "Diesel",
+                "msrp_price": 200000,
+                "kwh_per100km": 0,
+                "range_km": 800,
+            },
+        ]
+    )
+
+    incentives = pd.DataFrame(
+        [
+            {
+                "incentive_type": "purchase_rebate_aud",
+                "vehicle_type": "All",
+                "drivetrain": "BEV",
+                "incentive_flag": 1,
+                "incentive_rate": 50000,
+            }
+        ]
+    )
+
+    scenario_params = pd.DataFrame(
+        [
+            {
+                "scenario_id": "S001",
+                "parameter_table": "financial_params",
+                "parameter_name": "diesel_price",
+                "parameter_value": 2.5,
+                "vehicle_type": "All",
+                "vehicle_drivetrain": "All",
+            },
+            {
+                "scenario_id": "S001",
+                "parameter_table": "vehicle_models",
+                "parameter_name": "msrp_price_modifier",
+                "parameter_value": 0.9,
+                "vehicle_type": "Articulated",
+                "vehicle_drivetrain": "BEV",
+            },
+        ]
+    )
+
+    return {
+        "financial_params": financial_params,
+        "battery_params": battery_params,
+        "vehicle_models": vehicle_models,
+        "incentives": incentives,
+        "scenario_params": scenario_params,
+    }
 
 
 class TestScenarioApplicationService:
@@ -20,90 +110,6 @@ class TestScenarioApplicationService:
         """Create a ScenarioApplicationService instance."""
         return ScenarioApplicationService()
 
-    @pytest.fixture
-    def sample_data_tables(self):
-        """Create sample data tables for testing."""
-        financial_params = pd.DataFrame(
-            [
-                {"finance_description": "diesel_price", "default_value": 2.0},
-                {"finance_description": "discount_rate_percent", "default_value": 0.07},
-            ]
-        )
-
-        battery_params = pd.DataFrame(
-            [
-                {
-                    "battery_description": "replacement_per_kwh_price",
-                    "default_value": 100.0,
-                },
-                {
-                    "battery_description": "degradation_annual_percent",
-                    "default_value": 0.05,
-                },
-            ]
-        )
-
-        vehicle_models = pd.DataFrame(
-            [
-                {
-                    "vehicle_id": "BEV1",
-                    "vehicle_type": "Articulated",
-                    "vehicle_drivetrain": "BEV",
-                    "msrp_price": 300000,
-                    "kwh_per100km": 100,
-                    "range_km": 400,
-                },
-                {
-                    "vehicle_id": "DIESEL1",
-                    "vehicle_type": "Articulated",
-                    "vehicle_drivetrain": "Diesel",
-                    "msrp_price": 200000,
-                    "kwh_per100km": 0,
-                    "range_km": 800,
-                },
-            ]
-        )
-
-        incentives = pd.DataFrame(
-            [
-                {
-                    "incentive_type": "purchase_rebate_aud",
-                    "vehicle_type": "All",
-                    "drivetrain": "BEV",
-                    "incentive_flag": 1,
-                    "incentive_rate": 50000,
-                }
-            ]
-        )
-
-        scenario_params = pd.DataFrame(
-            [
-                {
-                    "scenario_id": "S001",
-                    "parameter_table": "financial_params",
-                    "parameter_name": "diesel_price",
-                    "parameter_value": 2.5,
-                    "vehicle_type": "All",
-                    "vehicle_drivetrain": "All",
-                },
-                {
-                    "scenario_id": "S001",
-                    "parameter_table": "vehicle_models",
-                    "parameter_name": "msrp_price_modifier",
-                    "parameter_value": 0.9,
-                    "vehicle_type": "Articulated",
-                    "vehicle_drivetrain": "BEV",
-                },
-            ]
-        )
-
-        return {
-            "financial_params": financial_params,
-            "battery_params": battery_params,
-            "vehicle_models": vehicle_models,
-            "incentives": incentives,
-            "scenario_params": scenario_params,
-        }
 
     def test_parse_scenario_params(self, service):
         """Test parsing scenario parameters into modification objects."""
@@ -338,3 +344,64 @@ class TestScenarioApplicationService:
         mod_dict = asdict(mod)
         assert mod_dict["table_name"] == "test_table"
         assert mod_dict["parameter_value"] == 123.45
+
+
+class TestModifierHandlers:
+    """Ensure individual handlers modify tables correctly."""
+
+    def test_financial_param_modifier(self, sample_data_tables):
+        table = sample_data_tables["financial_params"].copy()
+        mod = ScenarioModification(
+            table_name="financial_params",
+            parameter_name="diesel_price",
+            parameter_value=3.4,
+        )
+        FinancialParamModifier().apply(table, mod)
+        value = table[table[DataColumns.FINANCE_DESCRIPTION] == "diesel_price"][
+            DataColumns.FINANCE_DEFAULT_VALUE
+        ].iloc[0]
+        assert value == 3.4
+
+    def test_battery_param_modifier(self, sample_data_tables):
+        table = sample_data_tables["battery_params"].copy()
+        mod = ScenarioModification(
+            table_name="battery_params",
+            parameter_name="replacement_per_kwh_price",
+            parameter_value=150.0,
+        )
+        BatteryParamModifier().apply(table, mod)
+        value = table[table[DataColumns.BATTERY_DESCRIPTION] == "replacement_per_kwh_price"][
+            DataColumns.BATTERY_DEFAULT_VALUE
+        ].iloc[0]
+        assert value == 150.0
+
+    def test_vehicle_modifier(self, sample_data_tables):
+        table = sample_data_tables["vehicle_models"].copy()
+        mod = ScenarioModification(
+            table_name="vehicle_models",
+            parameter_name="msrp_price_modifier",
+            parameter_value=1.2,
+            vehicle_type="Articulated",
+            vehicle_drivetrain="BEV",
+        )
+        VehicleModifier().apply(table, mod)
+        mask = (
+            (table[DataColumns.VEHICLE_DRIVETRAIN] == "BEV")
+            & (table[DataColumns.VEHICLE_TYPE] == "Articulated")
+        )
+        value = table[mask][DataColumns.MSRP_PRICE].iloc[0]
+        assert value == 360000
+
+    def test_incentive_modifier(self, sample_data_tables):
+        table = sample_data_tables["incentives"].copy()
+        mod = ScenarioModification(
+            table_name="incentives",
+            parameter_name="purchase_rebate_aud.incentive_rate",
+            parameter_value=65000,
+            vehicle_type="All",
+            vehicle_drivetrain="BEV",
+        )
+        IncentiveModifier().apply(table, mod)
+        mask = table["incentive_type"] == "purchase_rebate_aud"
+        value = table[mask]["incentive_rate"].iloc[0]
+        assert value == 65000
