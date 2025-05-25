@@ -4,6 +4,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from unittest.mock import MagicMock
+import math
 
 from tco_app.domain.finance import (
     calculate_acquisition_cost,
@@ -12,6 +13,7 @@ from tco_app.domain.finance import (
     calculate_npv,
     calculate_tco,
     calculate_infrastructure_costs,
+    compute_infrastructure_npv,
     apply_infrastructure_incentives,
     integrate_infrastructure_with_tco,
 )
@@ -335,6 +337,62 @@ class TestFinanceCalculations:
             infra_costs_fleet["npv_per_vehicle"]
             == infra_costs_fleet["npv_infrastructure"] / 10
         )
+
+    def test_compute_infrastructure_npv_single_cycle(self):
+        """Verify NPV calculation for a single service cycle."""
+        price = 100000
+        service_life = 10
+        discount_rate = 0.05
+        truck_life_years = 10
+        annual_maintenance = price * 0.05
+
+        npv = compute_infrastructure_npv(
+            price,
+            service_life,
+            discount_rate,
+            truck_life_years,
+            annual_maintenance,
+        )
+
+        expected = price + sum(
+            annual_maintenance / ((1 + discount_rate) ** year)
+            for year in range(1, truck_life_years + 1)
+        )
+
+        assert abs(npv - expected) < 1e-6
+
+    def test_compute_infrastructure_npv_multiple_cycles(self):
+        """Verify NPV when multiple replacement cycles occur."""
+        price = 80000
+        service_life = 5
+        discount_rate = 0.07
+        truck_life_years = 12
+        annual_maintenance = price * 0.02
+
+        npv = compute_infrastructure_npv(
+            price,
+            service_life,
+            discount_rate,
+            truck_life_years,
+            annual_maintenance,
+        )
+
+        # Manual expected calculation
+        expected = 0.0
+        replacement_cycles = max(1, math.ceil(truck_life_years / service_life))
+        for cycle in range(replacement_cycles):
+            start_year = cycle * service_life
+            if start_year >= truck_life_years:
+                break
+
+            expected += price if cycle == 0 else price / ((1 + discount_rate) ** start_year)
+
+            years_in_cycle = min(service_life, truck_life_years - start_year)
+            for year in range(years_in_cycle):
+                current_year = start_year + year + 1
+                expected += annual_maintenance / ((1 + discount_rate) ** current_year)
+
+        assert abs(npv - expected) < 1e-6
 
     def test_infrastructure_incentives(self):
         """Test infrastructure incentive application."""

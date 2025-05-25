@@ -25,6 +25,7 @@ __all__ = [
     "calculate_annual_costs",
     "calculate_acquisition_cost",
     "calculate_tco",
+    "compute_infrastructure_npv",
     "calculate_infrastructure_costs",
     "apply_infrastructure_incentives",
     "integrate_infrastructure_with_tco",
@@ -263,6 +264,53 @@ def calculate_tco(
     }
 
 
+def compute_infrastructure_npv(
+    price: float,
+    service_life: int,
+    discount_rate: float,
+    truck_life_years: int,
+    annual_maintenance: float,
+) -> float:
+    """Calculate infrastructure NPV over the truck lifetime.
+
+    Args:
+        price: Upfront infrastructure cost.
+        service_life: Expected service life of the infrastructure in years.
+        discount_rate: Discount rate as a decimal.
+        truck_life_years: Lifetime of the truck in years.
+        annual_maintenance: Annual maintenance cost of the infrastructure.
+
+    Returns:
+        Net present value of the infrastructure costs over the truck lifetime.
+    """
+
+    replacement_cycles = max(
+        1,
+        math.ceil(
+            safe_division(
+                truck_life_years,
+                service_life,
+                context="truck_life_years/service_life calculation",
+            )
+        ),
+    )
+
+    npv_infra = 0.0
+    for cycle in range(replacement_cycles):
+        start_year = cycle * service_life
+        if start_year >= truck_life_years:
+            break
+
+        npv_infra += price if cycle == 0 else price / ((1 + discount_rate) ** start_year)
+
+        years_in_cycle = min(service_life, truck_life_years - start_year)
+        for year in range(years_in_cycle):
+            current_year = start_year + year + 1
+            npv_infra += annual_maintenance / ((1 + discount_rate) ** current_year)
+
+    return npv_infra
+
+
 def calculate_infrastructure_costs(
     infrastructure_option: Union[pd.Series, dict],
     truck_life_years: int,
@@ -294,20 +342,14 @@ def calculate_infrastructure_costs(
             )
         ),
     )
-    npv_infra = 0.0
-    for cycle in range(replacement_cycles):
-        start_year = cycle * service_life
-        if start_year >= truck_life_years:
-            break
 
-        npv_infra += (
-            price if cycle == 0 else price / ((1 + discount_rate) ** start_year)
-        )
-
-        years_in_cycle = min(service_life, truck_life_years - start_year)
-        for year in range(years_in_cycle):
-            current_year = start_year + year + 1
-            npv_infra += annual_maintenance / ((1 + discount_rate) ** current_year)
+    npv_infra = compute_infrastructure_npv(
+        price,
+        service_life,
+        discount_rate,
+        truck_life_years,
+        annual_maintenance,
+    )
 
     npv_per_vehicle = safe_division(
         npv_infra, fleet_size, context="npv_infra/fleet_size calculation"
