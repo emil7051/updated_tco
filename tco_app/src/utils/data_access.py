@@ -1,8 +1,10 @@
 """Data access utilities for structured DataFrames."""
 
 from typing import Any, Dict
-from tco_app.src.constants import DataColumns, ParameterKeys
+
 from tco_app.src import pd
+from tco_app.src.constants import DataColumns, ParameterKeys
+
 from .pandas_helpers import get_parameter_value
 
 
@@ -40,6 +42,7 @@ class ParameterRepository:
         )
         self._cache[key] = value
         return value
+
 
 class FinancialParameters(ParameterRepository):
     """Specialised repository for financial parameters."""

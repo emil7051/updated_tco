@@ -8,7 +8,7 @@ and any future notebooks.
 from __future__ import annotations
 
 import math
-from typing import Union, List
+from typing import List, Union
 
 from tco_app.src import pd
 from tco_app.src.constants import DataColumns, Drivetrain, ParameterKeys

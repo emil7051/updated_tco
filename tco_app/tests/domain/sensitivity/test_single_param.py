@@ -1,6 +1,7 @@
-import pytest
+from unittest.mock import MagicMock, patch
+
 import pandas as pd
-from unittest.mock import patch, MagicMock, call
+import pytest
 
 from tco_app.domain.sensitivity.single_param import perform_sensitivity_analysis
 from tco_app.src.constants import DataColumns, ParameterKeys

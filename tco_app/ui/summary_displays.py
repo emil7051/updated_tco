@@ -33,9 +33,7 @@ def display_summary_metrics(bev_results, diesel_results):
 
     with col1:
         with st.container():
-            st.markdown(
-                f"### {bev_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}"
-            )
+            st.markdown(f"### {bev_results['vehicle_data'][DataColumns.VEHICLE_MODEL]}")
 
             # Vehicle details
             st.markdown("**Vehicle Type:** Battery Electric")

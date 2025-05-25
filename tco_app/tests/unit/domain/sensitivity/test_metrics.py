@@ -1,12 +1,13 @@
 """Unit tests for sensitivity metrics calculations."""
 
-import pytest
 import math
-from unittest.mock import Mock
+
+import pytest
+
 from tco_app.domain.sensitivity.metrics import (
-    calculate_comparative_metrics,
-    adjust_upfront_costs,
     accumulate_operating_costs,
+    adjust_upfront_costs,
+    calculate_comparative_metrics,
     compute_price_parity,
 )
 from tco_app.src.constants import DataColumns

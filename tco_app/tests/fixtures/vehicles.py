@@ -1,8 +1,9 @@
 """Shared vehicle fixtures for tests."""
 
 import pytest
+
 from tco_app.src import pd
-from tco_app.src.constants import Drivetrain, DataColumns, ParameterKeys
+from tco_app.src.constants import DataColumns, Drivetrain, ParameterKeys
 
 
 @pytest.fixture

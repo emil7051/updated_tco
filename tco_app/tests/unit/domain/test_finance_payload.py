@@ -1,7 +1,7 @@
 """Unit tests for finance payload module."""
 
-import pytest
 import pandas as pd
+
 from tco_app.domain.finance_payload import calculate_payload_penalty_costs
 
 

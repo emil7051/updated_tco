@@ -2,9 +2,9 @@ import math
 
 from tco_app.domain.externalities import (
     calculate_externalities,
+    calculate_social_benefit_metrics,
     calculate_social_tco,
     prepare_externality_comparison,
-    calculate_social_benefit_metrics,
 )
 from tco_app.src import pd
 from tco_app.src.constants import DataColumns, Drivetrain
@@ -12,16 +12,20 @@ from tco_app.src.constants import DataColumns, Drivetrain
 
 class TestExternalitiesDomain:
     def test_calculate_externalities_detailed_table(self):
-        vehicle = pd.Series({
-            DataColumns.VEHICLE_TYPE: "Rigid",
-            DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.BEV,
-        })
-        ext_df = pd.DataFrame({
-            "vehicle_class": ["Rigid", "Rigid", "Rigid"],
-            "drivetrain": [Drivetrain.BEV, Drivetrain.BEV, Drivetrain.BEV],
-            "pollutant_type": ["CO2e", "NOx", "externalities_total"],
-            "cost_per_km": [0.01, 0.02, 0.05],
-        })
+        vehicle = pd.Series(
+            {
+                DataColumns.VEHICLE_TYPE: "Rigid",
+                DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.BEV,
+            }
+        )
+        ext_df = pd.DataFrame(
+            {
+                "vehicle_class": ["Rigid", "Rigid", "Rigid"],
+                "drivetrain": [Drivetrain.BEV, Drivetrain.BEV, Drivetrain.BEV],
+                "pollutant_type": ["CO2e", "NOx", "externalities_total"],
+                "cost_per_km": [0.01, 0.02, 0.05],
+            }
+        )
 
         res = calculate_externalities(vehicle, ext_df, 10000, 5, 0.0)
 
@@ -33,10 +37,12 @@ class TestExternalitiesDomain:
         assert res["breakdown"]["CO2e"]["annual_cost"] == 0.01 * 10000
 
     def test_calculate_externalities_fallback_table(self):
-        vehicle = pd.Series({
-            DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.DIESEL,
-            DataColumns.LITRES_PER100KM: 30,
-        })
+        vehicle = pd.Series(
+            {
+                DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.DIESEL,
+                DataColumns.LITRES_PER100KM: 30,
+            }
+        )
         factors = pd.DataFrame({"fuel_type": ["diesel"], "co2_per_unit": [2.5]})
 
         res = calculate_externalities(vehicle, factors, 10000, 5, 0.0)
@@ -53,10 +59,12 @@ class TestExternalitiesDomain:
         }
 
     def test_calculate_externalities_fallback_table_bev(self):
-        vehicle = pd.Series({
-            DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.BEV,
-            DataColumns.KWH_PER100KM: 50,
-        })
+        vehicle = pd.Series(
+            {
+                DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.BEV,
+                DataColumns.KWH_PER100KM: 50,
+            }
+        )
         factors = pd.DataFrame({"fuel_type": ["electricity"], "co2_per_unit": [2.0]})
 
         res = calculate_externalities(vehicle, factors, 10000, 5, 0.0)
@@ -73,16 +81,20 @@ class TestExternalitiesDomain:
         }
 
     def test_helper_delegation_detailed(self, monkeypatch):
-        vehicle = pd.Series({
-            DataColumns.VEHICLE_TYPE: "Rigid",
-            DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.BEV,
-        })
-        ext_df = pd.DataFrame({
-            "vehicle_class": ["Rigid"],
-            "drivetrain": [Drivetrain.BEV],
-            "pollutant_type": ["CO2e"],
-            "cost_per_km": [0.1],
-        })
+        vehicle = pd.Series(
+            {
+                DataColumns.VEHICLE_TYPE: "Rigid",
+                DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.BEV,
+            }
+        )
+        ext_df = pd.DataFrame(
+            {
+                "vehicle_class": ["Rigid"],
+                "drivetrain": [Drivetrain.BEV],
+                "pollutant_type": ["CO2e"],
+                "cost_per_km": [0.1],
+            }
+        )
 
         called = {}
 
@@ -109,10 +121,12 @@ class TestExternalitiesDomain:
         assert called.get("proxy") is None
 
     def test_helper_delegation_proxy(self, monkeypatch):
-        vehicle = pd.Series({
-            DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.DIESEL,
-            DataColumns.LITRES_PER100KM: 30,
-        })
+        vehicle = pd.Series(
+            {
+                DataColumns.VEHICLE_DRIVETRAIN: Drivetrain.DIESEL,
+                DataColumns.LITRES_PER100KM: 30,
+            }
+        )
         factors = pd.DataFrame({"fuel_type": ["diesel"], "co2_per_unit": [2.5]})
 
         called = {}

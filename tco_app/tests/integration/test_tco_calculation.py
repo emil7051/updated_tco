@@ -1,13 +1,14 @@
 """Integration tests for TCO calculation using modern service architecture."""
 
-import pytest
 from unittest.mock import Mock
 
-from tco_app.src import pd
-from tco_app.services.tco_calculation_service import TCOCalculationService
+import pytest
+
+from tco_app.repositories import ParametersRepository, VehicleRepository
 from tco_app.services.dtos import CalculationParameters, CalculationRequest
-from tco_app.repositories import VehicleRepository, ParametersRepository
-from tco_app.src.constants import DataColumns, Drivetrain, ParameterKeys
+from tco_app.services.tco_calculation_service import TCOCalculationService
+from tco_app.src import pd
+from tco_app.src.constants import DataColumns, Drivetrain
 
 
 class TestTCOCalculationIntegration:

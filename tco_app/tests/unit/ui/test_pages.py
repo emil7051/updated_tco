@@ -1,10 +1,10 @@
-import importlib
 import sys
 from types import ModuleType
 from unittest.mock import MagicMock
-from tco_app.src.constants import Drivetrain
-import tco_app.domain.sensitivity as _sens
+
 import tco_app.domain.finance as _fin
+import tco_app.domain.sensitivity as _sens
+from tco_app.src.constants import Drivetrain
 
 
 class _StreamlitStub(ModuleType):
@@ -124,8 +124,8 @@ def _smoke_render(module_path: str) -> None:
         "payload_difference_percentage": 0,
     }
     # Mock the re-exported streamlit from tco_app.src
-    import tco_app.src.imports as _imports
     import tco_app.src as _src
+    import tco_app.src.imports as _imports
 
     # Replace the imported streamlit with our stub
     _imports.st = sys.modules["streamlit"]

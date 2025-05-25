@@ -5,7 +5,7 @@ These repositories will provide an abstraction layer for accessing data,
 initially from in-memory DataFrames, but could be adapted for other sources.
 """
 
-from tco_app.src import pd, Dict
+from tco_app.src import Dict, pd
 from tco_app.src.exceptions import (
     VehicleNotFoundError,
 )  # Assuming this exception exists

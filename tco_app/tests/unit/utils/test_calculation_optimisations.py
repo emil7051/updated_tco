@@ -1,21 +1,19 @@
 """Test optimised calculation utilities."""
 
 import pytest
-from tco_app.src import np
-from tco_app.src import pd
-from unittest.mock import patch
 
-from tco_app.src.utils.calculation_optimisations import (
-    fast_npv,
-    vectorised_annual_costs,
-    batch_vehicle_lookup,
-    fast_discount_factors,
-    optimised_tco_calculation,
-    batch_parameter_lookup,
-    fast_cumulative_sum,
-    optimised_emissions_calculation,
-)
+from tco_app.src import np, pd
 from tco_app.src.constants import DataColumns
+from tco_app.src.utils.calculation_optimisations import (
+    batch_parameter_lookup,
+    batch_vehicle_lookup,
+    fast_cumulative_sum,
+    fast_discount_factors,
+    fast_npv,
+    optimised_emissions_calculation,
+    optimised_tco_calculation,
+    vectorised_annual_costs,
+)
 
 
 class TestFastNPV:

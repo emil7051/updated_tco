@@ -10,11 +10,10 @@ re-usable, easily unit-testable helper functions.
 
 from typing import Any, Dict, Tuple
 
+from tco_app.services.dtos import CalculationRequest, TCOResult
 from tco_app.src import pd
-
 from tco_app.src.constants import ParameterKeys
 from tco_app.src.utils.safe_operations import safe_get_parameter
-from tco_app.services.dtos import CalculationRequest, TCOResult
 
 __all__ = [
     "convert_tco_result_to_model_runner_dict",
@@ -73,10 +72,10 @@ def convert_tco_result_to_model_runner_dict(
     clean.
     """
 
-    from tco_app.src.constants import (
+    from tco_app.src.constants import (  # Local import to avoid cycles
         DataColumns,
         Drivetrain,
-    )  # Local import to avoid cycles
+    )
 
     # Construct the 'tco' sub-dictionary with final, post-infrastructure values
     final_tco_sub_dict: Dict[str, Any] = {

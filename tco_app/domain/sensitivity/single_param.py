@@ -1,6 +1,6 @@
 from __future__ import annotations
-from tco_app.src.constants import DataColumns, ParameterKeys
 
+from tco_app.src.constants import DataColumns, ParameterKeys
 from tco_app.src.utils.safe_operations import safe_division
 
 """Single-parameter sensitivity analysis helpers (extracted from the former
@@ -13,21 +13,18 @@ previously referenced legacy modules.
 
 from typing import Any, Dict, List, Union
 
-from tco_app.src import pd
-
-from tco_app.domain.energy import (
-    calculate_energy_costs,
-)
+from tco_app.domain.energy import calculate_energy_costs
 from tco_app.domain.finance import (
-    calculate_annual_costs,
+    apply_infrastructure_incentives,
     calculate_acquisition_cost,
+    calculate_annual_costs,
+    calculate_infrastructure_costs,
     calculate_npv,
     calculate_residual_value,
     calculate_tco,
-    calculate_infrastructure_costs,
-    apply_infrastructure_incentives,
     integrate_infrastructure_with_tco,
 )
+from tco_app.src import pd
 from tco_app.src.utils.battery import calculate_battery_replacement
 
 __all__ = ["perform_sensitivity_analysis"]

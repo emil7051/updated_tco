@@ -1,30 +1,20 @@
 """Unit tests for finance domain module."""
 
-import pytest
-import pandas as pd
-import numpy as np
-from unittest.mock import MagicMock
 import math
 
+import pandas as pd
+
 from tco_app.domain.finance import (
+    apply_infrastructure_incentives,
     calculate_acquisition_cost,
     calculate_annual_costs,
-    calculate_residual_value,
+    calculate_infrastructure_costs,
     calculate_npv,
     calculate_tco,
-    calculate_infrastructure_costs,
     compute_infrastructure_npv,
-    apply_infrastructure_incentives,
     integrate_infrastructure_with_tco,
 )
 from tco_app.src.constants import DataColumns, Drivetrain
-from tco_app.tests.fixtures import (
-    articulated_bev_vehicle,
-    standard_fees,
-    standard_financial_params,
-    standard_infrastructure_options,
-    standard_incentives,
-)
 
 
 class TestFinanceCalculations:
@@ -385,7 +375,9 @@ class TestFinanceCalculations:
             if start_year >= truck_life_years:
                 break
 
-            expected += price if cycle == 0 else price / ((1 + discount_rate) ** start_year)
+            expected += (
+                price if cycle == 0 else price / ((1 + discount_rate) ** start_year)
+            )
 
             years_in_cycle = min(service_life, truck_life_years - start_year)
             for year in range(years_in_cycle):

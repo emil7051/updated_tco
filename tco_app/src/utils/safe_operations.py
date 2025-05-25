@@ -1,10 +1,9 @@
 """Safe operations for DataFrame access and calculations."""
 
-from typing import Any, Union, List
-from tco_app.src import pd
-from tco_app.src import logging
+from typing import Any, List, Union
 
-from tco_app.src.exceptions import DataNotFoundError, CalculationError
+from tco_app.src import logging, pd
+from tco_app.src.exceptions import CalculationError, DataNotFoundError
 from tco_app.src.utils.pandas_helpers import safe_get_first
 
 logger = logging.getLogger(__name__)

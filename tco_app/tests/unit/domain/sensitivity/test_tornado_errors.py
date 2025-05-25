@@ -6,22 +6,30 @@ from tco_app.src.constants import DataColumns, ParameterKeys
 
 
 def _basic_params():
-    financial_params = pd.DataFrame({
-        DataColumns.FINANCE_DESCRIPTION: [ParameterKeys.DIESEL_PRICE],
-        DataColumns.FINANCE_DEFAULT_VALUE: [2.0],
-    })
-    battery_params = pd.DataFrame({
-        DataColumns.BATTERY_DESCRIPTION: [ParameterKeys.REPLACEMENT_COST],
-        DataColumns.BATTERY_DEFAULT_VALUE: [100],
-    })
-    charging_options = pd.DataFrame({
-        DataColumns.CHARGING_ID: [1],
-        DataColumns.PER_KWH_PRICE: [0.30],
-    })
-    infrastructure_options = pd.DataFrame({
-        DataColumns.INFRASTRUCTURE_ID: [1],
-        DataColumns.INFRASTRUCTURE_PRICE: [1000],
-    })
+    financial_params = pd.DataFrame(
+        {
+            DataColumns.FINANCE_DESCRIPTION: [ParameterKeys.DIESEL_PRICE],
+            DataColumns.FINANCE_DEFAULT_VALUE: [2.0],
+        }
+    )
+    battery_params = pd.DataFrame(
+        {
+            DataColumns.BATTERY_DESCRIPTION: [ParameterKeys.REPLACEMENT_COST],
+            DataColumns.BATTERY_DEFAULT_VALUE: [100],
+        }
+    )
+    charging_options = pd.DataFrame(
+        {
+            DataColumns.CHARGING_ID: [1],
+            DataColumns.PER_KWH_PRICE: [0.30],
+        }
+    )
+    infrastructure_options = pd.DataFrame(
+        {
+            DataColumns.INFRASTRUCTURE_ID: [1],
+            DataColumns.INFRASTRUCTURE_PRICE: [1000],
+        }
+    )
     return financial_params, battery_params, charging_options, infrastructure_options
 
 
@@ -29,7 +37,9 @@ def test_missing_bev_fees_raises_value_error():
     bev_results = {"vehicle_data": {}, "tco": {"tco_per_km": 1.0}}
     diesel_results = {"vehicle_data": {}, "fees": {}}
 
-    financial_params, battery_params, charging_options, infrastructure_options = _basic_params()
+    financial_params, battery_params, charging_options, infrastructure_options = (
+        _basic_params()
+    )
 
     with pytest.raises(ValueError):
         calculate_tornado_data(
@@ -54,7 +64,9 @@ def test_missing_diesel_fees_raises_value_error():
     bev_results = {"vehicle_data": {}, "fees": {}, "tco": {"tco_per_km": 1.0}}
     diesel_results = {"vehicle_data": {}}
 
-    financial_params, battery_params, charging_options, infrastructure_options = _basic_params()
+    financial_params, battery_params, charging_options, infrastructure_options = (
+        _basic_params()
+    )
 
     with pytest.raises(ValueError):
         calculate_tornado_data(

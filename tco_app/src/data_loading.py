@@ -4,8 +4,7 @@ import os
 from pathlib import Path
 from typing import Dict, List, Protocol
 
-from tco_app.src import pd
-from tco_app.src import st
+from tco_app.src import pd, st
 
 # --------------------------------------------------------------------------------------
 # Data-layer abstraction (step 8 of CODEBASE_IMPROVEMENTS.md)

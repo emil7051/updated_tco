@@ -1,8 +1,8 @@
-from tco_app.src import pd
 import pytest
 
 from tco_app.services.helpers import get_residual_value_parameters
-from tco_app.src.constants import ParameterKeys, DataColumns
+from tco_app.src import pd
+from tco_app.src.constants import DataColumns, ParameterKeys
 
 
 def _build_financial_params_df(initial: float = 0.2, annual: float = 0.1):

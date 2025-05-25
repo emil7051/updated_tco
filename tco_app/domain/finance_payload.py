@@ -1,6 +1,6 @@
 from __future__ import annotations
-from tco_app.src.constants import DataColumns
 
+from tco_app.src.constants import DataColumns
 from tco_app.src.utils.safe_operations import safe_division, safe_get_parameter
 
 """Payload-penalty cost helper previously housed in `domain.finance`.

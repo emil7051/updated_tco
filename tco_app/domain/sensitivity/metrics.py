@@ -1,14 +1,14 @@
 from __future__ import annotations
-from tco_app.src.constants import DataColumns
 
+from tco_app.src.constants import DataColumns
 from tco_app.src.utils.safe_operations import safe_division
 
 """Comparative BEV-vs-Diesel KPI helper, extracted to its own file."""
 
-from typing import Any, Dict, List, Tuple
-from tco_app.src.utils.pandas_helpers import to_scalar
-
 import math
+from typing import Any, Dict, List, Tuple
+
+from tco_app.src.utils.pandas_helpers import to_scalar
 
 
 def adjust_upfront_costs(
@@ -70,20 +70,27 @@ def accumulate_operating_costs(
     return bev_cum, diesel_cum
 
 
-def compute_price_parity(bev_cumulative: List[float], diesel_cumulative: List[float], years: List[int]) -> float:
+def compute_price_parity(
+    bev_cumulative: List[float], diesel_cumulative: List[float], years: List[int]
+) -> float:
     """Return the interpolated price parity year."""
 
     price_parity_year = math.inf
     for i in range(len(years) - 1):
-        if (bev_cumulative[i] - diesel_cumulative[i]) * (bev_cumulative[i + 1] - diesel_cumulative[i + 1]) <= 0:
+        if (bev_cumulative[i] - diesel_cumulative[i]) * (
+            bev_cumulative[i + 1] - diesel_cumulative[i + 1]
+        ) <= 0:
             delta_bev = bev_cumulative[i + 1] - bev_cumulative[i]
             delta_diesel = diesel_cumulative[i + 1] - diesel_cumulative[i]
             if delta_bev != delta_diesel:
-                t = (diesel_cumulative[i] - bev_cumulative[i]) / (delta_bev - delta_diesel)
+                t = (diesel_cumulative[i] - bev_cumulative[i]) / (
+                    delta_bev - delta_diesel
+                )
                 price_parity_year = years[i] + t
                 break
 
     return price_parity_year
+
 
 def calculate_comparative_metrics(
     bev_results: Dict[str, Any],

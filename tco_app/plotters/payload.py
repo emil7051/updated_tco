@@ -1,8 +1,9 @@
 import copy
-from tco_app.src import pd
+
 import plotly.graph_objects as go
 
 from tco_app.domain.finance import calculate_payload_penalty_costs
+from tco_app.src import pd
 
 
 def create_payload_comparison_chart(payload_metrics, bev_results, diesel_results):

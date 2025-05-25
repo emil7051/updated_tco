@@ -1,15 +1,15 @@
 """Integration tests for safe operations working together."""
 
 import pytest
-from tco_app.src import pd
 
+from tco_app.src import pd
+from tco_app.src.constants import DataColumns, ParameterKeys
 from tco_app.src.exceptions import DataNotFoundError
 from tco_app.src.utils.safe_operations import (
-    safe_lookup_vehicle,
-    safe_get_parameter,
     safe_division,
+    safe_get_parameter,
+    safe_lookup_vehicle,
 )
-from tco_app.src.constants import DataColumns, ParameterKeys
 
 
 class TestIntegrationScenarios:

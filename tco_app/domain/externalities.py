@@ -1,16 +1,15 @@
 from __future__ import annotations
-from tco_app.src.constants import DataColumns, Drivetrain
 
+from tco_app.src.constants import DataColumns, Drivetrain
 from tco_app.src.utils.safe_operations import safe_division
 
 """Externalities domain – emissions & societal cost helpers."""
 
-from typing import Dict, Any, Union
-
-from tco_app.src import pd
+from typing import Any, Dict, Union
 
 from tco_app.domain.energy import calculate_emissions  # Reuse shared impl
 from tco_app.domain.finance import calculate_npv
+from tco_app.src import pd
 from tco_app.src.utils.pandas_helpers import to_scalar
 
 __all__ = [
@@ -117,6 +116,7 @@ def _compute_co2_proxy(
 
     return total_externality_per_km, breakdown
 
+
 def calculate_externalities(
     vehicle_data: Union[pd.Series, dict],
     externalities_data: pd.DataFrame,
@@ -141,12 +141,14 @@ def calculate_externalities(
     if {"vehicle_class", "drivetrain", "pollutant_type", "cost_per_km"}.issubset(
         externalities_data.columns
     ):
-        total_externality_per_km, externality_breakdown = _compute_detailed_externalities(
-            vehicle_data,
-            externalities_data,
-            annual_kms,
-            truck_life_years,
-            discount_rate,
+        total_externality_per_km, externality_breakdown = (
+            _compute_detailed_externalities(
+                vehicle_data,
+                externalities_data,
+                annual_kms,
+                truck_life_years,
+                discount_rate,
+            )
         )
     else:
         total_externality_per_km, externality_breakdown = _compute_co2_proxy(

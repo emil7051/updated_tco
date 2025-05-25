@@ -3,14 +3,14 @@
 import math
 from typing import List
 
-from tco_app.src import pd
 import pytest
 
+from tco_app.src import pd
 from tco_app.src.utils.energy import weighted_electricity_price
 from tco_app.src.utils.finance import (
-    npv_constant,
-    cumulative_cost_curve,
     calculate_residual_value,
+    cumulative_cost_curve,
+    npv_constant,
     price_parity_year,
 )
 

@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+
 from tco_app.src.utils.safe_operations import safe_division
 
 

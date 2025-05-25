@@ -1,19 +1,19 @@
 """Performance tests for Work Package 8 optimisations."""
 
-import time
 import logging
-from tco_app.src import np
-from tco_app.src import pd
+import time
+
 import pytest
 
-from tco_app.src.utils.finance import npv_constant
+from tco_app.domain.finance import calculate_npv_optimised
+from tco_app.src import np, pd
+from tco_app.src.constants import DataColumns
 from tco_app.src.utils.calculation_optimisations import (
+    batch_vehicle_lookup,
     fast_npv,
     vectorised_annual_costs,
-    batch_vehicle_lookup,
 )
-from tco_app.domain.finance import calculate_npv, calculate_npv_optimised
-from tco_app.src.constants import DataColumns
+from tco_app.src.utils.finance import npv_constant
 
 logger = logging.getLogger(__name__)
 

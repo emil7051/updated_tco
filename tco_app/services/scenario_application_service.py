@@ -1,10 +1,9 @@
 """Service for applying scenario modifications to data."""
 
-from typing import Dict, Any, List
-from tco_app.src import logging
-from tco_app.src import pd
 from dataclasses import dataclass
+from typing import Any, Dict, List
 
+from tco_app.src import logging, pd
 from tco_app.src.constants import DataColumns
 from tco_app.src.exceptions import ScenarioError
 
@@ -43,7 +42,9 @@ class FinancialParamModifier(ModifierBase):
             if mod.parameter_name == "diesel_default_price":
                 mask = table[DataColumns.FINANCE_DESCRIPTION] == "diesel_price"
                 if mask.any():
-                    table.loc[mask, DataColumns.FINANCE_DEFAULT_VALUE] = mod.parameter_value
+                    table.loc[mask, DataColumns.FINANCE_DEFAULT_VALUE] = (
+                        mod.parameter_value
+                    )
                     logger.debug(
                         f"Applied diesel_default_price to diesel_price: {mod.parameter_value}"
                     )
@@ -86,15 +87,21 @@ class VehicleModifier(ModifierBase):
         if mod.parameter_name == "msrp_price_modifier":
             for idx in table[mask].index:
                 original_value = table.at[idx, DataColumns.MSRP_PRICE]
-                table.at[idx, DataColumns.MSRP_PRICE] = original_value * mod.parameter_value
+                table.at[idx, DataColumns.MSRP_PRICE] = (
+                    original_value * mod.parameter_value
+                )
         elif mod.parameter_name == "kwh_per100km_modifier":
             for idx in table[mask].index:
                 original_value = table.at[idx, DataColumns.KWH_PER100KM]
-                table.at[idx, DataColumns.KWH_PER100KM] = original_value * mod.parameter_value
+                table.at[idx, DataColumns.KWH_PER100KM] = (
+                    original_value * mod.parameter_value
+                )
         elif mod.parameter_name == "range_km_modifier":
             for idx in table[mask].index:
                 original_value = table.at[idx, DataColumns.RANGE_KM]
-                table.at[idx, DataColumns.RANGE_KM] = original_value * mod.parameter_value
+                table.at[idx, DataColumns.RANGE_KM] = (
+                    original_value * mod.parameter_value
+                )
         else:
             logger.warning(f"Unknown vehicle modifier: {mod.parameter_name}")
             return
@@ -130,6 +137,7 @@ class IncentiveModifier(ModifierBase):
             logger.warning(
                 f"No matching incentive for {incentive_type} VT={mod.vehicle_type} DR={mod.vehicle_drivetrain}"
             )
+
 
 class ScenarioApplicationService:
     """Service for applying scenario modifications to data tables."""
@@ -283,7 +291,6 @@ class ScenarioApplicationService:
             handler.apply(table, mod)
         else:
             logger.warning(f"No handler for table '{mod.table_name}'")
-
 
     def get_applied_modifications(self) -> List[ScenarioModification]:
         """Get list of modifications that were applied."""

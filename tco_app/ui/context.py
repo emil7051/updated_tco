@@ -14,13 +14,11 @@ maintainability and testability.
 """
 
 from __future__ import annotations
-from tco_app.src import Dict, Any
 
-from tco_app.src import st, logging
-
+from tco_app.src import Any, Dict, logging, st
 from tco_app.src.data_loading import load_data
-from tco_app.ui.context_builder import ContextDirector
 from tco_app.ui.calculation_orchestrator import CalculationOrchestrator
+from tco_app.ui.context_builder import ContextDirector
 
 logger = logging.getLogger(__name__)
 

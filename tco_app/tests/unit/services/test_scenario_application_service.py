@@ -1,17 +1,18 @@
 """Tests for the ScenarioApplicationService."""
 
-import pytest
-from tco_app.src import pd
 from dataclasses import asdict
 
+import pytest
+
 from tco_app.services.scenario_application_service import (
+    BatteryParamModifier,
+    FinancialParamModifier,
+    IncentiveModifier,
     ScenarioApplicationService,
     ScenarioModification,
-    FinancialParamModifier,
-    BatteryParamModifier,
     VehicleModifier,
-    IncentiveModifier,
 )
+from tco_app.src import pd
 from tco_app.src.constants import DataColumns
 from tco_app.src.exceptions import ScenarioError
 
@@ -109,7 +110,6 @@ class TestScenarioApplicationService:
     def service(self):
         """Create a ScenarioApplicationService instance."""
         return ScenarioApplicationService()
-
 
     def test_parse_scenario_params(self, service):
         """Test parsing scenario parameters into modification objects."""
@@ -370,9 +370,9 @@ class TestModifierHandlers:
             parameter_value=150.0,
         )
         BatteryParamModifier().apply(table, mod)
-        value = table[table[DataColumns.BATTERY_DESCRIPTION] == "replacement_per_kwh_price"][
-            DataColumns.BATTERY_DEFAULT_VALUE
-        ].iloc[0]
+        value = table[
+            table[DataColumns.BATTERY_DESCRIPTION] == "replacement_per_kwh_price"
+        ][DataColumns.BATTERY_DEFAULT_VALUE].iloc[0]
         assert value == 150.0
 
     def test_vehicle_modifier(self, sample_data_tables):
@@ -385,9 +385,8 @@ class TestModifierHandlers:
             vehicle_drivetrain="BEV",
         )
         VehicleModifier().apply(table, mod)
-        mask = (
-            (table[DataColumns.VEHICLE_DRIVETRAIN] == "BEV")
-            & (table[DataColumns.VEHICLE_TYPE] == "Articulated")
+        mask = (table[DataColumns.VEHICLE_DRIVETRAIN] == "BEV") & (
+            table[DataColumns.VEHICLE_TYPE] == "Articulated"
         )
         value = table[mask][DataColumns.MSRP_PRICE].iloc[0]
         assert value == 360000

@@ -1,9 +1,9 @@
 """Energy consumption and emissions calculations."""
 
-from tco_app.src import pd, Dict, CALC_DEFAULTS, EMISSION_CONSTANTS
-from typing import Union, Optional
+from typing import Optional, Union
 
-from tco_app.src.constants import DataColumns, ParameterKeys, Drivetrain
+from tco_app.src import CALC_DEFAULTS, EMISSION_CONSTANTS, Dict, pd
+from tco_app.src.constants import DataColumns, Drivetrain, ParameterKeys
 from tco_app.src.utils.energy import weighted_electricity_price
 from tco_app.src.utils.safe_operations import (
     safe_division,

@@ -1,6 +1,6 @@
 from __future__ import annotations
-from tco_app.src.constants import DataColumns, ParameterKeys
 
+from tco_app.src.constants import DataColumns, ParameterKeys
 from tco_app.src.utils.safe_operations import safe_get_parameter
 
 """Multi-parameter tornado-chart helper extracted from the original monolith.

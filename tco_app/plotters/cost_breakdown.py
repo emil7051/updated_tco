@@ -1,9 +1,10 @@
 """Cost breakdown plotting functions."""
 
-from tco_app.src import pd
-from tco_app.src.constants import DataColumns, Drivetrain
 import plotly.express as px
 import plotly.graph_objects as go
+
+from tco_app.src import pd
+from tco_app.src.constants import DataColumns, Drivetrain
 
 
 def create_cost_breakdown_chart(bev_results, diesel_results):

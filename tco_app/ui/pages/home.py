@@ -1,14 +1,10 @@
 from tco_app.src import st
+from tco_app.ui.components import display_comparison_metrics, display_summary_metrics
+from tco_app.ui.context import get_context
 
 # Legacy app contains full interactive UI.
 # We invoke its `main()` function to preserve behaviour while we gradually
 # decompose the monolith (see modularisation step 5.2).
-
-from tco_app.ui.context import get_context
-from tco_app.ui.components import (
-    display_summary_metrics,
-    display_comparison_metrics,
-)
 
 
 def render():

@@ -1,10 +1,11 @@
 """Test data cache functionality."""
 
-import pytest
-from tco_app.src import pd
 from unittest.mock import patch
 
+import pytest
+
 from tco_app.services.data_cache import DataCache, data_cache, get_vehicle_with_cache
+from tco_app.src import pd
 from tco_app.src.constants import DataColumns
 
 

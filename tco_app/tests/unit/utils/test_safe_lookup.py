@@ -1,11 +1,11 @@
 """Tests for safe lookup operations."""
 
 import pytest
-from tco_app.src import pd
 
+from tco_app.src import pd
+from tco_app.src.constants import DataColumns
 from tco_app.src.exceptions import DataNotFoundError
 from tco_app.src.utils.safe_operations import safe_iloc_zero, safe_lookup_vehicle
-from tco_app.src.constants import DataColumns
 
 
 class TestSafeIlocZero:

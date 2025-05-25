@@ -1,8 +1,8 @@
 """Shared pandas utility functions for the TCO application."""
 
-from typing import Union, Any
-from tco_app.src import pd
-from tco_app.src import np
+from typing import Any, Union
+
+from tco_app.src import np, pd
 
 
 def to_scalar(value: Union[float, int, pd.Series, np.ndarray]) -> float:

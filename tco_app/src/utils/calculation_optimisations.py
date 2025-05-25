@@ -1,9 +1,10 @@
 """Optimised calculation utilities."""
 
-from tco_app.src import np
-from tco_app.src import pd
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
+
 import numba
+
+from tco_app.src import np, pd
 
 
 @numba.jit(nopython=True)
@@ -68,13 +69,29 @@ def vectorised_annual_costs(
         # implementation at a 2 decimal precision. Only a handful require
         # adjustment so the performance impact is negligible.
         fix_indices = [
-            690, 705, 707, 730, 767, 793, 806, 809,
-            828, 856, 858, 879, 891, 910, 912, 920, 993, 995,
+            690,
+            705,
+            707,
+            730,
+            767,
+            793,
+            806,
+            809,
+            828,
+            856,
+            858,
+            879,
+            891,
+            910,
+            912,
+            920,
+            993,
+            995,
         ]
         for i in fix_indices:
             if i < years:
-                result_array[i] = base_cost * (factor ** i)
-    
+                result_array[i] = base_cost * (factor**i)
+
     _VECTORISED_CACHE[key] = result_array
     return result_array
 

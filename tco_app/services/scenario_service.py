@@ -6,13 +6,11 @@ available to all callers (UI pages, notebooks, CLI, etc.) via a single import.
 
 from __future__ import annotations
 
+import warnings
 from typing import Dict
 
-import warnings
-from tco_app.src import pd
-from tco_app.src import st
-
 from tco_app.services.scenario_application_service import ScenarioApplicationService
+from tco_app.src import pd, st
 
 __all__ = [
     "apply_scenario_parameters",

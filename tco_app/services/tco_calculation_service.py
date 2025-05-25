@@ -1,35 +1,29 @@
 """Consolidated TCO Calculation Service."""
 
-from tco_app.src import logging, Dict, Any
-
-from tco_app.repositories import VehicleRepository, ParametersRepository  # Added
-
 # Domain module imports - to be reviewed based on model_runner logic
-from tco_app.domain import (
+from tco_app.domain import (  # battery is not directly used by model_runner top level
     energy,
-    finance,
     externalities,
-)  # battery is not directly used by model_runner top level
+    finance,
+)
 from tco_app.domain.sensitivity import (
     metrics as sensitivity_metrics,
 )  # Added import for calculate_comparative_metrics
-from tco_app.src.exceptions import CalculationError
-from tco_app.src.constants import DataColumns, Drivetrain
+from tco_app.repositories import ParametersRepository, VehicleRepository  # Added
+
+# NEW: centralised DTOs
+from tco_app.services.dtos import CalculationRequest, ComparisonResult, TCOResult
 from tco_app.services.helpers import (
-    get_residual_value_parameters,
     convert_tco_result_to_model_runner_dict,
+    get_residual_value_parameters,
 )
+from tco_app.src import Any, Dict, logging
+from tco_app.src.constants import DataColumns, Drivetrain
+from tco_app.src.exceptions import CalculationError
 from tco_app.src.utils.battery import (
     calculate_battery_replacement,
 )  # Used by model_runner
 from tco_app.src.utils.energy import weighted_electricity_price  # Used by model_runner
-
-# NEW: centralised DTOs
-from tco_app.services.dtos import (
-    CalculationRequest,
-    TCOResult,
-    ComparisonResult,
-)
 
 logger = logging.getLogger(__name__)
 

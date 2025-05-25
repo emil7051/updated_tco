@@ -1,17 +1,14 @@
 """Context director for orchestrating UI context building."""
 
-from tco_app.src import Dict, Any
-from tco_app.src import pd
-from tco_app.src import st
-
-from tco_app.src.constants import Drivetrain, DataColumns
 from tco_app.services.scenario_service import apply_scenario_parameters
+from tco_app.src import Any, Dict, pd, st
+from tco_app.src.constants import DataColumns, Drivetrain
 from tco_app.ui.builders import (
-    ScenarioBuilder,
-    VehicleSelectionBuilder,
-    ParameterInputBuilder,
     ChargingConfigurationBuilder,
     InfrastructureBuilder,
+    ParameterInputBuilder,
+    ScenarioBuilder,
+    VehicleSelectionBuilder,
 )
 
 

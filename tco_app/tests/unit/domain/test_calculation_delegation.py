@@ -1,14 +1,16 @@
 """Unit tests for domain calculation delegation."""
 
 import math
-from tco_app.src import pd
+
 import pytest
+
+from tco_app.domain.energy import calculate_energy_costs as energy_cost_domain
+from tco_app.domain.finance import calculate_residual_value as residual_domain
+from tco_app.src import pd
 from tco_app.src.constants import Drivetrain
 from tco_app.src.utils import energy as en_utils
 from tco_app.src.utils import finance as fin_utils
 from tco_app.src.utils.battery import calculate_battery_replacement as battery_utils
-from tco_app.domain.energy import calculate_energy_costs as energy_cost_domain
-from tco_app.domain.finance import calculate_residual_value as residual_domain
 
 
 @pytest.fixture

@@ -2,8 +2,8 @@
 
 import plotly.express as px
 import plotly.graph_objects as go
-from tco_app.src.constants import DataColumns
 
+from tco_app.src.constants import DataColumns
 from tco_app.src.utils.energy import weighted_electricity_price
 
 

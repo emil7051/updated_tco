@@ -1,19 +1,15 @@
 """End-to-end tests for the complete TCO calculation flow."""
 
-import pytest
-import pandas as pd
 from unittest.mock import Mock
 
-from tco_app.src.constants import DataColumns, Drivetrain
-from tco_app.repositories import VehicleRepository, ParametersRepository
+import pandas as pd
+import pytest
+
+from tco_app.repositories import ParametersRepository, VehicleRepository
+from tco_app.services.dtos import ComparisonResult, TCOResult
 from tco_app.services.tco_calculation_service import TCOCalculationService
+from tco_app.src.constants import DataColumns, Drivetrain
 from tco_app.ui.calculation_orchestrator import CalculationOrchestrator
-from tco_app.services.dtos import (
-    CalculationRequest,
-    CalculationParameters,
-    TCOResult,
-    ComparisonResult,
-)
 
 
 class TestFullTCOFlow:

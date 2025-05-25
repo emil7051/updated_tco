@@ -3,9 +3,9 @@
 Provides a router for multi-page UI as part of modularisation step 5.2.
 """
 
-from pathlib import Path
-import sys
 import importlib
+import sys
+from pathlib import Path
 
 # Ensure project root directory is on sys.path so that ``tco_app`` can be
 # imported when this file is executed directly (e.g. ``streamlit run tco_app/main.py``)
@@ -14,7 +14,7 @@ _project_root = Path(__file__).resolve().parent.parent
 if _project_root.as_posix() not in sys.path:
     sys.path.insert(0, _project_root.as_posix())
 
-from tco_app.src import st, Dict, UI_CONFIG
+from tco_app.src import UI_CONFIG, Dict, st
 
 # ------- Page registry ----------------------------------------------------
 

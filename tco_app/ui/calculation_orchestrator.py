@@ -1,19 +1,15 @@
 """Orchestrates TCO calculations after UI context is built."""
 
-from tco_app.src import pd, logging, Dict, Any
-from tco_app.src.constants import DataColumns, ParameterKeys, Drivetrain
-
+from tco_app.repositories import ParametersRepository, VehicleRepository
+from tco_app.services.dtos import CalculationParameters, CalculationRequest
 from tco_app.services.tco_calculation_service import (
-    TCOCalculationService,
     ComparisonResult,
+    TCOCalculationService,
     TCOResult,
 )
-from tco_app.services.dtos import (
-    CalculationRequest,
-    CalculationParameters,
-)
-from tco_app.repositories import VehicleRepository, ParametersRepository
-from tco_app.src.exceptions import VehicleNotFoundError, CalculationError
+from tco_app.src import Any, Dict, logging, pd
+from tco_app.src.constants import DataColumns, Drivetrain, ParameterKeys
+from tco_app.src.exceptions import CalculationError, VehicleNotFoundError
 
 logger = logging.getLogger(__name__)
 

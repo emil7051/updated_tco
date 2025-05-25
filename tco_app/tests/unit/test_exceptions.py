@@ -1,13 +1,12 @@
 """Tests for custom exceptions from Work Package 5."""
 
-import pytest
 from tco_app.src.exceptions import (
-    TCOBaseException,
-    DataNotFoundError,
     CalculationError,
+    DataNotFoundError,
     InvalidVehicleError,
-    ScenarioError,
     ParameterError,
+    ScenarioError,
+    TCOBaseException,
 )
 
 

@@ -1,9 +1,7 @@
-from tco_app.plotters import (
-    create_cost_breakdown_chart,
-    create_emissions_chart,
-)
-from tco_app.src.constants import Drivetrain
 import plotly.graph_objects as go
+
+from tco_app.plotters import create_cost_breakdown_chart, create_emissions_chart
+from tco_app.src.constants import Drivetrain
 
 
 def _dummy_results(acquisition_cost: float = 100_000, truck_life_years: int = 10):

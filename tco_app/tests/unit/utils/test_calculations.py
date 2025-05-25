@@ -1,11 +1,13 @@
 """Unit tests for calculation utility functions."""
 
 import math
-from tco_app.src import pd
+
 import pytest
+
+from tco_app.src import pd
 from tco_app.src.constants import Drivetrain
-from tco_app.src.utils import energy as en
 from tco_app.src.utils import battery as bat
+from tco_app.src.utils import energy as en
 from tco_app.src.utils import finance as fin
 
 

@@ -1,10 +1,11 @@
 """Tests for safe calculation operations."""
 
-import pytest
 from unittest.mock import patch
 
+import pytest
+
 from tco_app.src.exceptions import CalculationError
-from tco_app.src.utils.safe_operations import safe_division, safe_calculate
+from tco_app.src.utils.safe_operations import safe_calculate, safe_division
 
 
 class TestSafeDivision:

@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
-from tco_app.src import pd
-
 from tco_app.domain.externalities import calculate_externalities, calculate_social_tco
+from tco_app.src import pd
 
 __all__ = ["perform_externality_sensitivity"]
 

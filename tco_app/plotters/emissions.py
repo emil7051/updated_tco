@@ -1,7 +1,7 @@
-from tco_app.src import pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from tco_app.src import pd
 from tco_app.src.constants import Drivetrain
 
 

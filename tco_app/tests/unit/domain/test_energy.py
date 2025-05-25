@@ -1,6 +1,7 @@
 import pytest
-from tco_app.src import pd, CALC_DEFAULTS
+
 from tco_app.domain.energy import calculate_charging_requirements
+from tco_app.src import CALC_DEFAULTS, pd
 from tco_app.src.constants import DataColumns, Drivetrain
 
 
@@ -8,13 +9,19 @@ from tco_app.src.constants import DataColumns, Drivetrain
     "drivetrain,desc,expected_power",
     [
         (Drivetrain.BEV, "Depot charger 80 kW", 80.0),
-        (Drivetrain.BEV, "Fast charger high kW", CALC_DEFAULTS.DEFAULT_CHARGER_POWER_KW),
+        (
+            Drivetrain.BEV,
+            "Fast charger high kW",
+            CALC_DEFAULTS.DEFAULT_CHARGER_POWER_KW,
+        ),
         (Drivetrain.DIESEL, None, 0.0),
     ],
 )
 def test_calculate_charging_requirements(drivetrain, desc, expected_power):
     annual_kms = 36500
-    vehicle = pd.Series({DataColumns.VEHICLE_DRIVETRAIN: drivetrain, DataColumns.KWH_PER100KM: 20})
+    vehicle = pd.Series(
+        {DataColumns.VEHICLE_DRIVETRAIN: drivetrain, DataColumns.KWH_PER100KM: 20}
+    )
     infra = None
     if desc is not None:
         infra = pd.Series({DataColumns.INFRASTRUCTURE_DESCRIPTION: desc})

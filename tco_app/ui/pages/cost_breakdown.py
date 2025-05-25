@@ -1,12 +1,11 @@
-from tco_app.src import st
-
-from tco_app.ui.context import get_context
 from tco_app.plotters import (
-    create_cost_breakdown_chart,
-    create_charging_mix_chart,
     create_annual_costs_chart,
+    create_charging_mix_chart,
+    create_cost_breakdown_chart,
 )
-from tco_app.src.constants import Drivetrain, DataColumns
+from tco_app.src import st
+from tco_app.src.constants import DataColumns, Drivetrain
+from tco_app.ui.context import get_context
 
 
 def render():

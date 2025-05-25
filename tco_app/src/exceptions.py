@@ -6,8 +6,6 @@ from typing import Any
 class TCOBaseException(Exception):
     """Base exception for all TCO-specific errors."""
 
-    pass
-
 
 class DataNotFoundError(TCOBaseException):
     """Raised when expected data is not found in DataFrame."""
@@ -36,8 +34,6 @@ class InvalidVehicleError(TCOBaseException):
 
 class ScenarioError(TCOBaseException):
     """Raised when scenario configuration is invalid."""
-
-    pass
 
 
 class ParameterError(TCOBaseException):

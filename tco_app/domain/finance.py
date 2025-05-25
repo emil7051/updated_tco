@@ -3,18 +3,15 @@
 from __future__ import annotations
 
 import math
-from tco_app.src import pd, np, Dict, Any, PERFORMANCE_CONFIG, Optional
 from typing import Union
 
-from tco_app.src.constants import Drivetrain, DataColumns
-from tco_app.src.utils.finance import (
-    npv_constant as calculate_npv,
-    cumulative_cost_curve,
-    price_parity_year,
-    calculate_residual_value,
-)
-from tco_app.src.utils.safe_operations import safe_division, safe_iloc_zero
 from tco_app.domain.finance_payload import calculate_payload_penalty_costs as _impl
+from tco_app.src import PERFORMANCE_CONFIG, Any, Dict, Optional, np, pd
+from tco_app.src.constants import DataColumns, Drivetrain
+from tco_app.src.utils.finance import calculate_residual_value, cumulative_cost_curve
+from tco_app.src.utils.finance import npv_constant as calculate_npv
+from tco_app.src.utils.finance import price_parity_year
+from tco_app.src.utils.safe_operations import safe_division, safe_iloc_zero
 
 __all__ = [
     "calculate_npv",
@@ -301,7 +298,9 @@ def compute_infrastructure_npv(
         if start_year >= truck_life_years:
             break
 
-        npv_infra += price if cycle == 0 else price / ((1 + discount_rate) ** start_year)
+        npv_infra += (
+            price if cycle == 0 else price / ((1 + discount_rate) ** start_year)
+        )
 
         years_in_cycle = min(service_life, truck_life_years - start_year)
         for year in range(years_in_cycle):

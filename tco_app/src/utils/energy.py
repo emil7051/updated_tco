@@ -7,18 +7,17 @@ functions to guarantee a single, authoritative implementation for weighted
 charging-mix calculations.
 """
 
+import logging
+from typing import Dict, Mapping
+
+from tco_app.src import pd
+from tco_app.src.constants import DataColumns, EmissionStandard, ParameterKeys
 from tco_app.src.utils.safe_operations import (
     safe_division,
     safe_get_charging_option,
     safe_get_parameter,
     safe_iloc_zero,
 )
-from tco_app.src.constants import DataColumns, ParameterKeys, EmissionStandard
-import logging
-
-from typing import Dict, Mapping
-
-from tco_app.src import pd
 
 logger = logging.getLogger(__name__)
 
@@ -94,10 +93,10 @@ def weighted_electricity_price(
     return weighted_price
 
 
-from ..constants import (
+from ..constants import (  # noqa: E402  # Imported late to avoid circularity
     Drivetrain,
     FuelType,
-)  # noqa: E402  # Imported late to avoid circularity
+)
 
 
 def calculate_energy_costs(

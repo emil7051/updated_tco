@@ -6,8 +6,8 @@ data for the TCO calculation service, promoting type safety and clear interfaces
 
 from dataclasses import dataclass, field
 from typing import Dict, Optional
-from tco_app.src import pd, datetime, Any
 
+from tco_app.src import Any, datetime, pd
 from tco_app.src.constants import DataColumns, Drivetrain
 
 __all__ = [

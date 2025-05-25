@@ -2,9 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
-from tco_app.src import pd
-
 from tco_app.services import scenario_service
+from tco_app.src import pd
 
 
 class _StubExpander:
@@ -27,7 +26,12 @@ class TestApplyScenarioParameters:
         )
 
         battery_params = pd.DataFrame(
-            [{"battery_description": "replacement_per_kwh_price", "default_value": 100.0}]
+            [
+                {
+                    "battery_description": "replacement_per_kwh_price",
+                    "default_value": 100.0,
+                }
+            ]
         )
 
         vehicle_models = pd.DataFrame(
@@ -96,9 +100,9 @@ class TestApplyScenarioParameters:
         assert diesel_price == 2.5
 
         # vehicle price modified for BEV truck
-        bev_mask = (
-            modified["vehicle_models"]["vehicle_drivetrain"] == "BEV"
-        ) & (modified["vehicle_models"]["vehicle_type"] == "Truck")
+        bev_mask = (modified["vehicle_models"]["vehicle_drivetrain"] == "BEV") & (
+            modified["vehicle_models"]["vehicle_type"] == "Truck"
+        )
         bev_price = modified["vehicle_models"][bev_mask]["msrp_price"].iloc[0]
         assert bev_price == 240000  # 300000 * 0.8
 
@@ -112,9 +116,15 @@ class TestApplyScenarioParameters:
             "UNKNOWN", data_tables, "Truck", "BEV"
         )
 
-        pd.testing.assert_frame_equal(modified["financial_params"], data_tables["financial_params"])  # noqa: E501
-        pd.testing.assert_frame_equal(modified["vehicle_models"], data_tables["vehicle_models"])  # noqa: E501
-        pd.testing.assert_frame_equal(modified["battery_params"], data_tables["battery_params"])  # noqa: E501
+        pd.testing.assert_frame_equal(
+            modified["financial_params"], data_tables["financial_params"]
+        )  # noqa: E501
+        pd.testing.assert_frame_equal(
+            modified["vehicle_models"], data_tables["vehicle_models"]
+        )  # noqa: E501
+        pd.testing.assert_frame_equal(
+            modified["battery_params"], data_tables["battery_params"]
+        )  # noqa: E501
 
 
 class TestDisplayScenarioParameters:
@@ -144,16 +154,20 @@ class TestDisplayScenarioParameters:
         stub.caption.assert_not_called()
 
     def test_display_base_scenario(self):
-        scenario_params = pd.DataFrame([
-            {
-                "scenario_id": "S1",
-                "parameter_table": "financial_params",
-                "parameter_name": "diesel_price",
-                "parameter_value": 2.5,
-            }
-        ])
+        scenario_params = pd.DataFrame(
+            [
+                {
+                    "scenario_id": "S1",
+                    "parameter_table": "financial_params",
+                    "parameter_name": "diesel_price",
+                    "parameter_value": 2.5,
+                }
+            ]
+        )
         stub = self._stub_streamlit()
         with patch("tco_app.services.scenario_service.st", stub):
-            scenario_service.display_scenario_parameters("S000", scenario_params, "Base")
+            scenario_service.display_scenario_parameters(
+                "S000", scenario_params, "Base"
+            )
         stub.caption.assert_called_once()
         stub.markdown.assert_not_called()

@@ -1,10 +1,11 @@
-import pytest
 from unittest.mock import Mock
 
-from tco_app.src import pd
-from tco_app.services.tco_calculation_service import TCOCalculationService
+import pytest
+
+from tco_app.repositories import ParametersRepository, VehicleRepository
 from tco_app.services.dtos import CalculationParameters, CalculationRequest
-from tco_app.repositories import VehicleRepository, ParametersRepository
+from tco_app.services.tco_calculation_service import TCOCalculationService
+from tco_app.src import pd
 from tco_app.src.constants import DataColumns
 
 
@@ -13,9 +14,13 @@ class TestTCOMetrics:
 
     @pytest.fixture
     def service(self):
-        return TCOCalculationService(Mock(spec=VehicleRepository), Mock(spec=ParametersRepository))
+        return TCOCalculationService(
+            Mock(spec=VehicleRepository), Mock(spec=ParametersRepository)
+        )
 
-    def _minimal_request(self, annual_kms: int, truck_life_years: int, payload: float = 5.0):
+    def _minimal_request(
+        self, annual_kms: int, truck_life_years: int, payload: float = 5.0
+    ):
         params = CalculationParameters(
             annual_kms=annual_kms,
             truck_life_years=truck_life_years,
@@ -41,8 +46,12 @@ class TestTCOMetrics:
 
     def test_metrics_non_zero(self, service):
         """Ensure per-km and per-tonne-km metrics are calculated correctly."""
-        request = self._minimal_request(annual_kms=100000, truck_life_years=10, payload=5)
-        tco_per_km, tco_per_tonne_km = service._calculate_tco_metrics(1_000_000, request)
+        request = self._minimal_request(
+            annual_kms=100000, truck_life_years=10, payload=5
+        )
+        tco_per_km, tco_per_tonne_km = service._calculate_tco_metrics(
+            1_000_000, request
+        )
 
         assert pytest.approx(tco_per_km) == 1_000_000 / (100000 * 10)
         assert pytest.approx(tco_per_tonne_km) == (1_000_000 / (100000 * 10)) / 5
@@ -50,8 +59,12 @@ class TestTCOMetrics:
     @pytest.mark.parametrize("annual_kms, truck_life_years", [(0, 10), (100000, 0)])
     def test_metrics_zero_inputs(self, service, annual_kms, truck_life_years):
         """If annual_kms or truck_life_years are zero, metrics should be zero."""
-        request = self._minimal_request(annual_kms=annual_kms, truck_life_years=truck_life_years, payload=5)
-        tco_per_km, tco_per_tonne_km = service._calculate_tco_metrics(1_000_000, request)
+        request = self._minimal_request(
+            annual_kms=annual_kms, truck_life_years=truck_life_years, payload=5
+        )
+        tco_per_km, tco_per_tonne_km = service._calculate_tco_metrics(
+            1_000_000, request
+        )
 
         assert tco_per_km == 0
         assert tco_per_tonne_km == 0
