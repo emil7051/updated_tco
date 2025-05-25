@@ -41,8 +41,6 @@ class ParameterRepository:
         self._cache[key] = value
         return value
 
-
-
 class FinancialParameters(ParameterRepository):
     """Specialised repository for financial parameters."""
 
