@@ -5,32 +5,19 @@ from tco_app.src.utils.safe_operations import safe_division
 
 """Comparative BEV-vs-Diesel KPI helper, extracted to its own file."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 from tco_app.src.utils.pandas_helpers import to_scalar
 
 import math
 
 
-def calculate_comparative_metrics(
-    bev_results: Dict[str, Any],
-    diesel_results: Dict[str, Any],
-    annual_kms: int,
-    truck_life_years: int,
-) -> Dict[str, Any]:
-    """Return parity & abatement KPIs for BEV vs diesel (unchanged logic)."""
+def adjust_upfront_costs(
+    bev_results: Dict[str, Any], diesel_results: Dict[str, Any]
+) -> Tuple[float, float, float]:
+    """Return BEV and diesel upfront costs and their difference."""
 
-    # Initial acquisition costs
-    bev_initial_cost = bev_results["acquisition_cost"]
-    diesel_initial_cost = diesel_results["acquisition_cost"]
-
-    annual_savings = (
-        diesel_results["annual_costs"]["annual_operating_cost"]
-        - bev_results["annual_costs"]["annual_operating_cost"]
-    )
-
-    years = list(range(1, truck_life_years + 1))
-    bev_cum: List[float] = [bev_initial_cost]
-    diesel_cum: List[float] = [diesel_initial_cost]
+    bev_initial = bev_results["acquisition_cost"]
+    diesel_initial = diesel_results["acquisition_cost"]
 
     if "infrastructure_costs" in bev_results:
         infra_price = (
@@ -39,17 +26,21 @@ def calculate_comparative_metrics(
             )
             or bev_results["infrastructure_costs"][DataColumns.INFRASTRUCTURE_PRICE]
         )
-
         fleet_size = bev_results["infrastructure_costs"].get("fleet_size", 1) or 1
+        bev_initial += infra_price / float(fleet_size)
 
-        # Allocate infrastructure CAPEX on a per-vehicle basis and add to the
-        # upfront cash-flow for the BEV.
-        infrastructure_cost_per_vehicle = infra_price / float(fleet_size)
-        bev_cum[0] += infrastructure_cost_per_vehicle
-        bev_initial_cost += infrastructure_cost_per_vehicle
+    return bev_initial, diesel_initial, bev_initial - diesel_initial
 
-    # Calculate upfront difference after infrastructure costs are included
-    upfront_diff = bev_initial_cost - diesel_initial_cost
+
+def accumulate_operating_costs(
+    bev_results: Dict[str, Any], diesel_results: Dict[str, Any], truck_life_years: int
+) -> Tuple[List[float], List[float]]:
+    """Return cumulative operating costs for BEV and diesel."""
+
+    bev_initial, diesel_initial, _ = adjust_upfront_costs(bev_results, diesel_results)
+
+    bev_cum: List[float] = [bev_initial]
+    diesel_cum: List[float] = [diesel_initial]
 
     for year in range(1, truck_life_years):
         bev_annual = bev_results["annual_costs"]["annual_operating_cost"]
@@ -59,20 +50,15 @@ def calculate_comparative_metrics(
             bev_annual += bev_results.get("battery_replacement_cost", 0)
 
         if "infrastructure_costs" in bev_results:
-            infra_maint = bev_results["infrastructure_costs"][
-                "annual_maintenance"
-            ] / bev_results["infrastructure_costs"].get("fleet_size", 1)
+            infra = bev_results["infrastructure_costs"]
+            infra_maint = infra["annual_maintenance"] / infra.get("fleet_size", 1)
             bev_annual += infra_maint
-            service_life = bev_results["infrastructure_costs"]["service_life_years"]
+            service_life = infra["service_life_years"]
             if year % service_life == 0 and year < truck_life_years:
                 infra_rep = (
-                    bev_results["infrastructure_costs"].get(
-                        "infrastructure_price_with_incentives"
-                    )
-                    or bev_results["infrastructure_costs"][
-                        DataColumns.INFRASTRUCTURE_PRICE
-                    ]
-                ) / bev_results["infrastructure_costs"].get("fleet_size", 1)
+                    infra.get("infrastructure_price_with_incentives")
+                    or infra[DataColumns.INFRASTRUCTURE_PRICE]
+                ) / infra.get("fleet_size", 1)
                 bev_annual += infra_rep
 
         bev_cum.append(bev_cum[-1] + bev_annual)
@@ -81,15 +67,48 @@ def calculate_comparative_metrics(
     bev_cum[-1] -= to_scalar(bev_results["residual_value"])
     diesel_cum[-1] -= to_scalar(diesel_results["residual_value"])
 
+    return bev_cum, diesel_cum
+
+
+def compute_price_parity(bev_cumulative: List[float], diesel_cumulative: List[float], years: List[int]) -> float:
+    """Return the interpolated price parity year."""
+
     price_parity_year = math.inf
     for i in range(len(years) - 1):
-        if (bev_cum[i] - diesel_cum[i]) * (bev_cum[i + 1] - diesel_cum[i + 1]) <= 0:
-            delta_bev = bev_cum[i + 1] - bev_cum[i]
-            delta_diesel = diesel_cum[i + 1] - diesel_cum[i]
+        if (bev_cumulative[i] - diesel_cumulative[i]) * (bev_cumulative[i + 1] - diesel_cumulative[i + 1]) <= 0:
+            delta_bev = bev_cumulative[i + 1] - bev_cumulative[i]
+            delta_diesel = diesel_cumulative[i + 1] - diesel_cumulative[i]
             if delta_bev != delta_diesel:
-                t = (diesel_cum[i] - bev_cum[i]) / (delta_bev - delta_diesel)
+                t = (diesel_cumulative[i] - bev_cumulative[i]) / (delta_bev - delta_diesel)
                 price_parity_year = years[i] + t
                 break
+
+    return price_parity_year
+
+def calculate_comparative_metrics(
+    bev_results: Dict[str, Any],
+    diesel_results: Dict[str, Any],
+    annual_kms: int,
+    truck_life_years: int,
+) -> Dict[str, Any]:
+    """Return parity & abatement KPIs for BEV vs diesel (unchanged logic)."""
+
+    annual_savings = (
+        diesel_results["annual_costs"]["annual_operating_cost"]
+        - bev_results["annual_costs"]["annual_operating_cost"]
+    )
+
+    years = list(range(1, truck_life_years + 1))
+
+    bev_initial_cost, diesel_initial_cost, upfront_diff = adjust_upfront_costs(
+        bev_results, diesel_results
+    )
+
+    bev_cum, diesel_cum = accumulate_operating_costs(
+        bev_results, diesel_results, truck_life_years
+    )
+
+    price_parity_year = compute_price_parity(bev_cum, diesel_cum, years)
 
     emission_savings = to_scalar(
         diesel_results["emissions"]["lifetime_emissions"]
