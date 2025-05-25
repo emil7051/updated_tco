@@ -26,6 +26,97 @@ __all__ = [
 # --------------------------------------------------------------------------------------
 
 
+def _compute_detailed_externalities(
+    vehicle_data: Union[pd.Series, dict],
+    externalities_data: pd.DataFrame,
+    annual_kms: int,
+    truck_life_years: int,
+    discount_rate: float,
+) -> tuple[float, Dict[str, Any]]:
+    """Compute externalities using a detailed externalities table."""
+
+    vehicle_class = vehicle_data[DataColumns.VEHICLE_TYPE]
+    drivetrain = vehicle_data[DataColumns.VEHICLE_DRIVETRAIN]
+
+    vehicle_externalities = externalities_data[
+        (externalities_data["vehicle_class"] == vehicle_class)
+        & (externalities_data["drivetrain"] == drivetrain)
+    ]
+
+    total_entry = vehicle_externalities[
+        vehicle_externalities["pollutant_type"] == "externalities_total"
+    ]
+    total_externality_per_km = (
+        total_entry.iloc[0]["cost_per_km"]
+        if not total_entry.empty
+        else vehicle_externalities["cost_per_km"].sum()
+    )
+
+    breakdown: Dict[str, Any] = {}
+    for _, row in vehicle_externalities.iterrows():
+        if row["pollutant_type"] == "externalities_total":
+            continue
+        pollutant = row["pollutant_type"]
+        cost_per_km = row["cost_per_km"]
+        annual_cost = cost_per_km * annual_kms
+        lifetime_cost = annual_cost * truck_life_years
+        npv_cost = calculate_npv(annual_cost, discount_rate, truck_life_years)
+        breakdown[pollutant] = {
+            "cost_per_km": cost_per_km,
+            "annual_cost": annual_cost,
+            "lifetime_cost": lifetime_cost,
+            "npv_cost": npv_cost,
+        }
+
+    return float(total_externality_per_km), breakdown
+
+
+def _compute_co2_proxy(
+    vehicle_data: Union[pd.Series, dict],
+    emission_factors: pd.DataFrame,
+    annual_kms: int,
+    truck_life_years: int,
+    discount_rate: float,
+) -> tuple[float, Dict[str, Any]]:
+    """Fallback computation using CO₂ intensity as a proxy."""
+
+    SCC_AUD_PER_TONNE = 100.0
+
+    fuel_type = (
+        "electricity"
+        if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV
+        else "diesel"
+    )
+
+    match = emission_factors[emission_factors["fuel_type"] == fuel_type]
+    if match.empty:
+        co2_per_unit = emission_factors["co2_per_unit"].mean()
+    else:
+        co2_per_unit = float(match.iloc[0]["co2_per_unit"])
+
+    if fuel_type == "diesel":
+        consumption_per100 = vehicle_data.get(DataColumns.LITRES_PER100KM, 0)
+    else:
+        consumption_per100 = vehicle_data.get(DataColumns.KWH_PER100KM, 0)
+
+    co2_per_km = (consumption_per100 / 100) * co2_per_unit
+    total_externality_per_km = (co2_per_km / 1000) * SCC_AUD_PER_TONNE
+
+    breakdown = {
+        "CO2e": {
+            "cost_per_km": total_externality_per_km,
+            "annual_cost": total_externality_per_km * annual_kms,
+            "lifetime_cost": total_externality_per_km * annual_kms * truck_life_years,
+            "npv_cost": calculate_npv(
+                total_externality_per_km * annual_kms,
+                discount_rate,
+                truck_life_years,
+            ),
+        }
+    }
+
+    return total_externality_per_km, breakdown
+
 def calculate_externalities(
     vehicle_data: Union[pd.Series, dict],
     externalities_data: pd.DataFrame,
@@ -47,98 +138,24 @@ def calculate_externalities(
       asserted in the test-suite).
     """
 
-    # ------------------------------------------------------------------
-    # Happy-path: detailed externalities table is available.
-    # ------------------------------------------------------------------
     if {"vehicle_class", "drivetrain", "pollutant_type", "cost_per_km"}.issubset(
         externalities_data.columns
     ):
-        vehicle_class = vehicle_data[DataColumns.VEHICLE_TYPE]
-        drivetrain = vehicle_data[DataColumns.VEHICLE_DRIVETRAIN]
-
-        vehicle_externalities = externalities_data[
-            (externalities_data["vehicle_class"] == vehicle_class)
-            & (externalities_data["drivetrain"] == drivetrain)
-        ]
-
-        total_entry = vehicle_externalities[
-            vehicle_externalities["pollutant_type"] == "externalities_total"
-        ]
-        total_externality_per_km = (
-            total_entry.iloc[0]["cost_per_km"]
-            if not total_entry.empty
-            else vehicle_externalities["cost_per_km"].sum()
+        total_externality_per_km, externality_breakdown = _compute_detailed_externalities(
+            vehicle_data,
+            externalities_data,
+            annual_kms,
+            truck_life_years,
+            discount_rate,
         )
-
-        externality_breakdown: Dict[str, Any] = {}
-        for _, row in vehicle_externalities.iterrows():
-            if row["pollutant_type"] == "externalities_total":
-                continue
-            pollutant = row["pollutant_type"]
-            cost_per_km = row["cost_per_km"]
-            annual_cost = cost_per_km * annual_kms
-            lifetime_cost = annual_cost * truck_life_years
-            npv_cost = calculate_npv(annual_cost, discount_rate, truck_life_years)
-            externality_breakdown[pollutant] = {
-                "cost_per_km": cost_per_km,
-                "annual_cost": annual_cost,
-                "lifetime_cost": lifetime_cost,
-                "npv_cost": npv_cost,
-            }
-
-        total_externality_per_km = float(total_externality_per_km)
-
-    # ------------------------------------------------------------------
-    # Fallback: minimal table (e.g. emission_factors) – approximate CO₂ cost.
-    # ------------------------------------------------------------------
     else:
-        # Use a conservative social cost of carbon (SCC) proxy – AUD 100/tCO₂e.
-        # The absolute value is **irrelevant** to the current unit tests; they
-        # merely require it be positive so that social-TCO > engineering-TCO.
-        SCC_AUD_PER_TONNE = 100.0
-
-        # Determine the vehicle's specific CO₂ intensity (kg/unit of energy).
-        fuel_type = (
-            "electricity"
-            if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV
-            else "diesel"
+        total_externality_per_km, externality_breakdown = _compute_co2_proxy(
+            vehicle_data,
+            externalities_data,
+            annual_kms,
+            truck_life_years,
+            discount_rate,
         )
-
-        match = externalities_data[externalities_data["fuel_type"] == fuel_type]
-        if match.empty:
-            co2_per_unit = externalities_data["co2_per_unit"].mean()
-        else:
-            co2_per_unit = float(match.iloc[0]["co2_per_unit"])
-
-        # Rough energy consumption (litres or kWh per 100 km).
-        if fuel_type == "diesel":
-            consumption_per100 = vehicle_data.get(DataColumns.LITRES_PER100KM, 0)
-            # 2.68 kg CO₂ per litre diesel is already represented in co2_per_unit
-        else:
-            consumption_per100 = vehicle_data.get(DataColumns.KWH_PER100KM, 0)
-
-        # kg CO₂ per km.
-        co2_per_km = (consumption_per100 / 100) * co2_per_unit
-
-        # Cost per km using SCC.
-        total_externality_per_km = (
-            co2_per_km / 1000
-        ) * SCC_AUD_PER_TONNE  # convert kg→t
-
-        externality_breakdown = {
-            "CO2e": {
-                "cost_per_km": total_externality_per_km,
-                "annual_cost": total_externality_per_km * annual_kms,
-                "lifetime_cost": total_externality_per_km
-                * annual_kms
-                * truck_life_years,
-                "npv_cost": calculate_npv(
-                    total_externality_per_km * annual_kms,
-                    discount_rate,
-                    truck_life_years,
-                ),
-            }
-        }
 
     # ------------------------------------------------------------------
     # Aggregate metrics common to both paths.
