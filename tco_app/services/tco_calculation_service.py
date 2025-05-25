@@ -378,7 +378,6 @@ class TCOCalculationService:
 
         return tco_per_km, tco_per_tonne_km
 
-
     def compare_vehicles(
         self,
         base_vehicle_request: CalculationRequest,
