@@ -4,7 +4,7 @@ This module provides configuration classes that consolidate scattered constants
 and magic numbers, improving maintainability and discoverability.
 """
 
-from tco_app.src import dataclass
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
