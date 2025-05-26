@@ -5,49 +5,67 @@ import plotly.graph_objects as go
 
 from tco_app.src import pd
 from tco_app.src.constants import DataColumns, Drivetrain
+from tco_app.ui.utils.dto_accessors import (
+    get_acquisition_cost,
+    get_annual_energy_cost,
+    get_annual_maintenance_cost,
+    get_battery_replacement_cost,
+    get_residual_value,
+    get_annual_operating_cost,
+    get_infrastructure_npv_per_vehicle,
+)
 
 
 def create_cost_breakdown_chart(bev_results, diesel_results):
     """Create a stacked bar chart showing cost breakdown"""
+    # Get truck_life_years from either DTO or dict
+    if hasattr(bev_results, 'truck_life_years'):
+        bev_truck_life_years = bev_results.truck_life_years
+        diesel_truck_life_years = diesel_results.truck_life_years
+    else:
+        bev_truck_life_years = bev_results.get("truck_life_years", 0)
+        diesel_truck_life_years = diesel_results.get("truck_life_years", 0)
+    
+    # Get annual costs safely
+    if hasattr(bev_results, 'annual_costs_breakdown'):
+        bev_insurance_annual = bev_results.annual_costs_breakdown.get("insurance_annual", 0)
+        bev_registration_annual = bev_results.annual_costs_breakdown.get("registration_annual", 0)
+    else:
+        bev_insurance_annual = bev_results.get("annual_costs", {}).get("insurance_annual", 0)
+        bev_registration_annual = bev_results.get("annual_costs", {}).get("registration_annual", 0)
+    
+    if hasattr(diesel_results, 'annual_costs_breakdown'):
+        diesel_insurance_annual = diesel_results.annual_costs_breakdown.get("insurance_annual", 0)
+        diesel_registration_annual = diesel_results.annual_costs_breakdown.get("registration_annual", 0)
+    else:
+        diesel_insurance_annual = diesel_results.get("annual_costs", {}).get("insurance_annual", 0)
+        diesel_registration_annual = diesel_results.get("annual_costs", {}).get("registration_annual", 0)
+    
     # Prepare data for BEV
     bev_costs = {
-        "Acquisition": bev_results["acquisition_cost"],
-        "Energy": bev_results["annual_costs"]["annual_energy_cost"]
-        * bev_results["truck_life_years"],
-        "Maintenance": bev_results["annual_costs"]["annual_maintenance_cost"]
-        * bev_results["truck_life_years"],
-        "Insurance": bev_results["annual_costs"]["insurance_annual"]
-        * bev_results["truck_life_years"],
-        "Registration": bev_results["annual_costs"]["registration_annual"]
-        * bev_results["truck_life_years"],
-        "Battery Replacement": bev_results["battery_replacement"],
-        "Residual Value": -bev_results["residual_value"],
+        "Acquisition": get_acquisition_cost(bev_results),
+        "Energy": get_annual_energy_cost(bev_results) * bev_truck_life_years,
+        "Maintenance": get_annual_maintenance_cost(bev_results) * bev_truck_life_years,
+        "Insurance": bev_insurance_annual * bev_truck_life_years,
+        "Registration": bev_registration_annual * bev_truck_life_years,
+        "Battery Replacement": get_battery_replacement_cost(bev_results),
+        "Residual Value": -get_residual_value(bev_results),
     }
 
     # Add infrastructure costs if available
-    if "infrastructure_costs" in bev_results:
-        if "npv_per_vehicle_with_incentives" in bev_results["infrastructure_costs"]:
-            bev_costs["Infrastructure"] = bev_results["infrastructure_costs"][
-                "npv_per_vehicle_with_incentives"
-            ]
-        else:
-            bev_costs["Infrastructure"] = bev_results["infrastructure_costs"][
-                "npv_per_vehicle"
-            ]
+    infra_npv = get_infrastructure_npv_per_vehicle(bev_results)
+    if infra_npv:
+        bev_costs["Infrastructure"] = infra_npv
 
     # Prepare data for Diesel
     diesel_costs = {
-        "Acquisition": diesel_results["acquisition_cost"],
-        "Energy": diesel_results["annual_costs"]["annual_energy_cost"]
-        * diesel_results["truck_life_years"],
-        "Maintenance": diesel_results["annual_costs"]["annual_maintenance_cost"]
-        * diesel_results["truck_life_years"],
-        "Insurance": diesel_results["annual_costs"]["insurance_annual"]
-        * diesel_results["truck_life_years"],
-        "Registration": diesel_results["annual_costs"]["registration_annual"]
-        * diesel_results["truck_life_years"],
+        "Acquisition": get_acquisition_cost(diesel_results),
+        "Energy": get_annual_energy_cost(diesel_results) * diesel_truck_life_years,
+        "Maintenance": get_annual_maintenance_cost(diesel_results) * diesel_truck_life_years,
+        "Insurance": diesel_insurance_annual * diesel_truck_life_years,
+        "Registration": diesel_registration_annual * diesel_truck_life_years,
         "Battery Replacement": 0,
-        "Residual Value": -diesel_results["residual_value"],
+        "Residual Value": -get_residual_value(diesel_results),
         "Infrastructure": 0,  # No infrastructure costs for diesel
     }
 
@@ -86,54 +104,52 @@ def create_annual_costs_chart(bev_results, diesel_results, truck_life_years):
     years = list(range(1, truck_life_years + 1))
 
     # Initial cumulative costs include acquisition (and infrastructure for BEV)
-    bev_cumulative = [bev_results["acquisition_cost"]]
-    diesel_cumulative = [diesel_results["acquisition_cost"]]
+    bev_cumulative = [get_acquisition_cost(bev_results)]
+    diesel_cumulative = [get_acquisition_cost(diesel_results)]
 
-    if "infrastructure_costs" in bev_results:
-        if (
-            "infrastructure_price_with_incentives"
-            in bev_results["infrastructure_costs"]
-        ):
-            bev_cumulative[0] += bev_results["infrastructure_costs"][
-                "infrastructure_price_with_incentives"
-            ] / bev_results["infrastructure_costs"].get("fleet_size", 1)
-        else:
-            bev_cumulative[0] += bev_results["infrastructure_costs"][
-                DataColumns.INFRASTRUCTURE_PRICE
-            ] / bev_results["infrastructure_costs"].get("fleet_size", 1)
+    # Handle infrastructure costs for BEV
+    if hasattr(bev_results, 'infrastructure_costs_breakdown'):
+        infra_breakdown = bev_results.infrastructure_costs_breakdown
+    else:
+        infra_breakdown = bev_results.get("infrastructure_costs", {})
+    
+    if infra_breakdown:
+        fleet_size = infra_breakdown.get("fleet_size", 1)
+        if "infrastructure_price_with_incentives" in infra_breakdown:
+            bev_cumulative[0] += infra_breakdown["infrastructure_price_with_incentives"] / fleet_size
+        elif DataColumns.INFRASTRUCTURE_PRICE in infra_breakdown:
+            bev_cumulative[0] += infra_breakdown[DataColumns.INFRASTRUCTURE_PRICE] / fleet_size
 
     for year in range(1, truck_life_years):
-        bev_annual = bev_results["annual_costs"]["annual_operating_cost"]
-        diesel_annual = diesel_results["annual_costs"]["annual_operating_cost"]
+        bev_annual = get_annual_operating_cost(bev_results)
+        diesel_annual = get_annual_operating_cost(diesel_results)
 
-        if bev_results.get("battery_replacement_year") == year:
+        # Check for battery replacement
+        if hasattr(bev_results, 'battery_replacement_year'):
+            if bev_results.battery_replacement_year == year:
+                bev_annual += bev_results.battery_replacement_cost or 0
+        elif bev_results.get("battery_replacement_year") == year:
             bev_annual += bev_results.get("battery_replacement_cost", 0)
 
-        if "infrastructure_costs" in bev_results:
-            infra_maintenance = bev_results["infrastructure_costs"][
-                "annual_maintenance"
-            ] / bev_results["infrastructure_costs"].get("fleet_size", 1)
+        # Handle infrastructure maintenance and replacement
+        if infra_breakdown:
+            fleet_size = infra_breakdown.get("fleet_size", 1)
+            infra_maintenance = infra_breakdown.get("annual_maintenance", 0) / fleet_size
             bev_annual += infra_maintenance
 
-            service_life = bev_results["infrastructure_costs"]["service_life_years"]
-            if year % service_life == 0 and year < truck_life_years:
-                if (
-                    "infrastructure_price_with_incentives"
-                    in bev_results["infrastructure_costs"]
-                ):
-                    bev_annual += bev_results["infrastructure_costs"][
-                        "infrastructure_price_with_incentives"
-                    ] / bev_results["infrastructure_costs"].get("fleet_size", 1)
-                else:
-                    bev_annual += bev_results["infrastructure_costs"][
-                        DataColumns.INFRASTRUCTURE_PRICE
-                    ] / bev_results["infrastructure_costs"].get("fleet_size", 1)
+            service_life = infra_breakdown.get("service_life_years", float('inf'))
+            if service_life > 0 and year % service_life == 0 and year < truck_life_years:
+                if "infrastructure_price_with_incentives" in infra_breakdown:
+                    bev_annual += infra_breakdown["infrastructure_price_with_incentives"] / fleet_size
+                elif DataColumns.INFRASTRUCTURE_PRICE in infra_breakdown:
+                    bev_annual += infra_breakdown[DataColumns.INFRASTRUCTURE_PRICE] / fleet_size
 
         bev_cumulative.append(bev_cumulative[-1] + bev_annual)
         diesel_cumulative.append(diesel_cumulative[-1] + diesel_annual)
 
-    bev_cumulative[-1] -= bev_results["residual_value"]
-    diesel_cumulative[-1] -= diesel_results["residual_value"]
+    # Subtract residual value at the end
+    bev_cumulative[-1] -= get_residual_value(bev_results)
+    diesel_cumulative[-1] -= get_residual_value(diesel_results)
 
     df = pd.DataFrame(
         {
@@ -158,6 +174,7 @@ def create_annual_costs_chart(bev_results, diesel_results, truck_life_years):
         height=400,
     )
 
+    # Find intersection point (price parity)
     intersection_year = None
     intersection_cost = None
 

@@ -3,6 +3,10 @@ from plotly.subplots import make_subplots
 
 from tco_app.src import pd
 from tco_app.src.constants import Drivetrain
+from tco_app.ui.utils.dto_accessors import (
+    get_annual_emissions,
+    get_lifetime_emissions,
+)
 
 
 def create_emissions_chart(bev_results, diesel_results, truck_life_years):
@@ -11,12 +15,12 @@ def create_emissions_chart(bev_results, diesel_results, truck_life_years):
         {
             "Vehicle Type": [Drivetrain.BEV.value, Drivetrain.DIESEL.value],
             "Annual Emissions (kg CO₂)": [
-                bev_results["emissions"]["annual_emissions"],
-                diesel_results["emissions"]["annual_emissions"],
+                get_annual_emissions(bev_results),
+                get_annual_emissions(diesel_results),
             ],
             "Lifetime Emissions (tonnes CO₂)": [
-                bev_results["emissions"]["lifetime_emissions"] / 1_000,
-                diesel_results["emissions"]["lifetime_emissions"] / 1_000,
+                get_lifetime_emissions(bev_results) / 1_000,
+                get_lifetime_emissions(diesel_results) / 1_000,
             ],
         }
     )

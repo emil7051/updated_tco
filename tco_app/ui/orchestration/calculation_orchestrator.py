@@ -191,6 +191,16 @@ class CalculationOrchestrator:
                 comparison_vehicle_request=diesel_request,
             )
 
+            # Check if we should return DTOs directly
+            use_dtos = self.ui_context.get("use_dtos", False)
+            if use_dtos:
+                return self._prepare_dto_results(
+                    comparison_result,
+                    bev_request,
+                    diesel_request,
+                )
+            
+            # Otherwise, transform to legacy dictionary format
             ui_results = self._transform_results_for_ui(
                 comparison_result,
                 bev_request,  # Pass requests for context data
@@ -385,4 +395,63 @@ class CalculationOrchestrator:
             "charging_mix": self.ui_context.get("charging_mix"),
             "apply_incentives": self.ui_context.get("apply_incentives", True),
             "scenario_meta": self.ui_context.get("scenario_meta", {}),
+        }
+
+    def _prepare_dto_results(
+        self,
+        comparison: ComparisonResult,
+        bev_request: CalculationRequest,
+        diesel_request: CalculationRequest,
+    ) -> Dict[str, Any]:
+        """Prepare results with DTOs for components that support them."""
+        # Add context data to the DTOs
+        bev_result = comparison.base_vehicle_result
+        diesel_result = comparison.comparison_vehicle_result
+        
+        # Store request data on the DTOs for UI components that need it
+        bev_result.vehicle_data = bev_request.vehicle_data
+        diesel_result.vehicle_data = diesel_request.vehicle_data
+        
+        # Store annual_kms and truck_life_years on DTOs if not already there
+        bev_result.annual_kms = bev_request.parameters.annual_kms
+        bev_result.truck_life_years = bev_request.parameters.truck_life_years
+        diesel_result.annual_kms = diesel_request.parameters.annual_kms
+        diesel_result.truck_life_years = diesel_request.parameters.truck_life_years
+        
+        return {
+            "bev_results": bev_result,  # Return DTO directly
+            "diesel_results": diesel_result,  # Return DTO directly
+            "comparison": comparison,  # Return ComparisonResult DTO
+            # Legacy fields for compatibility
+            "comparison_metrics": {
+                "upfront_cost_difference": comparison.upfront_cost_difference,
+                "annual_operating_savings": comparison.annual_operating_cost_savings,
+                "price_parity_year": comparison.payback_period_years,
+                "emission_savings_lifetime": comparison.emissions_reduction_lifetime_co2e,
+                "abatement_cost": comparison.abatement_cost,
+                "bev_to_diesel_tco_ratio": comparison.bev_to_diesel_tco_ratio,
+            },
+            # Keep other context data for pages that need it
+            "annual_kms": self.ui_context["annual_kms"],
+            "truck_life_years": self.ui_context["truck_life_years"],
+            "discount_rate": self.ui_context["discount_rate"],
+            "fleet_size": self.ui_context.get("fleet_size", 1),
+            "charging_mix": self.ui_context.get("charging_mix"),
+            "apply_incentives": self.ui_context.get("apply_incentives", True),
+            "scenario_meta": self.ui_context.get("scenario_meta", {}),
+            # Data tables for pages that need them
+            "charging_options": bev_request.charging_options,
+            "infrastructure_options": bev_request.infrastructure_options,
+            "financial_params_with_ui": bev_request.financial_params,
+            "battery_params_with_ui": bev_request.battery_params,
+            "emission_factors": bev_request.emission_factors,
+            "incentives": bev_request.incentives,
+            # Pass through UI context selections
+            "selected_charging": self.ui_context["selected_charging"],
+            "selected_infrastructure": self.ui_context["selected_infrastructure"],
+            # Vehicle data for sensitivity page
+            "bev_vehicle_data": bev_request.vehicle_data,
+            "diesel_vehicle_data": diesel_request.vehicle_data,
+            "bev_fees": bev_request.fees_data,
+            "diesel_fees": diesel_request.fees_data,
         }

@@ -90,42 +90,46 @@ The sensitivity analysis has been successfully modernised with:
 - Gradual migration path for UI
 
 ### **Phase 2.2: Remove UI Transformation Functions**
-*Priority: High | Estimated Effort: 4-5 days*
+*Status: IN PROGRESS | Started: 26/05/2025*
 
 **Current State**:
 - `_transform_single_tco_result_for_ui()` converts DTOs back to dictionaries
 - All UI components expect dictionary format
 
-**Detailed Migration Strategy**:
+**Progress So Far**:
 
-1. **Create DTO accessor utilities**:
-```python
-# In tco_app/ui/utils/dto_accessors.py
-def get_tco_per_km(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor that works with both DTOs and dicts during migration."""
-    if isinstance(result, TCOResult):
-        return result.tco_per_km
-    return result.get("tco", {}).get("tco_per_km", 0.0)
-```
+1. **Created DTO accessor utilities** ✅
+   - File: `tco_app/ui/utils/dto_accessors.py`
+   - Provides safe accessors that work with both DTOs and dictionaries
+   - Enables gradual migration of UI components
 
-2. **Migrate components incrementally**:
-   - Start with simple display components
-   - Move to complex plotters
-   - Update one file at a time with testing
+2. **Added DTO mode support to orchestrator** ✅
+   - Added `_prepare_dto_results()` method
+   - Can return DTOs directly when `use_dtos` flag is set
+   - Maintains backward compatibility with dictionary mode
 
-3. **Component migration order**:
-   - `summary_displays.py` - Simple metric displays
-   - `metric_cards.py` - Card-based displays
-   - `key_metrics.py` - Key metrics charts
-   - `emissions.py` - Emission charts
-   - `cost_breakdown.py` - Complex cost breakdowns
-   - `sensitivity.py` - Sensitivity charts
-   - `tornado.py` - Tornado charts
+3. **Migrated components** ✅:
+   - `summary_displays.py` - Migrated to use DTO accessors
+   - `key_metrics.py` - Migrated key metrics chart
+   - `emissions.py` - Migrated emissions chart
+   - `cost_breakdown.py` - Migrated complex cost breakdowns
 
-4. **Testing strategy**:
-   - Create test fixture with both DTO and dict versions
-   - Ensure output remains identical
-   - Run app after each component update
+4. **Created test script** ✅
+   - File: `utility_scripts/test_dto_mode.py`
+   - Verifies DTO mode works correctly
+   - Confirms accessors work with both DTOs and dictionaries
+
+**Remaining Components to Migrate**:
+- `metric_cards.py` - Works with comparison_metrics dict (no changes needed)
+- `sensitivity.py` - Works with sensitivity results (no changes needed)
+- `tornado.py` - Works with tornado results (no changes needed)
+- UI pages that directly access results dictionaries
+
+**Next Steps**:
+1. Identify and migrate any remaining UI components that directly access result dictionaries
+2. Update main pages to optionally use DTO mode
+3. Add feature flag in UI to toggle between modes
+4. Once all components support DTOs, remove transformation functions
 
 ### **Phase 3: Fix Data Schema Issues**
 *Priority: Medium | Estimated Effort: 1 day*
