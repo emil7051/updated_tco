@@ -26,6 +26,7 @@ if '/mount/src/' in str(current_file):
     if mount_root.exists() and mount_root.as_posix() not in sys.path:
         sys.path.insert(0, mount_root.as_posix())
 
+# Now import tco_app modules after path is properly set
 from tco_app.src import UI_CONFIG, Dict, st
 
 # ------- Page registry ----------------------------------------------------

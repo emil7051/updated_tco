@@ -1,4 +1,13 @@
 """Sensitivity analysis page module."""
+import sys
+from pathlib import Path
+
+# Ensure the project root is in the path for containerized environments
+_current_file = Path(__file__).resolve()
+_project_root = _current_file.parent.parent.parent.parent  # Navigate up to project root
+if _project_root.as_posix() not in sys.path:
+    sys.path.insert(0, _project_root.as_posix())
+
 import streamlit as st
 from typing import List
 
