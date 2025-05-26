@@ -25,6 +25,7 @@ class ScenarioBuilder:
                 "scenario_name"
             ],
             key="scenario_selector",
+            help="Pre-configured scenarios automatically adjust relevant parameters"
         )
 
         # Get scenario details

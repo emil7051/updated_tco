@@ -18,8 +18,10 @@ class VehicleSelectionBuilder:
         vehicle_models = self.data_tables["vehicle_models"]
 
         self.vehicle_type = st.selectbox(
-            "Vehicle Type", ["Light Rigid", "Medium Rigid", "Articulated"],
+            "Vehicle Type", 
+            ["Light Rigid", "Medium Rigid", "Articulated"],
             key="vehicle_type_selector",
+            help="Select the vehicle category for your analysis"
         )
 
         # Filter vehicles by type
@@ -37,6 +39,7 @@ class VehicleSelectionBuilder:
                 vehicle_models[DataColumns.VEHICLE_ID] == x
             ].iloc[0][DataColumns.VEHICLE_MODEL],
             key="bev_model_selector",
+            help="Choose the battery electric vehicle for comparison"
         )
 
         # Get comparison diesel
@@ -45,11 +48,11 @@ class VehicleSelectionBuilder:
         ].iloc[0]
         self.comparison_diesel_id = selected_bev[DataColumns.COMPARISON_PAIR_ID]
 
-        # Show diesel info
+        # Show diesel info with better formatting
         diesel_model = vehicle_models[
             vehicle_models[DataColumns.VEHICLE_ID] == self.comparison_diesel_id
         ].iloc[0][DataColumns.VEHICLE_MODEL]
-        st.info(f"Comparison Diesel: {diesel_model}")
+        st.info(f"**Comparison Diesel:** {diesel_model}")
 
         return self
 

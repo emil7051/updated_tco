@@ -25,6 +25,7 @@ class ChargingConfigurationBuilder:
             "Charging Approach",
             ["Single Charging Option", "Mixed Charging (Time-of-Use)"],
             index=0,
+            help="Choose between a single charging method or a mix of different charging options"
         )
 
         use_charging_mix = self.charging_approach == "Mixed Charging (Time-of-Use)"
@@ -57,18 +58,21 @@ class ChargingConfigurationBuilder:
         st.markdown(
             f"Allocate percentage of charging per option (must sum to {UI_CONFIG.CHARGING_MIX_TOTAL}%)"
         )
+        st.info("💡 Use this to model realistic charging patterns with different rates at different times")
+        
         charging_percentages: Dict[int, float] = {}
         total_percentage = 0
         default_pct = UI_CONFIG.CHARGING_MIX_TOTAL // len(charging_options)
 
         for idx, option in charging_options.iterrows():
             pct = st.slider(
-                option[DataColumns.CHARGING_APPROACH],
+                f"{option[DataColumns.CHARGING_APPROACH]} (${option[DataColumns.PER_KWH_PRICE]:.2f}/kWh)",
                 0,
                 UI_CONFIG.CHARGING_MIX_TOTAL,
                 default_pct,
                 UI_CONFIG.CHARGING_MIX_STEP,
                 key=f"cm_{idx}",
+                help=f"Percentage of charging using {option[DataColumns.CHARGING_APPROACH]}"
             )
             charging_percentages[option[DataColumns.CHARGING_ID]] = (
                 pct / UI_CONFIG.CHARGING_MIX_TOTAL
@@ -77,10 +81,11 @@ class ChargingConfigurationBuilder:
 
         if total_percentage != UI_CONFIG.CHARGING_MIX_TOTAL:
             st.warning(
-                f"Total allocation must equal {UI_CONFIG.CHARGING_MIX_TOTAL}% (current {total_percentage}%)"
+                f"⚠️ Total allocation must equal {UI_CONFIG.CHARGING_MIX_TOTAL}% (current: {total_percentage}%)"
             )
             return None
         else:
+            st.success(f"✅ Total allocation: {total_percentage}%")
             return charging_percentages
 
     def _configure_single_charging(self, charging_options: pd.DataFrame) -> int:
@@ -95,6 +100,7 @@ class ChargingConfigurationBuilder:
             .apply(lambda r: f"{r.iloc[0]} (${r.iloc[1]:.2f}/kWh)", axis=1)
             .iloc[0],
             key="primary_charging_selector",
+            help="Select the primary method for charging your electric vehicle"
         )
 
     def build(self) -> Dict[str, Any]:
@@ -115,7 +121,6 @@ class InfrastructureBuilder:
         self.data_tables = data_tables
         self.selected_infrastructure = None
         self.fleet_size = None
-        self.apply_incentives = None
 
     def configure_infrastructure(self) -> "InfrastructureBuilder":
         """Handle infrastructure configuration UI."""
@@ -128,17 +133,26 @@ class InfrastructureBuilder:
                 infrastructure_options[DataColumns.INFRASTRUCTURE_ID] == x
             ].iloc[0][DataColumns.INFRASTRUCTURE_DESCRIPTION],
             key="infrastructure_selector",
+            help="Choose the type of charging infrastructure for your fleet"
         )
 
         self.fleet_size = st.number_input(
-            "Number of Vehicles Sharing Infrastructure",
+            "Fleet Size",
             VALIDATION_LIMITS.MIN_FLEET_SIZE,
             VALIDATION_LIMITS.MAX_FLEET_SIZE,
             VALIDATION_LIMITS.MIN_FLEET_SIZE,
             VALIDATION_LIMITS.FLEET_SIZE_STEP,
+            help="Number of vehicles sharing the infrastructure"
         )
 
-        self.apply_incentives = st.checkbox("Apply Incentives", value=True)
+        # Show infrastructure cost preview
+        selected_infra = infrastructure_options[
+            infrastructure_options[DataColumns.INFRASTRUCTURE_ID] == self.selected_infrastructure
+        ].iloc[0]
+        
+        if self.fleet_size > 0:
+            cost_per_vehicle = selected_infra[DataColumns.INFRASTRUCTURE_PRICE] / self.fleet_size
+            st.info(f"💰 Infrastructure cost per vehicle: ${cost_per_vehicle:,.0f}")
 
         return self
 
@@ -147,5 +161,4 @@ class InfrastructureBuilder:
         return {
             "selected_infrastructure": self.selected_infrastructure,
             "fleet_size": self.fleet_size,
-            "apply_incentives": self.apply_incentives,
         }

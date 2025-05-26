@@ -66,13 +66,9 @@ class CalculationOrchestrator:
                 ParameterKeys.DIESEL_PRICE
             ),  # Using ParameterKeys for consistency
             carbon_price_override=self.ui_context.get(ParameterKeys.CARBON_PRICE),
-            # degradation_rate_override and replacement_cost_override need keys from ui_context if they exist
-            degradation_rate_override=self.ui_context.get(
-                "battery_degradation_rate_override"
-            ),  # Example key
-            replacement_cost_override=self.ui_context.get(
-                "battery_replacement_cost_override"
-            ),  # Example key
+            # Battery parameter overrides from UI context
+            degradation_rate_override=self.ui_context.get("degradation_rate"),
+            replacement_cost_override=self.ui_context.get("replacement_cost"),
         )
 
         # Parameters like diesel_price_override from CalculationParameters are intended to inform
@@ -89,6 +85,11 @@ class CalculationOrchestrator:
             self.params_repo.get_battery_params(), parameters
         )
 
+        # Get incentives from modified tables if available, otherwise from repo
+        incentives_for_request = self.modified_tables.get("incentives")
+        if incentives_for_request is None or incentives_for_request.empty:
+            incentives_for_request = self.params_repo.get_incentives()
+
         return CalculationRequest(
             vehicle_data=vehicle_data_series,
             fees_data=fees_data_series,
@@ -99,7 +100,7 @@ class CalculationOrchestrator:
             battery_params=battery_params_for_request,  # Pass the adjusted DF
             emission_factors=self.params_repo.get_emission_factors(),
             externalities_data=self.params_repo.get_externalities_data(),
-            incentives=self.params_repo.get_incentives(),  # Assuming incentives from repo are scenario-modified
+            incentives=incentives_for_request,  # Use modified incentives from UI
         )
 
     def _apply_ui_overrides_to_financial_params(
@@ -255,6 +256,7 @@ class CalculationOrchestrator:
             "charging_mix": self.ui_context.get("charging_mix"),
             "apply_incentives": self.ui_context.get("apply_incentives", True),
             "scenario_meta": self.ui_context.get("scenario_meta", {}),
+            "selected_incentives": self.ui_context.get("selected_incentives", []),
             # Data tables for pages that need them
             "charging_options": bev_request.charging_options,
             "infrastructure_options": bev_request.infrastructure_options,

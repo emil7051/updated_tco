@@ -4,6 +4,7 @@ from .charging_builder import ChargingConfigurationBuilder, InfrastructureBuilde
 from .parameter_builder import ParameterInputBuilder
 from .scenario_builder import ScenarioBuilder
 from .vehicle_builder import VehicleSelectionBuilder
+from .incentives_builder import IncentivesBuilder
 
 __all__ = [
     "ScenarioBuilder",
@@ -11,4 +12,5 @@ __all__ = [
     "ParameterInputBuilder",
     "ChargingConfigurationBuilder",
     "InfrastructureBuilder",
+    "IncentivesBuilder",
 ]
