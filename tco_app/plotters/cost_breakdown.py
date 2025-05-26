@@ -16,8 +16,8 @@ from tco_app.ui.utils.dto_accessors import (
 )
 
 
-def create_cost_breakdown_chart(bev_results, diesel_results):
-    """Create a stacked bar chart showing cost breakdown"""
+def create_cost_breakdown_chart(bev_results, diesel_results, payload_penalties=None):
+    """Create a stacked bar chart showing cost breakdown including payload penalties"""
     # Get truck_life_years from either DTO or dict
     if hasattr(bev_results, 'truck_life_years'):
         bev_truck_life_years = bev_results.truck_life_years
@@ -56,6 +56,10 @@ def create_cost_breakdown_chart(bev_results, diesel_results):
     infra_npv = get_infrastructure_npv_per_vehicle(bev_results)
     if infra_npv:
         bev_costs["Infrastructure"] = infra_npv
+    
+    # Add payload penalty costs if available
+    if payload_penalties and payload_penalties.get("has_penalty", False):
+        bev_costs["Payload Penalty"] = payload_penalties.get("additional_operational_cost_lifetime", 0)
 
     # Prepare data for Diesel
     diesel_costs = {
@@ -67,6 +71,7 @@ def create_cost_breakdown_chart(bev_results, diesel_results):
         "Battery Replacement": 0,
         "Residual Value": -get_residual_value(diesel_results),
         "Infrastructure": 0,  # No infrastructure costs for diesel
+        "Payload Penalty": 0,  # No payload penalty for diesel
     }
 
     categories = list(bev_costs.keys())
@@ -99,8 +104,8 @@ def create_cost_breakdown_chart(bev_results, diesel_results):
     return fig
 
 
-def create_annual_costs_chart(bev_results, diesel_results, truck_life_years):
-    """Create a line chart showing annual costs over time"""
+def create_annual_costs_chart(bev_results, diesel_results, truck_life_years, payload_penalties=None):
+    """Create a line chart showing annual costs over time including payload penalties"""
     years = list(range(1, truck_life_years + 1))
 
     # Initial cumulative costs include acquisition (and infrastructure for BEV)
@@ -119,10 +124,18 @@ def create_annual_costs_chart(bev_results, diesel_results, truck_life_years):
             bev_cumulative[0] += infra_breakdown["infrastructure_price_with_incentives"] / fleet_size
         elif DataColumns.INFRASTRUCTURE_PRICE in infra_breakdown:
             bev_cumulative[0] += infra_breakdown[DataColumns.INFRASTRUCTURE_PRICE] / fleet_size
+    
+    # Calculate annual payload penalty if applicable
+    annual_payload_penalty = 0
+    if payload_penalties and payload_penalties.get("has_penalty", False):
+        annual_payload_penalty = payload_penalties.get("additional_operational_cost_annual", 0)
 
     for year in range(1, truck_life_years):
         bev_annual = get_annual_operating_cost(bev_results)
         diesel_annual = get_annual_operating_cost(diesel_results)
+        
+        # Add payload penalty to BEV annual costs
+        bev_annual += annual_payload_penalty
 
         # Check for battery replacement
         if hasattr(bev_results, 'battery_replacement_year'):
@@ -165,7 +178,7 @@ def create_annual_costs_chart(bev_results, diesel_results, truck_life_years):
         x="Year",
         y="Cumulative Cost",
         color="Vehicle Type",
-        title="Cumulative Costs Over Time",
+        title="Cumulative Costs Over Time" + (" (Including Payload Penalty)" if payload_penalties and payload_penalties.get("has_penalty", False) else ""),
         labels={"Cumulative Cost": "Cumulative Cost (AUD)", "Year": "Year"},
         color_discrete_map={
             Drivetrain.BEV.value: "#1f77b4",

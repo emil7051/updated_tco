@@ -136,6 +136,9 @@ class ComparisonResult:
     # Parameters needed for calculations
     annual_kms: Optional[int] = None
     truck_life_years: Optional[int] = None
+    
+    # Payload penalties
+    payload_penalties: Optional[Dict[str, Any]] = None
 
     # Meta
     comparison_timestamp: str = field(

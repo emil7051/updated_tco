@@ -16,5 +16,16 @@ def render():
 
     display_summary_metrics(bev_results, diesel_results)
     display_comparison_metrics(comparison_metrics)
+    
+    # Display payload penalty warning if applicable
+    if "comparison" in ctx and hasattr(ctx["comparison"], "payload_penalties"):
+        payload_penalties = ctx["comparison"].payload_penalties
+        if payload_penalties and payload_penalties.get("has_penalty", False):
+            st.warning(
+                f"⚠️ **Payload Consideration**: The BEV has {payload_penalties['payload_difference_percentage']:.1f}% "
+                f"less payload capacity than the diesel vehicle. This analysis includes an additional "
+                f"${payload_penalties['additional_operational_cost_lifetime']:,.0f} in lifetime costs to account for "
+                f"the {payload_penalties['additional_trips_percentage']:.1f}% more trips required to transport the same freight volume."
+            )
 
     st.query_params["page"] = "home"

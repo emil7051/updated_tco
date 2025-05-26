@@ -30,10 +30,24 @@ def render():
     bev_results = ctx["bev_results"]
     diesel_results = ctx["diesel_results"]
     truck_life_years = ctx["truck_life_years"]
+    
+    # Get payload penalties from comparison result if available
+    payload_penalties = None
+    if "comparison" in ctx and hasattr(ctx["comparison"], "payload_penalties"):
+        payload_penalties = ctx["comparison"].payload_penalties
 
     st.subheader("Lifetime Cost Components")
-    chart = create_cost_breakdown_chart(bev_results, diesel_results)
+    chart = create_cost_breakdown_chart(bev_results, diesel_results, payload_penalties)
     st.plotly_chart(chart, use_container_width=True)
+    
+    # Display payload penalty information if it exists
+    if payload_penalties and payload_penalties.get("has_penalty", False):
+        st.info(
+            f"⚠️ **Payload Penalty Applied**: The BEV has {payload_penalties['payload_difference']:.1f} tonnes "
+            f"less payload capacity ({payload_penalties['payload_difference_percentage']:.1f}% reduction). "
+            f"This results in an additional lifetime cost of ${payload_penalties['additional_operational_cost_lifetime']:,.0f} "
+            f"due to the need for {payload_penalties['additional_trips_percentage']:.1f}% more trips."
+        )
 
     # Charging mix visual
     if has_charging_mix(bev_results):
@@ -98,6 +112,6 @@ def render():
 
     st.subheader("Costs Over Time")
     annual_chart = create_annual_costs_chart(
-        bev_results, diesel_results, truck_life_years
+        bev_results, diesel_results, truck_life_years, payload_penalties
     )
     st.plotly_chart(annual_chart, use_container_width=True, key="annual_costs_chart")

@@ -6,6 +6,7 @@ from tco_app.domain import (  # battery is not directly used by model_runner top
     externalities,
     finance,
 )
+from tco_app.domain.finance_payload import calculate_payload_penalty_costs
 from tco_app.domain.sensitivity import (
     metrics as sensitivity_metrics,
 )  # Added import for calculate_comparative_metrics
@@ -392,11 +393,62 @@ class TCOCalculationService:
             comparison_vehicle_request
         )
 
+        # Calculate payload penalties if comparing BEV vs Diesel
+        payload_penalties = None
+        if (base_vehicle_request.drivetrain == Drivetrain.BEV and 
+            comparison_vehicle_request.drivetrain == Drivetrain.DIESEL):
+            # Create temporary dictionaries for payload calculation
+            bev_temp = {
+                "vehicle_data": base_vehicle_request.vehicle_data,
+                "annual_kms": base_vehicle_request.parameters.annual_kms,
+                "truck_life_years": base_vehicle_request.parameters.truck_life_years,
+                "energy_cost_per_km": base_tco_result.energy_cost_per_km,
+                "annual_costs": {
+                    "annual_operating_cost": base_tco_result.annual_operating_cost,
+                    "annual_energy_cost": base_tco_result.annual_costs_breakdown.get("annual_energy_cost", 0),
+                    "annual_maintenance_cost": base_tco_result.annual_costs_breakdown.get("annual_maintenance_cost", 0),
+                    "insurance_annual": base_tco_result.annual_costs_breakdown.get("insurance_annual", 0),
+                    "registration_annual": base_tco_result.annual_costs_breakdown.get("registration_annual", 0),
+                },
+                "tco": {
+                    "npv_total_cost": base_tco_result.tco_total_lifetime,
+                    "tco_per_tonne_km": base_tco_result.tco_per_tonne_km,
+                },
+            }
+            
+            diesel_temp = {
+                "vehicle_data": comparison_vehicle_request.vehicle_data,
+                "annual_kms": comparison_vehicle_request.parameters.annual_kms,
+                "truck_life_years": comparison_vehicle_request.parameters.truck_life_years,
+                "energy_cost_per_km": comparison_tco_result.energy_cost_per_km,
+                "annual_costs": {
+                    "annual_operating_cost": comparison_tco_result.annual_operating_cost,
+                    "annual_energy_cost": comparison_tco_result.annual_costs_breakdown.get("annual_energy_cost", 0),
+                    "annual_maintenance_cost": comparison_tco_result.annual_costs_breakdown.get("annual_maintenance_cost", 0),
+                    "insurance_annual": comparison_tco_result.annual_costs_breakdown.get("insurance_annual", 0),
+                    "registration_annual": comparison_tco_result.annual_costs_breakdown.get("registration_annual", 0),
+                },
+                "tco": {
+                    "npv_total_cost": comparison_tco_result.tco_total_lifetime,
+                    "tco_per_tonne_km": comparison_tco_result.tco_per_tonne_km,
+                },
+            }
+            
+            payload_penalties = calculate_payload_penalty_costs(
+                bev_temp, diesel_temp, base_vehicle_request.financial_params
+            )
+
         # Create ComparisonResult with basic data
         tco_savings = (
             comparison_tco_result.tco_total_lifetime
             - base_tco_result.tco_total_lifetime
         )
+        
+        # Adjust TCO savings if payload penalties exist
+        if payload_penalties and payload_penalties.get("has_penalty", False):
+            # Adjust BEV TCO with payload penalty
+            adjusted_bev_tco = payload_penalties["bev_adjusted_lifetime_tco"]
+            tco_savings = comparison_tco_result.tco_total_lifetime - adjusted_bev_tco
         
         # Ensure annual_kms and truck_life_years are consistent for the comparison.
         # Using values from the base_vehicle_request as representative.
@@ -412,6 +464,7 @@ class TCOCalculationService:
             tco_savings_lifetime=tco_savings,
             annual_kms=annual_kms_for_comparison,
             truck_life_years=truck_life_years_for_comparison,
+            payload_penalties=payload_penalties,
         )
 
         # Calculate comparative metrics using the new DTO-based function
