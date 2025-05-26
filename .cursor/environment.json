@@ -1,6 +1,6 @@
 {
   "snapshot": "snapshot-20250526-ae77eaf8-8041-4d17-be2b-b3c544831629",
-  "install": "sudo apt update && sudo apt install -y python3.13-venv python3-pip && python3 -m venv venv && source venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt",
+  "install": "sudo apt update && sudo apt install -y python3.13-venv python3-pip && python3 -m venv venv && source venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt && [ -f utility_scripts/tools/cleanup_deployment.py ] && python3 utility_scripts/tools/cleanup_deployment.py || echo 'Cleanup script not found'",
   "start": "source venv/bin/activate && python3 -m streamlit run tco_app/main.py",
   "terminals": []
 }

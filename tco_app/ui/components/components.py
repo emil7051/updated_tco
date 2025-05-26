@@ -15,9 +15,5 @@ def render_info_tooltip(text: str, tooltip: str) -> None:
 
 # Define what gets exported when someone does "from tco_app.ui.components import *"
 __all__ = [
-    "display_metric_card",
-    "display_comparison_metrics",
-    "display_summary_metrics",
-    "CalculationOrchestrator",
-    "ContextDirector",
+    "render_info_tooltip",
 ]

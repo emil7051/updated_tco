@@ -18,8 +18,9 @@
     }
   },
   "updateContentCommand": "[ -f packages.txt ] && sudo apt update && sudo apt upgrade -y && sudo xargs apt install -y <packages.txt; [ -f requirements.txt ] && pip3 install --user -r requirements.txt; pip3 install --user streamlit; echo '✅ Packages installed and Requirements met'",
+  "postCreateCommand": "[ -f utility_scripts/tools/cleanup_deployment.py ] && python3 utility_scripts/tools/cleanup_deployment.py || echo 'Cleanup script not found'",
   "postAttachCommand": {
-    "server": "streamlit run tco_app/main.py --server.enableCORS false --server.enableXsrfProtection false"
+    "server": "cd /workspaces/updated_tco && python3 -m streamlit run tco_app/main.py --server.enableCORS false --server.enableXsrfProtection false"
   },
   "portsAttributes": {
     "8501": {
