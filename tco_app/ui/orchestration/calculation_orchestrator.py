@@ -90,12 +90,24 @@ class CalculationOrchestrator:
         if incentives_for_request is None or incentives_for_request.empty:
             incentives_for_request = self.params_repo.get_incentives()
 
+        # Handle infrastructure options - check if we have combined infrastructure data
+        infrastructure_options = self.params_repo.get_infrastructure_options()
+        combined_infrastructure_data = self.ui_context.get("combined_infrastructure_data")
+        
+        if combined_infrastructure_data is not None and not combined_infrastructure_data.empty:
+            # Add the combined infrastructure to the options DataFrame
+            # First, convert Series to DataFrame with single row
+            combined_df = pd.DataFrame([combined_infrastructure_data])
+            # Append to existing options
+            infrastructure_options = pd.concat([infrastructure_options, combined_df], ignore_index=True)
+            logger.debug(f"Added combined infrastructure with ID {combined_infrastructure_data[DataColumns.INFRASTRUCTURE_ID]}")
+
         return CalculationRequest(
             vehicle_data=vehicle_data_series,
             fees_data=fees_data_series,
             parameters=parameters,
             charging_options=self.params_repo.get_charging_options(),
-            infrastructure_options=self.params_repo.get_infrastructure_options(),
+            infrastructure_options=infrastructure_options,  # Pass the modified options
             financial_params=financial_params_for_request,  # Pass the adjusted DF
             battery_params=battery_params_for_request,  # Pass the adjusted DF
             emission_factors=self.params_repo.get_emission_factors(),

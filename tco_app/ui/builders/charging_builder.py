@@ -119,22 +119,81 @@ class InfrastructureBuilder:
 
     def __init__(self, data_tables: Dict[str, pd.DataFrame]):
         self.data_tables = data_tables
-        self.selected_infrastructure = None
+        self.selected_infrastructure = None  # Back to single ID for compatibility
+        self.selected_infrastructure_list = []  # Store the list separately
         self.fleet_size = None
+        self.combined_infrastructure_data = None
 
     def configure_infrastructure(self) -> "InfrastructureBuilder":
         """Handle infrastructure configuration UI."""
         infrastructure_options = self.data_tables["infrastructure_options"]
 
-        self.selected_infrastructure = st.selectbox(
-            "Charging Infrastructure",
-            infrastructure_options[DataColumns.INFRASTRUCTURE_ID].tolist(),
-            format_func=lambda x: infrastructure_options[
-                infrastructure_options[DataColumns.INFRASTRUCTURE_ID] == x
-            ].iloc[0][DataColumns.INFRASTRUCTURE_DESCRIPTION],
-            key="infrastructure_selector",
-            help="Choose the type of charging infrastructure for your fleet"
-        )
+        st.markdown("**Select Infrastructure Components**")
+        st.info("💡 Select all infrastructure components needed for your charging setup. Costs will be combined.")
+        
+        # Create checkboxes for each infrastructure option
+        selected_infra_ids = []
+        selected_infra_data = []
+        total_infrastructure_cost = 0
+        total_maintenance_percent = 0
+        min_service_life = float('inf')
+        
+        for _, infra_option in infrastructure_options.iterrows():
+            infra_id = infra_option[DataColumns.INFRASTRUCTURE_ID]
+            infra_desc = infra_option[DataColumns.INFRASTRUCTURE_DESCRIPTION]
+            infra_price = infra_option[DataColumns.INFRASTRUCTURE_PRICE]
+            
+            # Create checkbox for each infrastructure option
+            if st.checkbox(
+                f"{infra_desc} (${infra_price:,.0f})",
+                key=f"infra_checkbox_{infra_id}",
+                help=f"Include {infra_desc} in the infrastructure setup"
+            ):
+                selected_infra_ids.append(infra_id)
+                selected_infra_data.append(infra_option)
+                total_infrastructure_cost += infra_price
+                # Weighted average for maintenance percent based on price
+                total_maintenance_percent += infra_option.get("maintenance_percent", 0.02) * infra_price
+                # Use minimum service life for conservative estimate
+                service_life = infra_option.get("service_life_years", 10)
+                if service_life < min_service_life:
+                    min_service_life = service_life
+        
+        # Store selected infrastructure IDs
+        self.selected_infrastructure_list = selected_infra_ids
+        
+        if selected_infra_ids:
+            st.success(f"✅ Total Infrastructure Cost: ${total_infrastructure_cost:,.0f}")
+            
+            # Create a combined infrastructure entry for calculations
+            # Use a special ID that won't conflict with existing IDs
+            combined_id = 999999  # Special ID for combined infrastructure
+            
+            # Calculate weighted average maintenance percent
+            avg_maintenance_percent = total_maintenance_percent / total_infrastructure_cost if total_infrastructure_cost > 0 else 0.02
+            
+            # Create combined infrastructure data
+            self.combined_infrastructure_data = pd.Series({
+                DataColumns.INFRASTRUCTURE_ID: combined_id,
+                DataColumns.INFRASTRUCTURE_DESCRIPTION: "Combined Infrastructure",
+                DataColumns.INFRASTRUCTURE_PRICE: total_infrastructure_cost,
+                "maintenance_percent": avg_maintenance_percent,
+                "service_life_years": min_service_life if min_service_life != float('inf') else 10,
+            })
+            
+            # Use the combined ID for the calculation system
+            self.selected_infrastructure = combined_id
+            
+            # Show breakdown
+            if len(selected_infra_data) > 1:  # Only show breakdown if multiple items selected
+                st.markdown("**Selected Components:**")
+                for infra in selected_infra_data:
+                    st.markdown(f"• {infra[DataColumns.INFRASTRUCTURE_DESCRIPTION]}: ${infra[DataColumns.INFRASTRUCTURE_PRICE]:,.0f}")
+        else:
+            st.warning("⚠️ Please select at least one infrastructure component")
+            # Default to first infrastructure if none selected
+            if len(infrastructure_options) > 0:
+                self.selected_infrastructure = infrastructure_options.iloc[0][DataColumns.INFRASTRUCTURE_ID]
 
         self.fleet_size = st.number_input(
             "Fleet Size",
@@ -145,13 +204,9 @@ class InfrastructureBuilder:
             help="Number of vehicles sharing the infrastructure"
         )
 
-        # Show infrastructure cost preview
-        selected_infra = infrastructure_options[
-            infrastructure_options[DataColumns.INFRASTRUCTURE_ID] == self.selected_infrastructure
-        ].iloc[0]
-        
-        if self.fleet_size > 0:
-            cost_per_vehicle = selected_infra[DataColumns.INFRASTRUCTURE_PRICE] / self.fleet_size
+        # Show infrastructure cost preview per vehicle
+        if self.fleet_size > 0 and total_infrastructure_cost > 0:
+            cost_per_vehicle = total_infrastructure_cost / self.fleet_size
             st.info(f"💰 Infrastructure cost per vehicle: ${cost_per_vehicle:,.0f}")
 
         return self
@@ -159,6 +214,8 @@ class InfrastructureBuilder:
     def build(self) -> Dict[str, Any]:
         """Return infrastructure context."""
         return {
-            "selected_infrastructure": self.selected_infrastructure,
+            "selected_infrastructure": self.selected_infrastructure,  # Single ID for compatibility
+            "selected_infrastructure_list": self.selected_infrastructure_list,  # List of selected IDs
+            "combined_infrastructure_data": self.combined_infrastructure_data,  # Combined data if multiple selected
             "fleet_size": self.fleet_size,
         }
