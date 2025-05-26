@@ -19,6 +19,8 @@ from tco_app.src import Any, Dict, logging, st
 from tco_app.src.data_loading import load_data
 from tco_app.ui.calculation_orchestrator import CalculationOrchestrator
 from tco_app.ui.context_builder import ContextDirector
+from tco_app.ui.sidebar_renderer import SidebarRenderer
+from tco_app.ui.input_hash import generate_input_hash
 
 logger = logging.getLogger(__name__)
 
@@ -27,22 +29,36 @@ def get_context() -> Dict[str, Any]:
     """Return cached modelling context using builder pattern."""
     logger.info("Attempting to get context...")
 
-    # Basic cache – recompute when the user presses the Streamlit *rerun* button.
-    if "ctx_cache" in st.session_state:
-        logger.info("Returning cached context.")
-        return st.session_state["ctx_cache"]
-
-    logger.info("No cached context found, computing new context...")
-
     # Load data
     logger.debug("Loading data...")
     data_tables = load_data()
     logger.debug("Data loaded successfully.")
 
+    # Always render sidebar to collect inputs
+    logger.info("Rendering sidebar and collecting inputs...")
+    sidebar_renderer = SidebarRenderer(data_tables)
+    sidebar_inputs = sidebar_renderer.render_and_collect_inputs()
+    
+    # Generate hash of current inputs
+    current_input_hash = generate_input_hash(sidebar_inputs)
+    
+    # Check if we have a cached context and if inputs haven't changed
+    if (
+        "ctx_cache" in st.session_state
+        and "ctx_input_hash" in st.session_state
+        and st.session_state["ctx_input_hash"] == current_input_hash
+    ):
+        logger.info("Returning cached context (inputs unchanged).")
+        # Show caption for active scenario
+        st.caption(f'Scenario: {sidebar_inputs["scenario_meta"]["name"]}')
+        return st.session_state["ctx_cache"]
+
+    logger.info("Inputs changed or no cache found, computing new context...")
+
     # Build UI context using builder pattern
     logger.info("Building UI context...")
     context_director = ContextDirector(data_tables)
-    ui_context = context_director.build_ui_context()
+    ui_context = context_director.build_ui_context(sidebar_inputs)
     logger.debug("UI context built successfully.")
 
     # Perform calculations
@@ -53,7 +69,9 @@ def get_context() -> Dict[str, Any]:
     # Show caption for active scenario
     st.caption(f'Scenario: {ui_context["scenario_meta"]["name"]}')
 
-    # Cache and return
+    # Cache context and input hash
     st.session_state["ctx_cache"] = complete_context
-    logger.info("Context computed and cached.")
+    st.session_state["ctx_input_hash"] = current_input_hash
+    logger.info("Context computed and cached with input hash.")
+    
     return complete_context
