@@ -18,7 +18,7 @@ from tco_app.domain.sensitivity import (
     create_sensitivity_adapter
 )
 from tco_app.plotters import create_payload_sensitivity_chart, create_sensitivity_chart
-from tco_app.ui.components.sensitivity_components import (
+from tco_app.ui.components import (
     SensitivityContext,
     ParameterRangeCalculator,
 )
