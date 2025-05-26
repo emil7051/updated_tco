@@ -58,10 +58,10 @@ def calculate_energy_costs(
 
         # Calculate electric range ratio (assuming electric range is used first)
         electric_range = vehicle_data.get(
-            DataColumns.RANGE_KM, 50
+            DataColumns.RANGE_KM, CALC_DEFAULTS.DEFAULT_PHEV_ELECTRIC_RANGE_KM
         )  # Default 50km if not specified
-        # Assume typical daily driving of 100km, so electric portion is electric_range/100
-        electric_ratio = min(electric_range / UNIT_CONVERSIONS.PERCENTAGE_TO_DECIMAL, 1.0)
+        # Assume typical daily driving, so electric portion is electric_range/typical_daily_distance
+        electric_ratio = min(electric_range / CALC_DEFAULTS.TYPICAL_DAILY_DISTANCE_KM, 1.0)
         diesel_ratio = 1.0 - electric_ratio
 
         # Calculate combined cost
@@ -163,7 +163,7 @@ def calculate_charging_requirements(
     )
     max_vehicles_per_charger = (
         safe_division(
-            24, charging_time_per_day, context="24/charging_time_per_day calculation"
+            CALC_DEFAULTS.HOURS_PER_DAY, charging_time_per_day, context="hours_per_day/charging_time_per_day calculation"
         )
         if charging_time_per_day > 0
         else 0

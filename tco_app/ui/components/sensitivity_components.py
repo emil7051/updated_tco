@@ -5,7 +5,7 @@ from typing import List
 import pandas as pd
 
 from tco_app.src.constants import DataColumns, ParameterKeys
-from tco_app.src import VALIDATION_LIMITS, Any, Dict, st
+from tco_app.src import VALIDATION_LIMITS, CALC_DEFAULTS, Any, Dict, st
 
 
 @dataclass
@@ -56,8 +56,8 @@ class ParameterRangeCalculator:
 
     def calculate_annual_distance_range(self, base_value: float) -> List[float]:
         """Calculate range for annual distance parameter."""
-        min_val = max(1000, base_value * 0.5)
-        max_val = base_value * 1.5
+        min_val = max(VALIDATION_LIMITS.MIN_ANNUAL_KMS, base_value * VALIDATION_LIMITS.SENSITIVITY_MIN_FACTOR_STRICT)
+        max_val = base_value * (1 + VALIDATION_LIMITS.SENSITIVITY_VARIANCE_FACTOR)
         return self._create_range(min_val, max_val, base_value, round_digits=0)
 
     def calculate_diesel_price_range(
@@ -67,8 +67,8 @@ class ParameterRangeCalculator:
         base_value = self._get_financial_param(
             financial_params, ParameterKeys.DIESEL_PRICE
         )
-        min_val = max(0.5, base_value * 0.7)
-        max_val = base_value * 1.3
+        min_val = max(VALIDATION_LIMITS.MIN_DIESEL_PRICE, base_value * VALIDATION_LIMITS.SENSITIVITY_MIN_FACTOR)
+        max_val = base_value * VALIDATION_LIMITS.SENSITIVITY_MAX_FACTOR
         return self._create_range(min_val, max_val, base_value, round_digits=2)
 
     def calculate_electricity_price_range(
@@ -78,14 +78,14 @@ class ParameterRangeCalculator:
         base_value = self._get_electricity_base_price(
             bev_results, charging_options, selected_charging
         )
-        min_val = max(0.05, base_value * 0.7)
-        max_val = base_value * 1.3
+        min_val = max(VALIDATION_LIMITS.MIN_ELECTRICITY_PRICE, base_value * VALIDATION_LIMITS.SENSITIVITY_MIN_FACTOR)
+        max_val = base_value * VALIDATION_LIMITS.SENSITIVITY_MAX_FACTOR
         return self._create_range(min_val, max_val, base_value, round_digits=2)
 
     def calculate_vehicle_lifetime_range(self, base_value: int) -> List[int]:
         """Calculate range for vehicle lifetime parameter."""
-        min_val = max(1, base_value - 3)
-        max_val = base_value + 3
+        min_val = max(VALIDATION_LIMITS.MIN_TRUCK_LIFE_YEARS, base_value - VALIDATION_LIMITS.SENSITIVITY_LIFETIME_ADJUSTMENT)
+        max_val = base_value + VALIDATION_LIMITS.SENSITIVITY_LIFETIME_ADJUSTMENT
         param_range = list(range(int(min_val), int(max_val + 1)))
         if base_value not in param_range:
             param_range.append(base_value)
@@ -95,8 +95,8 @@ class ParameterRangeCalculator:
     def calculate_discount_rate_range(self, base_value: float) -> List[float]:
         """Calculate range for discount rate parameter."""
         discount_base = base_value * 100  # Convert to percentage
-        min_val = max(0.5, discount_base - 3)
-        max_val = min(15, discount_base + 3)
+        min_val = max(VALIDATION_LIMITS.MIN_DISCOUNT_RATE * 100, discount_base - VALIDATION_LIMITS.SENSITIVITY_DISCOUNT_ADJUSTMENT)
+        max_val = min(VALIDATION_LIMITS.MAX_DISCOUNT_RATE * 100, discount_base + VALIDATION_LIMITS.SENSITIVITY_DISCOUNT_ADJUSTMENT)
         return self._create_range(min_val, max_val, discount_base, round_digits=1)
 
     def _create_range(
@@ -148,4 +148,4 @@ class ParameterRangeCalculator:
         except (IndexError, KeyError):
             pass
 
-        return 0.20
+        return CALC_DEFAULTS.DEFAULT_ELECTRICITY_PRICE

@@ -1,4 +1,4 @@
-from tco_app.src import st, UNIT_CONVERSIONS
+from tco_app.src import st, UNIT_CONVERSIONS, VALIDATION_LIMITS
 from tco_app.src.utils.pandas_helpers import to_scalar
 
 
@@ -64,12 +64,12 @@ def display_comparison_metrics(comparative_metrics):
         )
 
     with col3:
-        display_metric_card(
-            "Payback Period",
-            comparative_metrics["price_parity_year"],
-            "years",
-            "Time to recover additional upfront investment",
-        )
+        if comparative_metrics["price_parity_year"] < VALIDATION_LIMITS.MAX_REASONABLE_PARITY_YEARS:
+            st.metric(
+                "Price Parity Year",
+                comparative_metrics["price_parity_year"],
+                help="First year when BEV lifetime cost equals diesel",
+            )
 
     # Payback period insight
     if comparative_metrics["price_parity_year"] < 100:
@@ -119,8 +119,8 @@ def display_comparison_metrics(comparative_metrics):
             "Cost effectiveness of emissions reduction",
             metric_type=(
                 "positive"
-                if abatement_cost < 50
-                else "negative" if abatement_cost > 100 else None
+                if abatement_cost < VALIDATION_LIMITS.ABATEMENT_COST_LOW_THRESHOLD
+                else "negative" if abatement_cost > VALIDATION_LIMITS.ABATEMENT_COST_HIGH_THRESHOLD else None
             ),
         )
 

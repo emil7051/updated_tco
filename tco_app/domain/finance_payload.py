@@ -58,6 +58,7 @@ def calculate_payload_penalty_costs(
     driver_cost_hourly = get_param("driver_cost_hourly", 35)
     avg_trip_distance = get_param("avg_trip_distance", 100)
     avg_loadunload_time = get_param("avg_loadunload_time", 1)
+    avg_speed_kmh = get_param("avg_speed_kmh", 60)
 
     # Additional operating cost
     additional_operational_cost_annual = (trips_multiplier - 1) * bev_results[
@@ -68,7 +69,6 @@ def calculate_payload_penalty_costs(
     )
 
     # Labour
-    avg_speed_kmh = 60
     baseline_driving_hours = safe_division(
         annual_kms, avg_speed_kmh, context="annual_kms/avg_speed_kmh calculation"
     )

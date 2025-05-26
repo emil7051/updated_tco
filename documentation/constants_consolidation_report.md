@@ -124,6 +124,56 @@ This report documents all constant duplication and redundant definitions found i
 - Consider adding data quality checks on startup
 - Log warnings when fallback values are used
 
+## ✅ Magic Numbers Audit and Remediation (Completed)
+
+### Overview
+Conducted comprehensive audit of all magic numbers in the codebase and replaced them with:
+- CSV data where they represent operational parameters
+- Configuration constants where they represent application behaviour
+
+### Changes Made
+
+#### 1. CSV Data Updates
+- **Added to financial_params.csv**: `FP015,avg_speed_kmh,60.0`
+  - Replaced hardcoded `avg_speed_kmh = 60` in finance_payload.py
+
+#### 2. Configuration Constants Added
+
+**CalculationDefaults**:
+- `HOURS_PER_DAY: int = 24`
+- `DEFAULT_PHEV_ELECTRIC_RANGE_KM: float = 50.0`
+- `TYPICAL_DAILY_DISTANCE_KM: float = 100.0`
+- `DEFAULT_ELECTRICITY_PRICE: float = 0.20`
+
+**ValidationLimits**:
+- `MIN_ELECTRICITY_PRICE: float = 0.05`
+- `SENSITIVITY_LIFETIME_ADJUSTMENT: int = 3`
+- `SENSITIVITY_DISCOUNT_ADJUSTMENT: float = 3.0`
+- `MAX_REASONABLE_PARITY_YEARS: int = 100`
+- `ABATEMENT_COST_LOW_THRESHOLD: float = 50.0`
+- `ABATEMENT_COST_HIGH_THRESHOLD: float = 100.0`
+
+#### 3. Code Updates
+- **domain/finance_payload.py**: Now uses CSV lookup for `avg_speed_kmh`
+- **domain/energy.py**: 
+  - Uses `CALC_DEFAULTS.DEFAULT_PHEV_ELECTRIC_RANGE_KM` instead of hardcoded 50
+  - Uses `CALC_DEFAULTS.TYPICAL_DAILY_DISTANCE_KM` instead of hardcoded 100
+  - Uses `CALC_DEFAULTS.HOURS_PER_DAY` instead of hardcoded 24
+- **ui/components/sensitivity_components.py**: 
+  - Now uses all `VALIDATION_LIMITS` constants for sensitivity ranges
+  - Uses `CALC_DEFAULTS.DEFAULT_ELECTRICITY_PRICE` for fallback
+- **ui/components/metric_cards.py**:
+  - Uses `VALIDATION_LIMITS.MAX_REASONABLE_PARITY_YEARS` for parity year threshold
+  - Uses `VALIDATION_LIMITS.ABATEMENT_COST_LOW/HIGH_THRESHOLD` for cost thresholds
+
+### Result
+All magic numbers have been either:
+1. Moved to CSV files (operational data that may change)
+2. Defined as constants in config.py (application behaviour)
+3. Left as-is where appropriate (mathematical constants, optimisation thresholds)
+
+The codebase now has no unexplained magic numbers, improving maintainability and clarity.
+
 ## Conclusion
 
 The codebase now properly separates:

@@ -13,6 +13,7 @@ class CalculationDefaults:
 
     # Time constants
     DAYS_PER_YEAR: int = 365
+    HOURS_PER_DAY: int = 24
 
     # Default values when CSV data is not available
     DEFAULT_TRUCK_LIFE_YEARS: int = 10
@@ -21,6 +22,13 @@ class CalculationDefaults:
     
     # Infrastructure defaults not in CSV
     DEFAULT_CHARGER_POWER_KW: float = 80.0  # DC fast charger
+    
+    # Energy defaults
+    DEFAULT_ELECTRICITY_PRICE: float = 0.20  # AUD/kWh
+    
+    # PHEV-specific defaults
+    DEFAULT_PHEV_ELECTRIC_RANGE_KM: float = 50.0
+    TYPICAL_DAILY_DISTANCE_KM: float = 100.0
 
 
 @dataclass(frozen=True)
@@ -50,6 +58,8 @@ class ValidationLimits:
     MIN_DIESEL_PRICE: float = 0.5  # AUD/L
     MAX_DIESEL_PRICE: float = 10.0  # AUD/L
     DIESEL_PRICE_STEP: float = 0.05  # 5 cent increments
+    
+    MIN_ELECTRICITY_PRICE: float = 0.05  # AUD/kWh
 
     # Sensitivity analysis
     SENSITIVITY_VARIANCE_FACTOR: float = 0.5  # ±50% from base value
@@ -58,6 +68,15 @@ class ValidationLimits:
     SENSITIVITY_MIN_FACTOR_STRICT: float = 0.5  # 50% of base value for annual kms
     SENSITIVITY_MAX_FACTOR: float = 1.3  # 130% of base value
     SENSITIVITY_MIN_DISCOUNT_RATE: float = 0.05  # 5% minimum for discount rate
+    
+    # Sensitivity adjustments
+    SENSITIVITY_LIFETIME_ADJUSTMENT: int = 3
+    SENSITIVITY_DISCOUNT_ADJUSTMENT: float = 3.0
+    
+    # Business logic thresholds
+    MAX_REASONABLE_PARITY_YEARS: int = 100
+    ABATEMENT_COST_LOW_THRESHOLD: float = 50.0
+    ABATEMENT_COST_HIGH_THRESHOLD: float = 100.0
 
 
 @dataclass(frozen=True)
