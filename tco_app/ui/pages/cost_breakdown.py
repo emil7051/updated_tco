@@ -6,6 +6,23 @@ from tco_app.plotters import (
 from tco_app.src import st
 from tco_app.src.constants import DataColumns, Drivetrain
 from tco_app.ui.context import get_context
+from tco_app.ui.utils.dto_accessors import (
+    get_vehicle_name,
+    get_drivetrain,
+    has_charging_mix,
+    is_bev,
+    get_infrastructure_price,
+    get_infrastructure_annual_maintenance,
+    get_infrastructure_npv_per_vehicle,
+    get_infrastructure_service_life,
+    get_infrastructure_replacement_cycles,
+    get_infrastructure_subsidy_rate,
+    get_infrastructure_subsidy_amount,
+    get_daily_kwh_required,
+    get_charging_time_per_day,
+    get_charger_power,
+    get_max_vehicles_per_charger,
+)
 
 
 def render():
@@ -19,43 +36,43 @@ def render():
     st.plotly_chart(chart, use_container_width=True)
 
     # Charging mix visual
-    if "charging_mix" in bev_results:
+    if has_charging_mix(bev_results):
         st.subheader("Charging Mix")
         cm_chart = create_charging_mix_chart(bev_results)
         st.plotly_chart(cm_chart, use_container_width=True)
 
     # Infrastructure + charging requirements
-    bev_vehicle_data = bev_results["vehicle_data"]
-    if bev_vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
+    if is_bev(bev_results):
         st.subheader("Infrastructure Costs")
         infra_col1, infra_col2 = st.columns(2)
         with infra_col1:
             st.metric(
                 "Infrastructure Capital Cost",
-                f"${bev_results['infrastructure_costs'][DataColumns.INFRASTRUCTURE_PRICE]:,.0f}",
+                f"${get_infrastructure_price(bev_results):,.0f}",
             )
             st.metric(
                 "Annual Maintenance",
-                f"${bev_results['infrastructure_costs']['annual_maintenance']:,.0f}/year",
+                f"${get_infrastructure_annual_maintenance(bev_results):,.0f}/year",
             )
             st.metric(
                 "Cost Per Vehicle",
-                f"${bev_results['infrastructure_costs']['npv_per_vehicle']:,.0f}",
+                f"${get_infrastructure_npv_per_vehicle(bev_results) or 0:,.0f}",
             )
         with infra_col2:
             st.metric(
                 "Service Life",
-                f"{bev_results['infrastructure_costs']['service_life_years']} years",
+                f"{get_infrastructure_service_life(bev_results)} years",
             )
             st.metric(
                 "Replacement Cycles",
-                f"{bev_results['infrastructure_costs']['replacement_cycles']}",
+                f"{get_infrastructure_replacement_cycles(bev_results)}",
             )
-            if bev_results["infrastructure_costs"].get("subsidy_rate", 0) > 0:
+            subsidy_rate = get_infrastructure_subsidy_rate(bev_results)
+            if subsidy_rate > 0:
                 st.metric(
                     "Infrastructure Subsidy",
-                    f"${bev_results['infrastructure_costs']['subsidy_amount']:,.0f}",
-                    delta=f"{bev_results['infrastructure_costs']['subsidy_rate'] * 100:.0f}%",
+                    f"${get_infrastructure_subsidy_amount(bev_results):,.0f}",
+                    delta=f"{subsidy_rate * 100:.0f}%",
                 )
 
         st.subheader("Charging Requirements")
@@ -63,20 +80,20 @@ def render():
         with cc1:
             st.metric(
                 "Daily Energy Required",
-                f"{bev_results['charging_requirements']['daily_kwh_required']:.1f} kWh",
+                f"{get_daily_kwh_required(bev_results):.1f} kWh",
             )
             st.metric(
                 "Charging Time Per Day",
-                f"{bev_results['charging_requirements']['charging_time_per_day']:.2f} hours",
+                f"{get_charging_time_per_day(bev_results):.2f} hours",
             )
         with cc2:
             st.metric(
                 "Charger Power",
-                f"{bev_results['charging_requirements']['charger_power']:.0f} kW",
+                f"{get_charger_power(bev_results):.0f} kW",
             )
             st.metric(
                 "Maximum Vehicles Per Charger",
-                f"{min(100, bev_results['charging_requirements']['max_vehicles_per_charger']):.1f}",
+                f"{min(100, get_max_vehicles_per_charger(bev_results)):.1f}",
             )
 
     st.subheader("Costs Over Time")

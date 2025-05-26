@@ -70,6 +70,17 @@ class SidebarRenderer:
             infra_builder = InfrastructureBuilder(self.data_tables)
             infra_ctx = infra_builder.configure_infrastructure().build()
             inputs.update(infra_ctx)
+            
+            # Step 6: Advanced settings
+            with st.expander("Advanced Settings", expanded=False):
+                st.write("**Performance Options**")
+                use_dtos = st.checkbox(
+                    "Use DTO mode (experimental)",
+                    value=False,
+                    help="Enable direct DTO usage for improved performance. This is an experimental feature.",
+                    key="use_dto_mode"
+                )
+                inputs["use_dtos"] = use_dtos
 
         # Store modified tables for calculations
         inputs["modified_tables"] = modified_tables
