@@ -9,8 +9,6 @@ from tco_app.ui.components.sensitivity_components import (
 )
 from typing import List
 from tco_app.services.dtos import SensitivityRequest
-from tco_app.services.tco_calculation_service import TCOCalculationService
-from tco_app.repositories import VehicleRepository, ParametersRepository
 
 
 def render():
@@ -193,6 +191,7 @@ def _perform_analysis_with_dtos(
         if externalities_data is None:
             # Create a fallback repository to get externalities
             from tco_app.src.data_loading import load_data
+            from tco_app.repositories import ParametersRepository
             data_tables = load_data()
             params_repo = ParametersRepository(data_tables)
             externalities_data = params_repo.get_externalities_data()
@@ -222,6 +221,9 @@ def _perform_analysis_with_dtos(
     
     # Create TCO service
     from tco_app.src.data_loading import load_data
+    from tco_app.repositories import VehicleRepository, ParametersRepository
+    from tco_app.services.tco_calculation_service import TCOCalculationService
+    
     data_tables = load_data()
     vehicle_repo = VehicleRepository(data_tables)
     params_repo = ParametersRepository(data_tables)

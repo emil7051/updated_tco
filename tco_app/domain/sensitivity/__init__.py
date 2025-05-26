@@ -1,8 +1,8 @@
-from __future__ import annotations
-
 """Sensitivity analysis package – splits the former monolithic module into
 smaller, responsibility-focused helpers for maintainability.
 """
+
+from __future__ import annotations
 
 from .externality import perform_externality_sensitivity
 from .metrics import calculate_comparative_metrics, calculate_comparative_metrics_from_dto
