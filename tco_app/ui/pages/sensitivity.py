@@ -1,7 +1,8 @@
 """Sensitivity analysis page module."""
 import streamlit as st
 from tco_app.ui.context import get_context
-from tco_app.domain.sensitivity import perform_sensitivity_analysis, perform_sensitivity_analysis_with_dtos, create_sensitivity_adapter
+# Delay these imports to avoid path issues
+# from tco_app.domain.sensitivity import perform_sensitivity_analysis, perform_sensitivity_analysis_with_dtos, create_sensitivity_adapter
 from tco_app.plotters import create_payload_sensitivity_chart, create_sensitivity_chart
 from tco_app.ui.components.sensitivity_components import (
     SensitivityContext,
@@ -11,6 +12,16 @@ from typing import List
 from tco_app.services.dtos import SensitivityRequest
 from tco_app.services.tco_calculation_service import TCOCalculationService
 from tco_app.repositories import VehicleRepository, ParametersRepository
+
+
+def _get_sensitivity_functions():
+    """Import sensitivity functions. Delayed to avoid import issues in deployment."""
+    from tco_app.domain.sensitivity import (
+        perform_sensitivity_analysis, 
+        perform_sensitivity_analysis_with_dtos, 
+        create_sensitivity_adapter
+    )
+    return perform_sensitivity_analysis, perform_sensitivity_analysis_with_dtos, create_sensitivity_adapter
 
 
 def render():
@@ -156,6 +167,7 @@ def _perform_analysis(
     param_type: str, param_range: List[float], context: SensitivityContext
 ) -> dict:
     """Perform sensitivity analysis for given parameter."""
+    perform_sensitivity_analysis, _, _ = _get_sensitivity_functions()
     return perform_sensitivity_analysis(
         param_type,
         param_range,
@@ -184,6 +196,8 @@ def _perform_analysis_with_dtos(
     param_type: str, param_range: List[float], context: SensitivityContext
 ) -> dict:
     """Perform sensitivity analysis using new DTO-based approach."""
+    _, perform_sensitivity_analysis_with_dtos, create_sensitivity_adapter = _get_sensitivity_functions()
+    
     # Get externalities data from context - check if it exists
     externalities_data = getattr(context, 'externalities_data', None)
     if externalities_data is None:
