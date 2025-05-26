@@ -1,94 +1,90 @@
-# Total Cost of Ownership Model for Electric vs. Diesel Trucks
+# TCO Application Module
 
-This Streamlit application provides a comprehensive Total Cost of Ownership (TCO) comparison between battery electric and diesel trucks in the Australian context.
+This directory contains the core Total Cost of Ownership (TCO) calculator application for comparing electric and diesel trucks.
 
-## Features
-
-- Compare battery electric (BEV) and diesel trucks across multiple dimensions
-- Customise scenarios, vehicle types, and operating parameters
-- Visualise cost breakdowns, emissions comparisons, and payback periods
-- Calculate key metrics including TCO per kilometre, emissions savings, and abatement costs
-- Apply various incentives and policy mechanisms
-- Export detailed results for further analysis
-
-## Directory Structure
-
-```text
- tco_app/
- │
- ├── main.py                 # Entry-point; Streamlit multi-page router
- ├── ui/                     # Pure presentation layer (widgets & pages)
- │   ├── pages/              # Individual Streamlit pages
- │   └── components.py       # Shared UI widgets / controls
- │
- ├── domain/                 # Business-logic packages
- │   ├── energy.py           # Energy & charging helpers
- │   ├── finance.py          # Monetary / NPV helpers
- │   ├── battery.py          # Degradation & replacement economics
- │   ├── externalities.py    # Emissions & societal cost helpers
- │   └── sensitivity.py      # Scenario & tornado analysis
- │
- ├── src/                    # Legacy monoliths – progressively strangled
- │   ├── calculations.py     # To be retired once fully modularised
- │   ├── utils/              # Reusable low-level maths (authoritative)
- │   └── data_loading.py     # IO & ETL helpers
- │
- ├── plotters/              # Figure builders extracted from monolith
- │   ├── cost_breakdown.py
- │   ├── emissions.py
- │   ├── key_metrics.py
- │   ├── charging_mix.py
- │   ├── sensitivity.py
- │   ├── tornado.py
- │   └── payload.py
- │
- ├── tests/                  # pytest suite with golden regression fixtures
- ├── data/                   # CSV parameter tables & dictionaries
- ├── requirements.txt        # Python dependencies
- └── README.md               # You are here
-```
-
-## Setup
+## Quick Start
 
 ```bash
-pip install -r requirements.txt
-
-# Run the application
+# From the project root
 streamlit run tco_app/main.py
 ```
 
-## Data Sources
+For detailed documentation, installation instructions, and usage guide, please see the [main README](../README.md).
 
-The application now uses CSV files stored in the `data/tables` directory. These were generated from the original Excel file `tco_tidytables.xlsx` and include:
+## Module Structure
 
-- Vehicle models and specifications
-- Vehicle fees and maintenance costs
-- Charging and infrastructure options
-- Financial and operational parameters
-- Incentives and policies
-- Emissions factors and externality costs
+```text
+tco_app/
+├── main.py                 # Streamlit entry point
+├── ui/                     # User interface layer
+│   ├── pages/              # Application pages
+│   ├── components/         # Reusable UI components
+│   ├── builders/           # Input builders
+│   ├── context/            # Context management
+│   ├── orchestration/      # Calculation coordination
+│   └── renderers/          # UI rendering
+├── domain/                 # Business logic
+│   ├── energy.py           # Energy calculations
+│   ├── finance.py          # Financial calculations
+│   ├── externalities.py    # Environmental costs
+│   └── sensitivity/        # Sensitivity analysis
+├── services/               # Service layer
+│   ├── tco_calculation_service.py
+│   ├── scenario_service.py
+│   └── dtos.py
+├── plotters/               # Visualisation modules
+├── repositories.py         # Data access layer
+├── src/                    # Core utilities
+│   ├── constants.py        # Application constants
+│   ├── config.py           # Configuration
+│   └── utils/              # Utility functions
+├── data/                   # Data files
+│   ├── tables/             # CSV data tables
+│   └── dictionary/         # Data definitions
+└── tests/                  # Test suite
+```
 
-The data dictionary with detailed calculation formulas is stored in `data/dictionary`.
+## Key Components
 
-## Using the Application
+### UI Layer (`ui/`)
+- **Pages**: Home dashboard, cost breakdown analysis, sensitivity analysis
+- **Context Management**: Handles caching and state management
+- **Builders**: Modular input collection using builder pattern
 
-1. Select a scenario from the dropdown in the sidebar
-2. Choose a vehicle type and specific BEV model
-3. Adjust operating parameters (annual distance, vehicle lifetime)
-4. Configure financial parameters as needed
-5. Explore the results across the different tabs
-6. Export the detailed results for further analysis
+### Domain Layer (`domain/`)
+- **Energy**: Energy cost and emissions calculations
+- **Finance**: TCO, NPV, and financial metric calculations
+- **Externalities**: Social and environmental cost calculations
+- **Sensitivity**: Parameter sensitivity and scenario analysis
 
-## Development
+### Service Layer (`services/`)
+- **TCO Calculation Service**: Orchestrates all TCO calculations
+- **Scenario Service**: Manages scenario parameters and overrides
+- **DTOs**: Data transfer objects for clean interfaces
 
-To contribute to this project:
+### Data Layer
+- **Repositories**: Abstracts data access with clean APIs
+- **CSV Tables**: All parameter data in standardised format
 
-1. Fork the repository
-2. Create a new branch (`git checkout -b feature/your-feature`)
-3. Make your changes
-4. Submit a pull request
+## Testing
 
-## License
+```bash
+# Run unit tests
+pytest tco_app/tests/unit/
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+# Run integration tests
+pytest tco_app/tests/integration/
+
+# Run all tests with coverage
+pytest --cov=tco_app
+```
+
+## Development Notes
+
+- Follow the existing module patterns when adding new features
+- Maintain separation between UI, domain, and data layers
+- Use type hints and comprehensive docstrings
+- Write tests for new functionality
+
+See the [architecture documentation](../documentation/architecture_diagram.md) for detailed data flow and design patterns.
 

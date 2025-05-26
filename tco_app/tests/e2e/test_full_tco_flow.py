@@ -9,7 +9,7 @@ from tco_app.repositories import ParametersRepository, VehicleRepository
 from tco_app.services.dtos import ComparisonResult, TCOResult
 from tco_app.services.tco_calculation_service import TCOCalculationService
 from tco_app.src.constants import DataColumns, Drivetrain
-from tco_app.ui.calculation_orchestrator import CalculationOrchestrator
+from tco_app.ui.orchestration import CalculationOrchestrator
 
 
 class TestFullTCOFlow:

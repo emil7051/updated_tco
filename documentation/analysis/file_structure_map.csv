@@ -1,0 +1,186 @@
+File Path,Type,Description,Purpose,Imports,Imported By
+.coveragerc,Config,Coverage configuration,Configures test coverage reporting,,
+.devcontainer/,Directory,Development container configuration,Docker dev environment setup,,
+.gitignore,Config,Git ignore rules,Specifies files to exclude from version control,,
+.pre-commit-config.yaml,Config,Pre-commit hooks configuration,Automates code quality checks,,
+.pytest_cache/,Directory,Pytest cache,Stores test cache data,,
+.vscode/,Directory,VS Code settings,IDE configuration,,
+.windsurfrules,Config,Windsurfer rules,Windsurfer AI assistant configuration,,
+documentation/,Directory,Project documentation,Contains all project documentation,,
+documentation/LICENSE,Legal,License file,Project license information,,
+documentation/PROPOSED_FILE_STRUCTURE_CLEANUP.md,Documentation,File structure cleanup plan,Proposed reorganisation of project files,,
+documentation/README.md,Documentation,Documentation readme,Guide to documentation structure,,
+documentation/analysis/,Directory,Analysis reports,Contains code quality and analysis reports,,
+documentation/analysis/CODE_QUALITY_ANALYSIS_2025-05-25.md,Documentation,Code quality analysis report,Analysis of code quality issues,,
+documentation/file_structure_map.csv,Data,File structure documentation,This file - maps all project files,,
+documentation/naming_map.csv,Data,Naming conventions map,Maps old names to new names,,
+documentation/planning/,Directory,Planning documents,Contains project planning documents,,
+documentation/planning/SENSITIVITY_RENDER_REFACTORING_PLAN.md,Documentation,Refactoring plan,Plan for sensitivity render refactoring,,
+pytest.ini,Config,Pytest configuration,Test runner configuration,,
+reports/,Directory,Generated reports,Contains all generated reports (gitignored),,
+reports/coverage/,Directory,Coverage reports,Test coverage reports,,
+reports/coverage/coverage.json,Report,Coverage data,JSON format coverage data,,
+reports/quality/,Directory,Quality reports,Code quality reports,,
+reports/quality/jscpd-report.json,Report,Duplicate code report,JSCPD duplicate detection results,,
+requirements.txt,Config,Python dependencies,Root level dependencies,,
+tco_app/,Directory,Main application,Core TCO application code,,
+tco_app/README.md,Documentation,App documentation,Application-specific documentation,,
+tco_app/__init__.py,Code,Package initialiser,Makes tco_app a Python package,,tco_app.src
+tco_app/assets/,Directory,Static assets,Images and static files,,
+tco_app/data/,Directory,Data files,Application data files,,
+tco_app/data/dictionary/,Directory,Data dictionaries,Parameter definitions,,
+tco_app/data/tables/,Directory,Data tables,CSV data files,,
+tco_app/domain/,Directory,Business logic,Core business domain logic,,
+tco_app/domain/__init__.py,Code,Python module,Auto-detected Python file,,tco_app.services.tco_calculation_service
+tco_app/domain/energy.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants; tco_app.src.utils.energy; tco_app.src.utils.safe_operations,tco_app.domain.externalities; tco_app.domain.sensitivity.single_param; tco_app.tests.unit.domain.test_calculation_delegation; tco_app.tests.unit.domain.test_energy; utility_scripts.validation.check_safe_operations
+tco_app/domain/externalities.py,Code,Python module,Auto-detected Python file,tco_app.domain.energy; tco_app.domain.finance; tco_app.src; tco_app.src.constants; tco_app.src.utils.pandas_helpers; tco_app.src.utils.safe_operations,tco_app.domain.sensitivity.externality; tco_app.tests.unit.domain.test_externalities; tco_app.tests.unit.domain.test_externalities_proxy
+tco_app/domain/finance.py,Code,Python module,Auto-detected Python file,tco_app.domain.finance_payload; tco_app.src; tco_app.src.constants; tco_app.src.utils.calculation_optimisations; tco_app.src.utils.finance; tco_app.src.utils.safe_operations,tco_app.domain.externalities; tco_app.domain.sensitivity.single_param; tco_app.plotters.payload; tco_app.tests.performance.test_performance_optimisations; tco_app.tests.unit.domain.test_calculation_delegation; tco_app.tests.unit.domain.test_finance; tco_app.tests.unit.ui.test_pages; utility_scripts.validation.check_safe_operations
+tco_app/domain/finance_payload.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants; tco_app.src.utils.safe_operations,tco_app.domain.finance; tco_app.tests.unit.domain.test_finance_payload; utility_scripts.validation.check_safe_operations
+tco_app/domain/sensitivity/,Directory,Sensitivity analysis,Sensitivity calculation logic,,
+tco_app/domain/sensitivity/__init__.py,Code,Python module,Auto-detected Python file,tco_app.domain.externality; tco_app.domain.metrics; tco_app.domain.single_param; tco_app.domain.tornado,tco_app.services.tco_calculation_service; tco_app.tests.unit.ui.test_pages; tco_app.ui.pages.sensitivity
+tco_app/domain/sensitivity/externality.py,Code,Python module,Auto-detected Python file,tco_app.domain.externalities; tco_app.src,tco_app.tests.domain.sensitivity.test_externality
+tco_app/domain/sensitivity/metrics.py,Code,Python module,Auto-detected Python file,tco_app.src.constants; tco_app.src.utils.pandas_helpers; tco_app.src.utils.safe_operations,tco_app.tests.unit.domain.sensitivity.test_metrics
+tco_app/domain/sensitivity/single_param.py,Code,Python module,Auto-detected Python file,tco_app.domain.energy; tco_app.domain.finance; tco_app.src; tco_app.src.constants; tco_app.src.utils.battery; tco_app.src.utils.safe_operations,tco_app.domain.sensitivity.tornado; tco_app.tests.domain.sensitivity.test_single_param
+tco_app/domain/sensitivity/tornado.py,Code,Python module,Auto-detected Python file,tco_app.domain.sensitivity.single_param; tco_app.src; tco_app.src.constants; tco_app.src.utils.safe_operations,tco_app.tests.unit.domain.sensitivity.test_tornado; tco_app.tests.unit.domain.sensitivity.test_tornado_errors
+tco_app/main.py,Code,Application entry point,Streamlit app main file,tco_app.src,
+tco_app/plotters/,Directory,Visualisation modules,Chart and plot generation,,
+tco_app/plotters/__init__.py,Code,Python module,Auto-detected Python file,tco_app.charging_mix; tco_app.cost_breakdown; tco_app.emissions; tco_app.key_metrics; tco_app.payload; tco_app.sensitivity; tco_app.tornado,tco_app.tests.unit.plotters.test_charts; tco_app.tests.unit.test_visualization; tco_app.tests.unit.ui.test_pages; tco_app.ui.pages.cost_breakdown; tco_app.ui.pages.sensitivity
+tco_app/plotters/charging_mix.py,Code,Python module,Auto-detected Python file,tco_app.src.constants; tco_app.src.utils.energy,
+tco_app/plotters/cost_breakdown.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants,
+tco_app/plotters/emissions.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants,
+tco_app/plotters/key_metrics.py,Code,Python module,Auto-detected Python file,tco_app.src.utils.safe_operations,
+tco_app/plotters/payload.py,Code,Python module,Auto-detected Python file,tco_app.domain.finance; tco_app.src,
+tco_app/plotters/sensitivity.py,Code,Python module,Auto-detected Python file,tco_app.src.constants,
+tco_app/plotters/tornado.py,Code,Python module,Auto-detected Python file,,
+tco_app/repositories.py,Code,Data repositories,Data access layer,tco_app.src; tco_app.src.exceptions,tco_app.services.tco_calculation_service; tco_app.tests.e2e.test_full_tco_flow; tco_app.tests.integration.test_tco_calculation; tco_app.tests.unit.services.test_tco_calculation_service; tco_app.ui.orchestration.calculation_orchestrator
+tco_app/requirements.txt,Config,App dependencies,Application-specific dependencies,,
+tco_app/services/,Directory,Service layer,Business services,,
+tco_app/services/__init__.py,Code,Python module,Auto-detected Python file,tco_app.data_cache; tco_app.scenario_application_service,tco_app.tests.unit.services.test_scenario_service
+tco_app/services/data_cache.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.utils.safe_operations,tco_app.tests.performance.test_performance_optimisations; tco_app.tests.unit.services.test_data_cache
+tco_app/services/dtos.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants,tco_app.services.helpers; tco_app.services.tco_calculation_service; tco_app.tests.e2e.test_full_tco_flow; tco_app.tests.integration.test_tco_calculation; tco_app.tests.unit.services.test_tco_calculation_service; tco_app.ui.orchestration.calculation_orchestrator
+tco_app/services/helpers/,Directory,Service utilities,Helper functions for services,,
+tco_app/services/helpers/__init__.py,Code,Python module,Auto-detected Python file,tco_app.services.dtos; tco_app.src; tco_app.src.constants; tco_app.src.utils.safe_operations,tco_app.services.tco_calculation_service; tco_app.tests.unit.utils.test_residual_value_helper
+tco_app/services/scenario_application_service.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants; tco_app.src.exceptions,tco_app.services.scenario_service; tco_app.tests.unit.services.test_scenario_application_service
+tco_app/services/scenario_service.py,Code,Python module,Auto-detected Python file,tco_app.services.scenario_application_service; tco_app.src,tco_app.ui.builders.scenario_builder; tco_app.ui.renderers.sidebar_renderer
+tco_app/services/tco_calculation_service.py,Code,Python module,Auto-detected Python file,tco_app.domain; tco_app.domain.sensitivity; tco_app.repositories; tco_app.services.dtos; tco_app.services.helpers; tco_app.src; tco_app.src.constants; tco_app.src.exceptions; tco_app.src.utils.battery; tco_app.src.utils.energy,tco_app.tests.e2e.test_full_tco_flow; tco_app.tests.integration.test_tco_calculation; tco_app.tests.unit.services.test_tco_calculation_service; tco_app.ui.orchestration.calculation_orchestrator
+tco_app/src/,Directory,Core utilities,Core utility modules,,
+tco_app/src/__init__.py,Code,Python module,Auto-detected Python file,tco_app; tco_app.config; tco_app.imports,tco_app.domain.energy; tco_app.domain.externalities; tco_app.domain.finance; tco_app.domain.finance_payload; tco_app.domain.sensitivity.externality; tco_app.domain.sensitivity.single_param; tco_app.domain.sensitivity.tornado; tco_app.main; tco_app.plotters.cost_breakdown; tco_app.plotters.emissions; tco_app.plotters.payload; tco_app.repositories; tco_app.services.data_cache; tco_app.services.dtos; tco_app.services.helpers; tco_app.services.scenario_application_service; tco_app.services.scenario_service; tco_app.services.tco_calculation_service; tco_app.src.data_loading; tco_app.src.utils.battery; tco_app.src.utils.calculation_optimisations; tco_app.src.utils.data_access; tco_app.src.utils.energy; tco_app.src.utils.pandas_helpers; tco_app.src.utils.safe_operations; tco_app.tests.fixtures.vehicles; tco_app.tests.integration.test_tco_calculation; tco_app.tests.performance.test_performance_optimisations; tco_app.tests.regression.test_golden; tco_app.tests.unit.domain.test_calculation_delegation; tco_app.tests.unit.domain.test_energy; tco_app.tests.unit.domain.test_externalities; tco_app.tests.unit.domain.test_externalities_proxy; tco_app.tests.unit.plotters.test_charts; tco_app.tests.unit.services.test_data_cache; tco_app.tests.unit.services.test_scenario_application_service; tco_app.tests.unit.services.test_scenario_service; tco_app.tests.unit.services.test_tco_calculation_service; tco_app.tests.unit.ui.test_pages; tco_app.tests.unit.utils.test_calculation_optimisations; tco_app.tests.unit.utils.test_calculations; tco_app.tests.unit.utils.test_residual_value_helper; tco_app.tests.unit.utils.test_safe_integration; tco_app.tests.unit.utils.test_safe_lookup; tco_app.tests.unit.utils.test_safe_parameters; tco_app.ui.builders.charging_builder; tco_app.ui.builders.parameter_builder; tco_app.ui.builders.scenario_builder; tco_app.ui.builders.vehicle_builder; tco_app.ui.components.metric_cards; tco_app.ui.components.summary_displays; tco_app.ui.context.context; tco_app.ui.context.context_builder; tco_app.ui.orchestration.calculation_orchestrator; tco_app.ui.pages.cost_breakdown; tco_app.ui.pages.home; tco_app.ui.renderers.sidebar_renderer
+tco_app/src/config.py,Code,Python module,Auto-detected Python file,,
+tco_app/src/constants.py,Code,Python module,Auto-detected Python file,,tco_app.domain.energy; tco_app.domain.externalities; tco_app.domain.finance; tco_app.domain.finance_payload; tco_app.domain.sensitivity.metrics; tco_app.domain.sensitivity.single_param; tco_app.domain.sensitivity.tornado; tco_app.plotters.charging_mix; tco_app.plotters.cost_breakdown; tco_app.plotters.emissions; tco_app.plotters.sensitivity; tco_app.services.dtos; tco_app.services.helpers; tco_app.services.scenario_application_service; tco_app.services.tco_calculation_service; tco_app.src.utils.battery; tco_app.src.utils.calculation_optimisations; tco_app.src.utils.data_access; tco_app.src.utils.energy; tco_app.src.utils.finance; tco_app.src.utils.safe_operations; tco_app.tests.domain.sensitivity.test_single_param; tco_app.tests.e2e.test_full_tco_flow; tco_app.tests.fixtures.vehicles; tco_app.tests.integration.test_tco_calculation; tco_app.tests.performance.test_performance_optimisations; tco_app.tests.unit.domain.sensitivity.test_metrics; tco_app.tests.unit.domain.sensitivity.test_tornado; tco_app.tests.unit.domain.sensitivity.test_tornado_errors; tco_app.tests.unit.domain.test_calculation_delegation; tco_app.tests.unit.domain.test_energy; tco_app.tests.unit.domain.test_externalities; tco_app.tests.unit.domain.test_externalities_proxy; tco_app.tests.unit.domain.test_finance; tco_app.tests.unit.plotters.test_charts; tco_app.tests.unit.services.test_data_cache; tco_app.tests.unit.services.test_scenario_application_service; tco_app.tests.unit.services.test_tco_calculation_service; tco_app.tests.unit.test_visualization; tco_app.tests.unit.ui.test_pages; tco_app.tests.unit.utils.test_calculation_optimisations; tco_app.tests.unit.utils.test_calculations; tco_app.tests.unit.utils.test_residual_value_helper; tco_app.tests.unit.utils.test_safe_integration; tco_app.tests.unit.utils.test_safe_lookup; tco_app.tests.unit.utils.test_safe_parameters; tco_app.ui.builders.charging_builder; tco_app.ui.builders.parameter_builder; tco_app.ui.builders.vehicle_builder; tco_app.ui.components.sensitivity_components; tco_app.ui.components.summary_displays; tco_app.ui.orchestration.calculation_orchestrator; tco_app.ui.pages.cost_breakdown; tco_app.ui.renderers.sidebar_renderer; utility_scripts.validation.check_safe_operations
+tco_app/src/data_loading.py,Code,Python module,Auto-detected Python file,tco_app.src,tco_app.ui.context.context
+tco_app/src/exceptions.py,Code,Python module,Auto-detected Python file,,tco_app.repositories; tco_app.services.scenario_application_service; tco_app.services.tco_calculation_service; tco_app.src.utils.safe_operations; tco_app.tests.unit.services.test_scenario_application_service; tco_app.tests.unit.test_exceptions; tco_app.tests.unit.utils.test_safe_calculations; tco_app.tests.unit.utils.test_safe_integration; tco_app.tests.unit.utils.test_safe_lookup; tco_app.tests.unit.utils.test_safe_parameters; tco_app.ui.orchestration.calculation_orchestrator; utility_scripts.validation.check_safe_operations
+tco_app/src/imports.py,Code,Python module,Auto-detected Python file,,tco_app.tests.unit.ui.test_pages
+tco_app/src/utils/,Directory,Utility functions,General utility functions,,
+tco_app/src/utils/__init__.py,Code,Python module,Auto-detected Python file,,tco_app.tests.unit.domain.test_calculation_delegation; tco_app.tests.unit.utils.test_calculations
+tco_app/src/utils/battery.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants,tco_app.domain.sensitivity.single_param; tco_app.services.tco_calculation_service; tco_app.tests.unit.domain.test_calculation_delegation
+tco_app/src/utils/calculation_optimisations.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants,tco_app.domain.finance; tco_app.tests.performance.test_performance_optimisations; tco_app.tests.unit.utils.test_calculation_optimisations
+tco_app/src/utils/data_access.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants; tco_app.src.utils.pandas_helpers,tco_app.ui.builders.parameter_builder
+tco_app/src/utils/energy.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants; tco_app.src.utils.safe_operations,tco_app.domain.energy; tco_app.plotters.charging_mix; tco_app.services.tco_calculation_service; tco_app.tests.regression.test_golden
+tco_app/src/utils/finance.py,Code,Python module,Auto-detected Python file,tco_app.src.constants,tco_app.domain.finance; tco_app.tests.performance.test_performance_optimisations; tco_app.tests.regression.test_golden
+tco_app/src/utils/pandas_helpers.py,Code,Python module,Auto-detected Python file,tco_app.src,tco_app.domain.externalities; tco_app.domain.sensitivity.metrics; tco_app.src.utils.data_access; tco_app.src.utils.safe_operations; tco_app.ui.components.metric_cards; tco_app.ui.components.summary_displays
+tco_app/src/utils/safe_operations.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants; tco_app.src.exceptions; tco_app.src.utils.pandas_helpers,tco_app.domain.energy; tco_app.domain.externalities; tco_app.domain.finance; tco_app.domain.finance_payload; tco_app.domain.sensitivity.metrics; tco_app.domain.sensitivity.single_param; tco_app.domain.sensitivity.tornado; tco_app.plotters.key_metrics; tco_app.services.data_cache; tco_app.services.helpers; tco_app.src.utils.energy; tco_app.tests.unit.utils.test_safe_calculations; tco_app.tests.unit.utils.test_safe_integration; tco_app.tests.unit.utils.test_safe_lookup; tco_app.tests.unit.utils.test_safe_parameters; utility_scripts.validation.check_safe_operations
+tco_app/tests/,Directory,All tests,Test suite root,,
+tco_app/tests/conftest.py,Code,Python module,Auto-detected Python file,,
+tco_app/tests/domain/sensitivity/test_externality.py,Code,Python module,Auto-detected Python file,tco_app.domain.sensitivity.externality,
+tco_app/tests/domain/sensitivity/test_single_param.py,Code,Python module,Auto-detected Python file,tco_app.domain.sensitivity.single_param; tco_app.src.constants,
+tco_app/tests/e2e/,Directory,End-to-end tests,Full application tests,,
+tco_app/tests/e2e/__init__.py,Code,Python module,Auto-detected Python file,,
+tco_app/tests/e2e/test_full_tco_flow.py,Code,Python module,Auto-detected Python file,tco_app.repositories; tco_app.services.dtos; tco_app.services.tco_calculation_service; tco_app.src.constants; tco_app.ui.orchestration,
+tco_app/tests/fixtures/,Directory,Test fixtures,Shared test data,,
+tco_app/tests/fixtures/__init__.py,Code,Python module,Auto-detected Python file,tco_app.tests.vehicles,tco_app.tests.unit.conftest
+tco_app/tests/fixtures/vehicles.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants,
+tco_app/tests/integration/,Directory,Integration tests,Component integration tests,,
+tco_app/tests/integration/__init__.py,Code,Python module,Auto-detected Python file,,
+tco_app/tests/integration/test_tco_calculation.py,Code,Python module,Auto-detected Python file,tco_app.repositories; tco_app.services.dtos; tco_app.services.tco_calculation_service; tco_app.src; tco_app.src.constants,
+tco_app/tests/performance/,Directory,Performance tests,Performance benchmarks,,
+tco_app/tests/performance/__init__.py,Code,Python module,Auto-detected Python file,,
+tco_app/tests/performance/test_performance_optimisations.py,Code,Python module,Auto-detected Python file,tco_app.domain.finance; tco_app.services.data_cache; tco_app.src; tco_app.src.constants; tco_app.src.utils.calculation_optimisations; tco_app.src.utils.finance,
+tco_app/tests/regression/,Directory,Regression tests,Regression test suite,,
+tco_app/tests/regression/test_golden.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.utils.energy; tco_app.src.utils.finance,
+tco_app/tests/unit/,Directory,Unit tests,Unit test suite,,
+tco_app/tests/unit/__init__.py,Code,Python module,Auto-detected Python file,,
+tco_app/tests/unit/conftest.py,Code,Python module,Auto-detected Python file,tco_app.tests.fixtures,
+tco_app/tests/unit/domain/,Directory,Domain unit tests,Domain logic tests,,
+tco_app/tests/unit/domain/__init__.py,Code,Python module,Auto-detected Python file,,
+tco_app/tests/unit/domain/sensitivity/,Directory,Sensitivity unit tests,Sensitivity calculation tests,,
+tco_app/tests/unit/domain/sensitivity/test_metrics.py,Code,Python module,Auto-detected Python file,tco_app.domain.sensitivity.metrics; tco_app.src.constants,
+tco_app/tests/unit/domain/sensitivity/test_tornado.py,Code,Python module,Auto-detected Python file,tco_app.domain.sensitivity.tornado; tco_app.src.constants,
+tco_app/tests/unit/domain/sensitivity/test_tornado_errors.py,Code,Python module,Auto-detected Python file,tco_app.domain.sensitivity.tornado; tco_app.src.constants,
+tco_app/tests/unit/domain/test_calculation_delegation.py,Code,Python module,Auto-detected Python file,tco_app.domain.energy; tco_app.domain.finance; tco_app.src; tco_app.src.constants; tco_app.src.utils; tco_app.src.utils.battery,
+tco_app/tests/unit/domain/test_energy.py,Code,Python module,Auto-detected Python file,tco_app.domain.energy; tco_app.src; tco_app.src.constants,
+tco_app/tests/unit/domain/test_externalities.py,Code,Python module,Auto-detected Python file,tco_app.domain.externalities; tco_app.src; tco_app.src.constants,
+tco_app/tests/unit/domain/test_externalities_proxy.py,Code,Python module,Auto-detected Python file,tco_app.domain.externalities; tco_app.src; tco_app.src.constants,
+tco_app/tests/unit/domain/test_finance.py,Code,Python module,Auto-detected Python file,tco_app.domain.finance; tco_app.src.constants,
+tco_app/tests/unit/domain/test_finance_payload.py,Code,Python module,Auto-detected Python file,tco_app.domain.finance_payload,
+tco_app/tests/unit/plotters/,Directory,Plotter unit tests,Visualisation tests,,
+tco_app/tests/unit/plotters/test_charts.py,Code,Python module,Auto-detected Python file,tco_app.plotters; tco_app.src; tco_app.src.constants,
+tco_app/tests/unit/services/,Directory,Service unit tests,Service layer tests,,
+tco_app/tests/unit/services/__init__.py,Code,Python module,Auto-detected Python file,,
+tco_app/tests/unit/services/test_data_cache.py,Code,Python module,Auto-detected Python file,tco_app.services.data_cache; tco_app.src; tco_app.src.constants,
+tco_app/tests/unit/services/test_scenario_application_service.py,Code,Python module,Auto-detected Python file,tco_app.services.scenario_application_service; tco_app.src; tco_app.src.constants; tco_app.src.exceptions,
+tco_app/tests/unit/services/test_scenario_service.py,Code,Python module,Auto-detected Python file,tco_app.services; tco_app.src,
+tco_app/tests/unit/services/test_tco_calculation_service.py,Code,Python module,Auto-detected Python file,tco_app.repositories; tco_app.services.dtos; tco_app.services.tco_calculation_service; tco_app.src; tco_app.src.constants,
+tco_app/tests/unit/test_exceptions.py,Code,Python module,Auto-detected Python file,tco_app.src.exceptions,
+tco_app/tests/unit/test_visualization.py,Code,Python module,Auto-detected Python file,tco_app.plotters; tco_app.src.constants,
+tco_app/tests/unit/ui/,Directory,UI unit tests,UI component tests,,
+tco_app/tests/unit/ui/__init__.py,Code,Python module,Auto-detected Python file,,
+tco_app/tests/unit/ui/test_pages.py,Code,Python module,Auto-detected Python file,tco_app.domain.finance; tco_app.domain.sensitivity; tco_app.plotters; tco_app.src; tco_app.src.constants; tco_app.src.imports; tco_app.ui.components; tco_app.ui.context,
+tco_app/tests/unit/utils/,Directory,Utils unit tests,Utility function tests,,
+tco_app/tests/unit/utils/__init__.py,Code,Python module,Auto-detected Python file,,
+tco_app/tests/unit/utils/test_calculation_optimisations.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants; tco_app.src.utils.calculation_optimisations,
+tco_app/tests/unit/utils/test_calculations.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants; tco_app.src.utils,
+tco_app/tests/unit/utils/test_residual_value_helper.py,Code,Python module,Auto-detected Python file,tco_app.services.helpers; tco_app.src; tco_app.src.constants,
+tco_app/tests/unit/utils/test_safe_calculations.py,Code,Python module,Auto-detected Python file,tco_app.src.exceptions; tco_app.src.utils.safe_operations,
+tco_app/tests/unit/utils/test_safe_integration.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants; tco_app.src.exceptions; tco_app.src.utils.safe_operations,
+tco_app/tests/unit/utils/test_safe_lookup.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants; tco_app.src.exceptions; tco_app.src.utils.safe_operations,
+tco_app/tests/unit/utils/test_safe_operations.py,Code,Python module,Auto-detected Python file,,
+tco_app/tests/unit/utils/test_safe_parameters.py,Code,Python module,Auto-detected Python file,tco_app.src; tco_app.src.constants; tco_app.src.exceptions; tco_app.src.utils.safe_operations,
+tco_app/ui/,Directory,Streamlit UI,User interface components,,
+tco_app/ui/__init__.py,Code,UI package init,UI module initialisation,,
+tco_app/ui/builders/,Directory,UI builders,Component builders,,
+tco_app/ui/builders/__init__.py,Code,Builders init,Builders module exports,tco_app.ui.charging_builder; tco_app.ui.parameter_builder; tco_app.ui.scenario_builder; tco_app.ui.vehicle_builder,tco_app.ui.renderers.sidebar_renderer
+tco_app/ui/builders/charging_builder.py,Code,Charging builder,Charging options UI builder,tco_app.src; tco_app.src.constants,
+tco_app/ui/builders/parameter_builder.py,Code,Parameter builder,Parameter input UI builder,tco_app.src; tco_app.src.constants; tco_app.src.utils.data_access,
+tco_app/ui/builders/scenario_builder.py,Code,Scenario builder,Scenario configuration builder,tco_app.services.scenario_service; tco_app.src,
+tco_app/ui/builders/vehicle_builder.py,Code,Vehicle builder,Vehicle selection UI builder,tco_app.src; tco_app.src.constants,
+tco_app/ui/components/,Directory,UI components,Reusable UI components,,
+tco_app/ui/components/__init__.py,Code,Components init,Components module exports,tco_app.ui.components; tco_app.ui.metric_cards; tco_app.ui.sensitivity_components; tco_app.ui.summary_displays,tco_app.tests.unit.ui.test_pages; tco_app.ui.components; tco_app.ui.pages.home
+tco_app/ui/components/components.py,Code,Base components,Basic UI component functions,,
+tco_app/ui/components/metric_cards.py,Code,Metric cards,Metric display components,tco_app.src; tco_app.src.utils.pandas_helpers,
+tco_app/ui/components/sensitivity_components.py,Code,Sensitivity components,Sensitivity analysis classes,tco_app.src.constants,tco_app.ui.pages.sensitivity
+tco_app/ui/components/summary_displays.py,Code,Summary displays,Summary display components,tco_app.src; tco_app.src.constants; tco_app.src.utils.pandas_helpers,
+tco_app/ui/context/,Directory,Context management,UI state and data flow,,
+tco_app/ui/context/__init__.py,Code,Context init,Context module exports,tco_app.ui.context; tco_app.ui.context_builder; tco_app.ui.input_hash,tco_app.tests.unit.ui.test_pages; tco_app.ui.context; tco_app.ui.pages.cost_breakdown; tco_app.ui.pages.home; tco_app.ui.pages.sensitivity
+tco_app/ui/context/context.py,Code,Context manager,Main context management,tco_app.src; tco_app.src.data_loading; tco_app.ui.context.context_builder; tco_app.ui.context.input_hash; tco_app.ui.orchestration; tco_app.ui.renderers,
+tco_app/ui/context/context_builder.py,Code,Context builder,Context building logic,tco_app.src,tco_app.ui.context.context
+tco_app/ui/context/input_hash.py,Code,Input hasher,Input hashing for caching,,tco_app.ui.context.context
+tco_app/ui/orchestration/,Directory,Orchestration,Calculation coordination,,
+tco_app/ui/orchestration/__init__.py,Code,Orchestration init,Orchestration module exports,tco_app.ui.calculation_orchestrator,tco_app.tests.e2e.test_full_tco_flow; tco_app.ui.context.context
+tco_app/ui/orchestration/calculation_orchestrator.py,Code,Calculation orchestrator,Coordinates calculations,tco_app.repositories; tco_app.services.dtos; tco_app.services.tco_calculation_service; tco_app.src; tco_app.src.constants; tco_app.src.exceptions,
+tco_app/ui/pages/,Directory,Streamlit pages,Application pages,,
+tco_app/ui/pages/__init__.py,Code,Pages init,Pages module exports,,
+tco_app/ui/pages/cost_breakdown.py,Code,Cost breakdown page,Detailed cost analysis page,tco_app.plotters; tco_app.src; tco_app.src.constants; tco_app.ui.context,
+tco_app/ui/pages/home.py,Code,Home page,Main dashboard page,tco_app.src; tco_app.ui.components; tco_app.ui.context,
+tco_app/ui/pages/sensitivity.py,Code,Sensitivity page,Sensitivity analysis page,tco_app.domain.sensitivity; tco_app.plotters; tco_app.ui.components.sensitivity_components; tco_app.ui.context,
+tco_app/ui/renderers/,Directory,UI renderers,Rendering components,,
+tco_app/ui/renderers/__init__.py,Code,Renderers init,Renderers module exports,tco_app.ui.sidebar_renderer,tco_app.ui.context.context
+tco_app/ui/renderers/sidebar_renderer.py,Code,Sidebar renderer,Sidebar rendering logic,tco_app.services.scenario_service; tco_app.src; tco_app.src.constants; tco_app.ui.builders,
+utility_scripts/,Directory,Development utilities,Scripts for development tasks,,
+utility_scripts/quality/,Directory,Quality scripts,Code quality checking scripts,,
+utility_scripts/tools/,Directory,Tool scripts,Various utility tools,,
+utility_scripts/tools/add_safe_operations.py,Script,Safe operations adder,Adds safe operations to code,,
+utility_scripts/tools/analyze_imports.py,Code,Python module,Auto-detected Python file,,
+utility_scripts/tools/check_code_quality.py,Code,Python module,Auto-detected Python file,,
+utility_scripts/tools/convert_excel_to_csv.py,Script,Excel converter,Converts Excel files to CSV,,
+utility_scripts/tools/convert_imports.py,Script,Import converter,Updates import statements,,
+utility_scripts/tools/final_cleanup.py,Script,Final cleanup,Final code cleanup script,,
+utility_scripts/tools/find_deprecated.py,Script,Deprecation finder,Finds deprecated code,,
+utility_scripts/tools/quick_fixes.py,Code,Python module,Auto-detected Python file,,
+utility_scripts/tools/rename_csv_files.py,Script,CSV renamer,Renames CSV files,,
+utility_scripts/tools/replace_magic_strings.py,Script,Magic string replacer,Replaces hardcoded strings,,
+utility_scripts/tools/show_dependencies.py,Code,Python module,Auto-detected Python file,,
+utility_scripts/validation/,Directory,Validation scripts,Code validation tools,,
+utility_scripts/validation/check_app_imports.py,Script,Import checker,Validates imports,,
+utility_scripts/validation/check_magic_strings.py,Script,Magic string checker,Finds hardcoded strings,,
+utility_scripts/validation/check_safe_operations.py,Script,Safe operations checker,Validates safe operations,tco_app.domain.energy; tco_app.domain.finance; tco_app.domain.finance_payload; tco_app.src.constants; tco_app.src.exceptions; tco_app.src.utils.safe_operations,
+venv/,Directory,Virtual environment,Python virtual environment ,,

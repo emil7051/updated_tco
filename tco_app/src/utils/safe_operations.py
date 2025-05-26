@@ -4,7 +4,7 @@ from typing import Any, List, Union
 
 from tco_app.src import logging, pd
 from tco_app.src.exceptions import CalculationError, DataNotFoundError
-from tco_app.src.utils.pandas_helpers import safe_get_first
+from tco_app.src.utils.pandas_helpers import safe_get_first, get_parameter_value
 
 logger = logging.getLogger(__name__)
 
@@ -25,17 +25,7 @@ def safe_iloc_zero(
     Raises:
         DataNotFoundError: If no rows match condition
     """
-    result = safe_get_first(df, condition)
-    if result is None:
-        # Build helpful error message
-        true_count = condition.sum() if isinstance(condition, pd.Series) else 0
-        msg = (
-            f"No {context} found matching the condition. "
-            f"DataFrame has {len(df)} rows, {true_count} match condition."
-        )
-        raise DataNotFoundError(msg, dataframe_name=context)
-
-    return result
+    return safe_get_first(df, condition, context=context, raise_on_missing=True)
 
 
 def safe_lookup_vehicle(vehicle_models: pd.DataFrame, vehicle_id: str) -> pd.Series:
@@ -156,11 +146,20 @@ def safe_get_parameter(
     """
     from tco_app.src.constants import DataColumns
 
-    condition = financial_params[DataColumns.FINANCE_DESCRIPTION] == parameter_key
-    param_row = safe_iloc_zero(
-        financial_params, condition, context=f"{context} '{parameter_key}'"
-    )
-    return param_row[DataColumns.FINANCE_DEFAULT_VALUE]
+    try:
+        return get_parameter_value(
+            financial_params,
+            DataColumns.FINANCE_DESCRIPTION,
+            parameter_key,
+            DataColumns.FINANCE_DEFAULT_VALUE,
+            raise_on_missing=True,
+        )
+    except DataNotFoundError:
+        # Re-raise with the expected message format for backward compatibility
+        raise DataNotFoundError(
+            f"No {context} '{parameter_key}' found",
+            dataframe_name=context
+        )
 
 
 def safe_get_charging_option(

@@ -11,20 +11,13 @@ import logging
 from typing import Dict, Mapping
 
 from tco_app.src import pd
-from tco_app.src.constants import DataColumns, EmissionStandard, ParameterKeys
-from tco_app.src.utils.safe_operations import (
-    safe_division,
-    safe_get_charging_option,
-    safe_get_parameter,
-    safe_iloc_zero,
-)
+from tco_app.src.constants import DataColumns
+from tco_app.src.utils.safe_operations import safe_division
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "weighted_electricity_price",
-    "calculate_energy_costs",
-    "calculate_emissions",
 ]
 
 
@@ -91,88 +84,3 @@ def weighted_electricity_price(
         weighted_price += price * weight
 
     return weighted_price
-
-
-from ..constants import (  # noqa: E402  # Imported late to avoid circularity
-    Drivetrain,
-    FuelType,
-)
-
-
-def calculate_energy_costs(
-    vehicle_data,
-    fees_data,
-    charging_data,
-    financial_params,
-    selected_charging,
-    charging_mix: dict | None = None,
-):
-    """Return the **energy cost per kilometre** for a given vehicle.
-
-    The implementation is lifted verbatim from the previous monolithic
-    *calculations.py* so that future refactors can simply remove the old copy.
-    """
-
-    if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
-        # Determine the electricity price either from a weighted mix or a single option.
-        if charging_mix:
-            electricity_price = weighted_electricity_price(charging_mix, charging_data)
-        else:
-            charging_option = safe_get_charging_option(charging_data, selected_charging)
-            electricity_price = charging_option[DataColumns.PER_KWH_PRICE]
-
-        energy_cost_per_km = (
-            vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_price
-        )
-    else:
-        diesel_price = safe_get_parameter(financial_params, ParameterKeys.DIESEL_PRICE)
-        energy_cost_per_km = (
-            vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_price
-        )
-
-    return energy_cost_per_km
-
-
-def calculate_emissions(
-    vehicle_data,
-    emission_factors,
-    annual_kms: int,
-    truck_life_years: int,
-):
-    """Return a dictionary with per-km, annual and lifetime CO₂ emissions."""
-
-    if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
-        electricity_ef_condition = (
-            emission_factors[DataColumns.FUEL_TYPE.value] == FuelType.ELECTRICITY
-        ) & (
-            emission_factors[DataColumns.EMISSION_STANDARD.value]
-            == EmissionStandard.GRID.value
-        )
-        electricity_ef_row = safe_iloc_zero(
-            emission_factors,
-            electricity_ef_condition,
-            context="electricity emission factor",
-        )
-        electricity_ef = electricity_ef_row[DataColumns.CO2_PER_UNIT.value]
-        co2_per_km = vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_ef
-    else:
-        diesel_ef_condition = (
-            emission_factors[DataColumns.FUEL_TYPE.value] == FuelType.DIESEL
-        ) & (
-            emission_factors[DataColumns.EMISSION_STANDARD.value]
-            == EmissionStandard.EURO_IV_PLUS.value
-        )
-        diesel_ef_row = safe_iloc_zero(
-            emission_factors, diesel_ef_condition, context="diesel emission factor"
-        )
-        diesel_ef = diesel_ef_row[DataColumns.CO2_PER_UNIT.value]
-        co2_per_km = vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_ef
-
-    annual_emissions = co2_per_km * annual_kms
-    lifetime_emissions = annual_emissions * truck_life_years
-
-    return {
-        "co2_per_km": co2_per_km,
-        "annual_emissions": annual_emissions,
-        "lifetime_emissions": lifetime_emissions,
-    }

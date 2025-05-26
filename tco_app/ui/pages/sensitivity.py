@@ -1,8 +1,9 @@
+"""Sensitivity analysis page module."""
+import streamlit as st
+from tco_app.ui.context import get_context
 from tco_app.domain.sensitivity import perform_sensitivity_analysis
 from tco_app.plotters import create_payload_sensitivity_chart, create_sensitivity_chart
-from tco_app.src import st
-from tco_app.ui.context import get_context
-from tco_app.ui.sensitivity_components import (
+from tco_app.ui.components.sensitivity_components import (
     SensitivityContext,
     ParameterRangeCalculator,
 )

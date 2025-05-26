@@ -1,26 +1,17 @@
-"""Shared context & data-preparation utilities for Streamlit pages.
+"""Context module for managing UI state and dependencies.
 
-This module centralises the heavy-lifting previously performed in the monolithic
-`tco_app.app` entry-point. It is intentionally *UI-aware*: the sidebar widgets
-are rendered here so that all pages share the same interactive controls.
-
-Down-stream pages call `get_context()` and receive a dictionary with
-pre-computed results in the same structure used historically. The helper is
-idempotent and cached in `st.session_state` under the key `'ctx_cache'` so the
-expensive calculations run at most once per page refresh.
-
-This module has been refactored to use the Builder pattern for better
-maintainability and testability.
+This module provides a way to manage context throughout the UI components
+and pages, ensuring consistent data access and calculations.
 """
 
 from __future__ import annotations
 
 from tco_app.src import Any, Dict, logging, st
 from tco_app.src.data_loading import load_data
-from tco_app.ui.calculation_orchestrator import CalculationOrchestrator
-from tco_app.ui.context_builder import ContextDirector
-from tco_app.ui.sidebar_renderer import SidebarRenderer
-from tco_app.ui.input_hash import generate_input_hash
+from tco_app.ui.orchestration import CalculationOrchestrator
+from tco_app.ui.context.context_builder import ContextDirector
+from tco_app.ui.renderers import SidebarRenderer
+from tco_app.ui.context.input_hash import generate_input_hash
 
 logger = logging.getLogger(__name__)
 

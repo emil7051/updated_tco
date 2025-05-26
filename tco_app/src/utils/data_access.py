@@ -8,7 +8,7 @@ from tco_app.src.constants import DataColumns, ParameterKeys
 from .pandas_helpers import get_parameter_value
 
 
-class ParameterRepository:
+class ParametersRepository:
     """Repository pattern for accessing parameter DataFrames."""
 
     def __init__(self, df: pd.DataFrame, key_column: str, value_column: str):
@@ -44,7 +44,7 @@ class ParameterRepository:
         return value
 
 
-class FinancialParameters(ParameterRepository):
+class FinancialParameters(ParametersRepository):
     """Specialised repository for financial parameters."""
 
     def __init__(self, df: pd.DataFrame):
@@ -68,7 +68,7 @@ class FinancialParameters(ParameterRepository):
         return self.get(ParameterKeys.CARBON_PRICE, 0.0)
 
 
-class BatteryParameters(ParameterRepository):
+class BatteryParameters(ParametersRepository):
     """Specialised repository for battery parameters."""
 
     def __init__(self, df: pd.DataFrame):

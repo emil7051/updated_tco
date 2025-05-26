@@ -1,8 +1,9 @@
 """Shared pandas utility functions for the TCO application."""
 
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from tco_app.src import np, pd
+from tco_app.src.exceptions import DataNotFoundError
 
 
 def to_scalar(value: Union[float, int, pd.Series, np.ndarray]) -> float:
@@ -39,26 +40,42 @@ def to_scalar(value: Union[float, int, pd.Series, np.ndarray]) -> float:
 
 
 def safe_get_first(
-    df: pd.DataFrame, condition: Union[pd.Series, bool], default: Any = None
+    df: pd.DataFrame,
+    condition: Union[pd.Series, bool],
+    default: Any = None,
+    context: Optional[str] = None,
+    raise_on_missing: bool = False,
 ) -> Union[pd.Series, Any]:
     """Safely get the first row matching a condition.
 
     Args:
         df: DataFrame to query
         condition: Boolean mask or condition
-        default: Value to return if no rows match
+        default: Value to return if no rows match (ignored if raise_on_missing=True)
+        context: Context for error message (used when raise_on_missing=True)
+        raise_on_missing: If True, raise DataNotFoundError instead of returning default
 
     Returns:
         First matching row as Series, or default if none found
 
     Raises:
         ValueError: If condition is not boolean type
+        DataNotFoundError: If no rows match and raise_on_missing=True
     """
     if not isinstance(condition, (pd.Series, bool)):
         raise ValueError("Condition must be a boolean Series or bool value")
 
     filtered = df[condition]
     if filtered.empty:
+        if raise_on_missing:
+            # Build helpful error message
+            true_count = condition.sum() if isinstance(condition, pd.Series) else 0
+            context_str = context or "data"
+            msg = (
+                f"No {context_str} found matching the condition. "
+                f"DataFrame has {len(df)} rows, {true_count} match condition."
+            )
+            raise DataNotFoundError(msg, dataframe_name=context_str)
         return default
     return filtered.iloc[0]
 
@@ -69,6 +86,7 @@ def get_parameter_value(
     key_value: str,
     value_column: str,
     default: Any = None,
+    raise_on_missing: bool = False,
 ) -> Any:
     """Extract a parameter value from a key-value structured DataFrame.
 
@@ -78,9 +96,13 @@ def get_parameter_value(
         key_value: The key to look up
         value_column: Name of the column containing values
         default: Default value if key not found
+        raise_on_missing: If True, raise DataNotFoundError instead of returning default
 
     Returns:
         The value associated with the key, or default
+
+    Raises:
+        DataNotFoundError: If key not found and raise_on_missing=True
 
     Examples:
         >>> df = pd.DataFrame({
@@ -91,6 +113,15 @@ def get_parameter_value(
         0.07
     """
     mask = df[key_column] == key_value
-    if not mask.any():
+    row = safe_get_first(
+        df,
+        mask,
+        default=None,
+        context=f"parameter '{key_value}'",
+        raise_on_missing=raise_on_missing,
+    )
+    
+    if row is None:
         return default
-    return df.loc[mask, value_column].iloc[0]
+    
+    return row[value_column]

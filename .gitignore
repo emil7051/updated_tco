@@ -42,8 +42,14 @@ Thumbs.db
 # Logs
 *.log
 
-# Refactoring documentation
-refactoring/ 
+# Test coverage
+.coverage
+coverage.json
+htmlcov/
 
-# Utility Scripts
-utility_scripts/
+# Generated reports
+reports/
+report/
+
+# Refactoring documentation (old location)
+refactoring/ 
