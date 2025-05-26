@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test script to verify DTO mode functionality."""
+"""Test script to verify DTO functionality."""
 
 import sys
 from pathlib import Path
@@ -45,63 +45,36 @@ def test_dto_mode():
     
     ui_context = context_director.build_ui_context(sidebar_inputs)
     
-    # Test with DTOs disabled (default)
-    print("\nTesting with DTOs disabled (dictionary mode)...")
+    # Test with DTOs (now the only mode)
+    print("\nTesting DTO functionality...")
     orchestrator = CalculationOrchestrator(data_tables, ui_context)
-    dict_results = orchestrator.perform_calculations()
+    results = orchestrator.perform_calculations()
     
-    bev_dict = dict_results["bev_results"]
-    diesel_dict = dict_results["diesel_results"]
-    
-    print(f"BEV results type: {type(bev_dict)}")
-    print(f"BEV TCO per km (dict): ${get_tco_per_km(bev_dict):.4f}")
-    print(f"BEV lifetime TCO (dict): ${get_tco_lifetime(bev_dict):,.0f}")
-    print(f"BEV annual operating cost (dict): ${get_annual_operating_cost(bev_dict):,.0f}")
-    print(f"BEV CO2 per km (dict): {get_co2_per_km(bev_dict):.2f} kg")
-    
-    # Test with DTOs enabled
-    print("\nTesting with DTOs enabled...")
-    ui_context["use_dtos"] = True
-    orchestrator_dto = CalculationOrchestrator(data_tables, ui_context)
-    dto_results = orchestrator_dto.perform_calculations()
-    
-    bev_dto = dto_results["bev_results"]
-    diesel_dto = dto_results["diesel_results"]
-    comparison_dto = dto_results["comparison"]
+    bev_dto = results["bev_results"]
+    diesel_dto = results["diesel_results"]
+    comparison_dto = results["comparison"]
     
     print(f"BEV results type: {type(bev_dto)}")
-    print(f"BEV TCO per km (DTO): ${get_tco_per_km(bev_dto):.4f}")
-    print(f"BEV lifetime TCO (DTO): ${get_tco_lifetime(bev_dto):,.0f}")
-    print(f"BEV annual operating cost (DTO): ${get_annual_operating_cost(bev_dto):,.0f}")
-    print(f"BEV CO2 per km (DTO): {get_co2_per_km(bev_dto):.2f} kg")
+    print(f"BEV TCO per km: ${get_tco_per_km(bev_dto):.4f}")
+    print(f"BEV lifetime TCO: ${get_tco_lifetime(bev_dto):,.0f}")
+    print(f"BEV annual operating cost: ${get_annual_operating_cost(bev_dto):,.0f}")
+    print(f"BEV CO2 per km: {get_co2_per_km(bev_dto):.2f} kg")
     
-    # Verify accessors work correctly with both types
-    print("\nVerifying accessor compatibility...")
-    dict_tco_km = get_tco_per_km(bev_dict)
-    dto_tco_km = get_tco_per_km(bev_dto)
-    
-    if abs(dict_tco_km - dto_tco_km) < 0.0001:
-        print("✅ TCO per km matches between dict and DTO modes")
-    else:
-        print(f"❌ TCO per km mismatch: dict={dict_tco_km}, dto={dto_tco_km}")
-    
-    dict_lifetime = get_tco_lifetime(bev_dict)
-    dto_lifetime = get_tco_lifetime(bev_dto)
-    
-    if abs(dict_lifetime - dto_lifetime) < 1:
-        print("✅ Lifetime TCO matches between dict and DTO modes")
-    else:
-        print(f"❌ Lifetime TCO mismatch: dict={dict_lifetime}, dto={dto_lifetime}")
+    print(f"\nDiesel results type: {type(diesel_dto)}")
+    print(f"Diesel TCO per km: ${get_tco_per_km(diesel_dto):.4f}")
+    print(f"Diesel lifetime TCO: ${get_tco_lifetime(diesel_dto):,.0f}")
+    print(f"Diesel annual operating cost: ${get_annual_operating_cost(diesel_dto):,.0f}")
+    print(f"Diesel CO2 per km: {get_co2_per_km(diesel_dto):.2f} kg")
     
     # Test comparison metrics
     print("\nTesting comparison metrics...")
-    comp_metrics = dto_results["comparison_metrics"]
+    comp_metrics = results["comparison_metrics"]
     print(f"Upfront cost difference: ${comp_metrics['upfront_cost_difference']:,.0f}")
     print(f"Annual operating savings: ${comp_metrics['annual_operating_savings']:,.0f}")
     print(f"Price parity year: {comp_metrics['price_parity_year']:.1f}")
     print(f"Emissions reduction: {comp_metrics['emission_savings_lifetime']:,.0f} kg")
     
-    print("\n✅ DTO mode test completed successfully!")
+    print("\n✅ DTO functionality test completed successfully!")
 
 
 if __name__ == "__main__":

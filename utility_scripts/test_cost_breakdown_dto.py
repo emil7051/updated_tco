@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test script to verify cost breakdown page works with DTO mode."""
+"""Test script to verify cost breakdown DTO accessor functionality."""
 
 import sys
 from pathlib import Path
@@ -18,7 +18,6 @@ from tco_app.ui.utils.dto_accessors import (
     get_infrastructure_service_life,
     get_infrastructure_replacement_cycles,
     get_infrastructure_subsidy_rate,
-    get_infrastructure_subsidy_amount,
     get_daily_kwh_required,
     get_charging_time_per_day,
     get_charger_power,
@@ -28,7 +27,7 @@ from tco_app.ui.utils.dto_accessors import (
 
 
 def test_cost_breakdown_accessors():
-    """Test that cost breakdown accessors work correctly with both modes."""
+    """Test that cost breakdown DTO accessors work correctly."""
     print("Loading data...")
     data_tables = load_data()
     
@@ -41,7 +40,7 @@ def test_cost_breakdown_accessors():
         "selected_bev_id": "BEV001",
         "comparison_diesel_id": "DSL001",
         "selected_charging": "C002",
-        "selected_infrastructure": "I002",  # Non-zero infrastructure
+        "selected_infrastructure": "I001",  # Select non-zero infrastructure
         "charging_mix": {"C002": 1.0},
         "apply_incentives": True,
         "annual_kms": 20000,
@@ -53,74 +52,41 @@ def test_cost_breakdown_accessors():
     
     ui_context = context_director.build_ui_context(sidebar_inputs)
     
-    # Test with DTOs disabled (default)
-    print("\nTesting with DTOs disabled (dictionary mode)...")
+    # Test with DTOs (now the only mode)
+    print("\nTesting DTO accessor functionality...")
     orchestrator = CalculationOrchestrator(data_tables, ui_context)
-    dict_results = orchestrator.perform_calculations()
+    results = orchestrator.perform_calculations()
     
-    bev_dict = dict_results["bev_results"]
-    
-    print(f"BEV is BEV check: {is_bev(bev_dict)}")
-    print(f"Infrastructure price: ${get_infrastructure_price(bev_dict):,.0f}")
-    print(f"Infrastructure annual maintenance: ${get_infrastructure_annual_maintenance(bev_dict):,.0f}")
-    print(f"Infrastructure NPV per vehicle: ${get_infrastructure_npv_per_vehicle(bev_dict) or 0:,.0f}")
-    print(f"Infrastructure service life: {get_infrastructure_service_life(bev_dict)} years")
-    print(f"Infrastructure replacement cycles: {get_infrastructure_replacement_cycles(bev_dict)}")
-    
-    subsidy_rate = get_infrastructure_subsidy_rate(bev_dict)
-    print(f"Infrastructure subsidy rate: {subsidy_rate * 100:.0f}%")
-    if subsidy_rate > 0:
-        print(f"Infrastructure subsidy amount: ${get_infrastructure_subsidy_amount(bev_dict):,.0f}")
-    
-    print(f"\nCharging requirements:")
-    print(f"Daily kWh required: {get_daily_kwh_required(bev_dict):.1f} kWh")
-    print(f"Charging time per day: {get_charging_time_per_day(bev_dict):.2f} hours")
-    print(f"Charger power: {get_charger_power(bev_dict):.0f} kW")
-    print(f"Max vehicles per charger: {get_max_vehicles_per_charger(bev_dict):.1f}")
-    
-    # Test with DTOs enabled
-    print("\n\nTesting with DTOs enabled...")
-    ui_context["use_dtos"] = True
-    orchestrator_dto = CalculationOrchestrator(data_tables, ui_context)
-    dto_results = orchestrator_dto.perform_calculations()
-    
-    bev_dto = dto_results["bev_results"]
+    bev_dto = results["bev_results"]
     
     print(f"BEV is BEV check: {is_bev(bev_dto)}")
-    print(f"Infrastructure price: ${get_infrastructure_price(bev_dto):,.0f}")
-    print(f"Infrastructure annual maintenance: ${get_infrastructure_annual_maintenance(bev_dto):,.0f}")
-    print(f"Infrastructure NPV per vehicle: ${get_infrastructure_npv_per_vehicle(bev_dto) or 0:,.0f}")
-    print(f"Infrastructure service life: {get_infrastructure_service_life(bev_dto)} years")
-    print(f"Infrastructure replacement cycles: {get_infrastructure_replacement_cycles(bev_dto)}")
     
-    subsidy_rate = get_infrastructure_subsidy_rate(bev_dto)
-    print(f"Infrastructure subsidy rate: {subsidy_rate * 100:.0f}%")
-    if subsidy_rate > 0:
-        print(f"Infrastructure subsidy amount: ${get_infrastructure_subsidy_amount(bev_dto):,.0f}")
+    # Test infrastructure accessors
+    infra_price = get_infrastructure_price(bev_dto)
+    infra_maint = get_infrastructure_annual_maintenance(bev_dto)
+    infra_npv = get_infrastructure_npv_per_vehicle(bev_dto)
+    infra_life = get_infrastructure_service_life(bev_dto)
+    infra_cycles = get_infrastructure_replacement_cycles(bev_dto)
+    infra_subsidy = get_infrastructure_subsidy_rate(bev_dto)
     
-    print(f"\nCharging requirements:")
-    print(f"Daily kWh required: {get_daily_kwh_required(bev_dto):.1f} kWh")
-    print(f"Charging time per day: {get_charging_time_per_day(bev_dto):.2f} hours")
-    print(f"Charger power: {get_charger_power(bev_dto):.0f} kW")
-    print(f"Max vehicles per charger: {get_max_vehicles_per_charger(bev_dto):.1f}")
+    print(f"Infrastructure price: ${infra_price:,.0f}")
+    print(f"Infrastructure annual maintenance: ${infra_maint:,.0f}")
+    print(f"Infrastructure NPV per vehicle: ${infra_npv:,.0f}")
+    print(f"Infrastructure service life: {infra_life} years")
+    print(f"Infrastructure replacement cycles: {infra_cycles}")
+    print(f"Infrastructure subsidy rate: {infra_subsidy:.0%}")
     
-    # Verify values match
-    print("\n\nVerifying accessor compatibility...")
-    dict_price = get_infrastructure_price(bev_dict)
-    dto_price = get_infrastructure_price(bev_dto)
+    # Test charging requirement accessors
+    print("\nCharging requirements:")
+    daily_kwh = get_daily_kwh_required(bev_dto)
+    charge_time = get_charging_time_per_day(bev_dto)
+    charger_power = get_charger_power(bev_dto)
+    max_vehicles = get_max_vehicles_per_charger(bev_dto)
     
-    if abs(dict_price - dto_price) < 1:
-        print("✅ Infrastructure price matches between dict and DTO modes")
-    else:
-        print(f"❌ Infrastructure price mismatch: dict={dict_price}, dto={dto_price}")
-    
-    dict_daily_kwh = get_daily_kwh_required(bev_dict)
-    dto_daily_kwh = get_daily_kwh_required(bev_dto)
-    
-    if abs(dict_daily_kwh - dto_daily_kwh) < 0.1:
-        print("✅ Daily kWh required matches between dict and DTO modes")
-    else:
-        print(f"❌ Daily kWh mismatch: dict={dict_daily_kwh}, dto={dto_daily_kwh}")
+    print(f"Daily kWh required: {daily_kwh:.1f} kWh")
+    print(f"Charging time per day: {charge_time:.2f} hours")
+    print(f"Charger power: {charger_power} kW")
+    print(f"Max vehicles per charger: {max_vehicles:.1f}")
     
     print("\n✅ Cost breakdown accessor test completed successfully!")
 

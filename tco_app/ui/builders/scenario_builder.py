@@ -24,6 +24,7 @@ class ScenarioBuilder:
             format_func=lambda x: scenarios[scenarios["scenario_id"] == x].iloc[0][
                 "scenario_name"
             ],
+            key="scenario_selector",
         )
 
         # Get scenario details

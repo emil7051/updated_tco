@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document summarizes the successful completion of Phase 1 and Phase 2 of the legacy code deprecation plan. The TCO application now fully supports modern DTO-based data structures alongside legacy dictionary structures, with a feature flag to toggle between modes.
+This document summarizes the successful completion of Phase 1, Phase 2, and Phase 3 of the legacy code deprecation plan. The TCO application now exclusively uses modern DTO-based data structures, with all legacy dictionary transformation code removed.
 
 ## Completed Phases
 
@@ -58,32 +58,117 @@ This document summarizes the successful completion of Phase 1 and Phase 2 of the
 - **Default**: False (dictionary mode)
 - **Status**: Complete and tested
 
+### Phase 3: Complete Migration and Remove Legacy Code ✅ 
+*Completed: 26/05/2025*
+
+#### 3.1 Enable DTO Mode by Default
+- **File**: `tco_app/ui/renderers/sidebar_renderer.py`
+- **Change**: Set DTO mode checkbox default value to `True`
+- **Status**: Complete
+
+#### 3.2 Remove Transformation Functions
+- **File**: `tco_app/ui/orchestration/calculation_orchestrator.py`
+- **Removed Functions**:
+  - `_transform_single_tco_result_for_ui()`
+  - `_transform_results_for_ui()`
+- **Changes**:
+  - `perform_calculations()` now always returns DTOs via `_prepare_dto_results()`
+  - Removed conditional logic for DTO/dictionary modes
+- **Status**: Complete
+
+#### 3.3 Remove Feature Flag
+- **File**: `tco_app/ui/renderers/sidebar_renderer.py`
+- **Changes**:
+  - Removed "Advanced Settings" expander
+  - Removed DTO mode checkbox
+  - Application now always uses DTO mode
+- **Status**: Complete
+
+#### 3.4 Testing
+- **Test Scripts Run**:
+  - `utility_scripts/test_dto_mode.py` - ✅ Passed
+  - `utility_scripts/test_cost_breakdown_dto.py` - ✅ Passed
+- **Application Testing**:
+  - Streamlit app starts and runs correctly
+  - All calculations produce expected results
+- **Status**: Complete
+
+### Phase 3.5: Final Cleanup ✅
+*Completed: 26/05/2025*
+
+#### 3.5.1 Update Test Scripts
+- **Files Updated**:
+  - `utility_scripts/test_dto_mode.py` - Removed dual-mode testing
+  - `utility_scripts/test_cost_breakdown_dto.py` - Removed dual-mode testing
+- **Changes**:
+  - Removed references to dictionary mode
+  - Simplified to test only DTO functionality
+- **Status**: Complete
+
+#### 3.5.2 Update DTO Accessors Documentation
+- **File**: `tco_app/ui/utils/dto_accessors.py`
+- **Changes**:
+  - Updated module docstring to remove "migration period" references
+  - Simplified function docstrings
+  - Kept backward compatibility for safety
+- **Status**: Complete
+
+#### 3.5.3 Clean Up Sensitivity Page
+- **File**: `tco_app/ui/pages/sensitivity.py`
+- **Changes**:
+  - Removed `use_dto_sensitivity` session state check
+  - Always uses `_perform_analysis_with_dtos()`
+  - Removed old `_perform_analysis()` function
+  - Removed import of `perform_sensitivity_analysis`
+- **Status**: Complete
+
+#### 3.5.4 Verification
+- **All tests pass**: ✅
+- **Application runs correctly**: ✅
+- **No references to old mode switching**: ✅
+
+#### 3.5.5 Remove Deprecated Functions
+- **File**: `tco_app/domain/sensitivity/metrics.py`
+- **Changes**:
+  - Removed deprecated `calculate_comparative_metrics()` function
+  - Removed unused helper functions `adjust_upfront_costs()` and `accumulate_operating_costs()`
+  - Updated imports in `__init__.py`
+- **Status**: Complete
+
+#### 3.5.6 Update Test Files
+- **File**: `tco_app/tests/unit/domain/sensitivity/test_metrics.py`
+- **Changes**:
+  - Removed tests for deprecated functions
+  - Updated to only test DTO-based functions
+  - Fixed test fixtures to match DTO structure
+- **Status**: Complete
+
 ## Technical Achievements
 
-### 1. Dual-Mode Support
-The application now supports both dictionary and DTO modes seamlessly:
-- Dictionary mode: Legacy behavior for stability
-- DTO mode: Modern, type-safe, performant
+### 1. Full DTO Migration
+The application now exclusively uses DTOs:
+- No more dictionary transformations in the critical path
+- Direct attribute access for all data
+- Type-safe throughout the codebase
 
-### 2. Zero Breaking Changes
-All changes maintain backward compatibility:
-- Existing code continues to work
-- New code can opt into DTO mode
-- Gradual migration path established
+### 2. Code Simplification
+Significant reduction in code complexity:
+- Removed ~200 lines of transformation code
+- Simplified orchestrator logic
+- Cleaner data flow
 
-### 3. Comprehensive Testing
-- Unit tests for all new functions
-- Integration tests for both modes
-- Test scripts verify compatibility:
-  - `utility_scripts/test_dto_mode.py`
-  - `utility_scripts/test_cost_breakdown_dto.py`
-
-### 4. Performance Ready
+### 3. Performance Improvements
 DTO mode provides:
 - Direct attribute access (no dictionary lookups)
 - Reduced memory usage (no duplicate structures)
 - Better IDE support and autocomplete
 - Type checking at development time
+
+### 4. Maintainability
+- Single source of truth for data structures
+- Clear, documented interfaces
+- Comprehensive test coverage
+- Easy to debug and extend
 
 ## Key Files Modified
 
@@ -97,8 +182,8 @@ DTO mode provides:
 - `tco_app/services/tco_calculation_service.py`
 
 ### UI Layer
-- `tco_app/ui/orchestration/calculation_orchestrator.py`
-- `tco_app/ui/renderers/sidebar_renderer.py`
+- `tco_app/ui/orchestration/calculation_orchestrator.py` (simplified)
+- `tco_app/ui/renderers/sidebar_renderer.py` (removed feature flag)
 - `tco_app/ui/utils/dto_accessors.py` (new)
 - `tco_app/ui/pages/cost_breakdown.py`
 - `tco_app/ui/pages/sensitivity.py`
@@ -110,36 +195,46 @@ DTO mode provides:
 
 ## Remaining Work
 
-### Phase 3: Cleanup and Optimization
-1. Enable DTO mode by default
-2. Remove transformation functions after stability period
-3. Clean up conditional logic
-4. Update documentation
-
-### Phase 4: Battery Enhancement
+### Phase 4: Battery Enhancement (Optional)
 1. Enhance battery replacement calculations
 2. Add detailed battery replacement results
 3. Use in price parity calculations
 
+### Documentation Updates
+1. Update API documentation to reflect DTO-only approach
+2. Update developer guides
+3. Remove references to dictionary format
+
 ## Metrics and Validation
 
 ### Correctness
-- ✅ All calculations produce identical results in both modes
+- ✅ All calculations produce identical results
 - ✅ No regression in functionality
 - ✅ All existing tests pass
 
 ### Code Quality
-- ✅ Type-safe data access with DTOs
-- ✅ Clean accessor pattern for compatibility
-- ✅ Feature flag for safe rollout
+- ✅ Type-safe data access throughout
+- ✅ No legacy transformation code
+- ✅ Single mode of operation
+
+### Performance
+- ✅ Direct attribute access
+- ✅ No duplicate data structures
+- ✅ Reduced memory footprint
 
 ### User Experience
 - ✅ No visible changes to end users
-- ✅ Optional performance mode available
-- ✅ Smooth migration path
+- ✅ Improved performance
+- ✅ Cleaner, simpler codebase
 
 ## Conclusion
 
-The legacy code deprecation project has successfully modernized the TCO application's data layer while maintaining complete backward compatibility. The dual-mode approach allows for a safe, gradual transition to the modern DTO-based architecture. With comprehensive testing and a feature flag system in place, the application is ready for production use of the new DTO mode.
+The legacy code deprecation project has been successfully completed through Phase 3. The TCO application now exclusively uses a modern, type-safe DTO-based architecture. All legacy dictionary transformation code has been removed, resulting in a cleaner, more performant, and more maintainable codebase.
 
-The remaining cleanup work can be done once DTO mode has been proven stable in production, completing the transition to a fully modern, type-safe codebase.
+The application is now:
+- **Simpler**: One way of working with data
+- **Faster**: Direct attribute access, no transformations
+- **Safer**: Type-checked DTOs throughout
+- **Cleaner**: ~200 lines of legacy code removed
+
+The modernisation is complete and the application is ready for future enhancements.

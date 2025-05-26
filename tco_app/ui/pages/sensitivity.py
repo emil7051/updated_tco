@@ -21,7 +21,6 @@ try:
     
     from tco_app.ui.context import get_context
     from tco_app.domain.sensitivity import (
-        perform_sensitivity_analysis, 
         perform_sensitivity_analysis_with_dtos, 
         create_sensitivity_adapter
     )
@@ -58,23 +57,29 @@ except ImportError as e:
 def render():
     """Render sensitivity analysis page."""
     try:
-        # Step 1: Load and validate context
-        context = SensitivityContext.from_context(get_context())
+        # Step 1: Load full context once at the beginning
+        full_context = get_context()
+        
+        # Step 2: Extract externalities data for later use
+        externalities_data = full_context.get('externalities_data', None)
+        
+        # Step 3: Create SensitivityContext from the full context
+        context = SensitivityContext.from_context(full_context)
 
-        # Step 2: Display header and info
+        # Step 4: Display header and info
         _display_header()
 
-        # Step 3: Get parameter selection
+        # Step 5: Get parameter selection
         sensitivity_param = _get_parameter_selection()
 
-        # Step 4: Initialize components
+        # Step 6: Initialize components
         range_calculator = ParameterRangeCalculator(num_points=11)
 
-        # Step 5: Perform analysis based on selection
+        # Step 7: Perform analysis based on selection
         if sensitivity_param == "Annual Distance (km) with Payload Effect":
             _display_payload_sensitivity(context, range_calculator)
         else:
-            _display_parameter_sensitivity(sensitivity_param, context, range_calculator)
+            _display_parameter_sensitivity(sensitivity_param, context, range_calculator, externalities_data)
             
     except Exception as e:
         st.error(f"Error rendering sensitivity page: {str(e)}")
@@ -103,6 +108,7 @@ def _get_parameter_selection() -> str:
             "Discount Rate (%)",
             "Annual Distance (km) with Payload Effect",
         ],
+        key="sensitivity_parameter_selector",
     )
 
 
@@ -139,6 +145,7 @@ def _display_parameter_sensitivity(
     param_type: str,
     context: SensitivityContext,
     range_calculator: ParameterRangeCalculator,
+    externalities_data: dict,
 ):
     """Display standard parameter sensitivity analysis."""
     # Calculate parameter range based on type
@@ -146,13 +153,8 @@ def _display_parameter_sensitivity(
 
     # Perform sensitivity analysis
     with st.spinner(f"Calculating sensitivity for {param_type}…"):
-        # Check if we should use the new DTO-based approach
-        use_new_approach = st.session_state.get("use_dto_sensitivity", False)
-        
-        if use_new_approach:
-            sensitivity_results = _perform_analysis_with_dtos(param_type, param_range, context)
-        else:
-            sensitivity_results = _perform_analysis(param_type, param_range, context)
+        # Always use the DTO-based approach
+        sensitivity_results = _perform_analysis_with_dtos(param_type, param_range, context, externalities_data)
 
         # Create and display chart
         chart = create_sensitivity_chart(
@@ -200,53 +202,19 @@ def _calculate_parameter_range(
     return range_methods[param_type]()
 
 
-def _perform_analysis(
-    param_type: str, param_range: List[float], context: SensitivityContext
-) -> dict:
-    """Perform sensitivity analysis for given parameter."""
-    return perform_sensitivity_analysis(
-        param_type,
-        param_range,
-        context.bev_vehicle_data,
-        context.diesel_vehicle_data,
-        context.bev_fees,
-        context.diesel_fees,
-        context.charging_options,
-        context.infrastructure_options,
-        context.financial_params_with_ui,
-        context.battery_params_with_ui,
-        context.emission_factors,
-        context.incentives,
-        context.selected_charging,
-        context.selected_infrastructure,
-        context.annual_kms,
-        context.truck_life_years,
-        context.discount_rate,
-        context.fleet_size,
-        context.charging_mix,
-        context.apply_incentives,
-    )
-
-
 def _perform_analysis_with_dtos(
-    param_type: str, param_range: List[float], context: SensitivityContext
+    param_type: str, param_range: List[float], context: SensitivityContext, externalities_data: dict
 ) -> dict:
     """Perform sensitivity analysis using new DTO-based approach."""
-    # Get externalities data from context - check if it exists
-    externalities_data = getattr(context, 'externalities_data', None)
+    # If externalities_data is None, load it as a fallback
     if externalities_data is None:
-        # Try to get from the full context
-        full_context = get_context()
-        externalities_data = full_context.get('externalities_data', None)
-        if externalities_data is None:
-            # Create a fallback repository to get externalities
-            # Import here to avoid circular imports and containerisation issues
-            import tco_app.repositories as repos
-            from tco_app.src.data_loading import load_data
-            
-            data_tables = load_data()
-            params_repo = repos.ParametersRepository(data_tables)
-            externalities_data = params_repo.get_externalities_data()
+        # Import here to avoid circular imports and containerisation issues
+        import tco_app.repositories as repos
+        from tco_app.src.data_loading import load_data
+        
+        data_tables = load_data()
+        params_repo = repos.ParametersRepository(data_tables)
+        externalities_data = params_repo.get_externalities_data()
     
     # Create calculation requests using adapter
     bev_request, diesel_request = create_sensitivity_adapter(

@@ -47,19 +47,18 @@ def create_sensitivity_chart(
 
     current_value = None
     if parameter == "Annual Distance (km)":
-        current_value = bev_results["annual_kms"]
+        current_value = getattr(bev_results, "annual_kms", None)
     elif parameter == "Diesel Price ($/L)":
-        current_value = (
-            diesel_results["vehicle_data"].get(ParameterKeys.DIESEL_PRICE)
-            if "vehicle_data" in diesel_results
-            else None
-        )
+        if hasattr(diesel_results, "vehicle_data") and diesel_results.vehicle_data is not None:
+            current_value = diesel_results.vehicle_data.get(ParameterKeys.DIESEL_PRICE)
+        else:
+            current_value = None
     elif parameter == "Vehicle Lifetime (years)":
-        current_value = bev_results["truck_life_years"]
+        current_value = getattr(bev_results, "truck_life_years", None)
     elif parameter == "Discount Rate (%)":
-        current_value = bev_results.get("discount_rate")
+        current_value = getattr(bev_results, "discount_rate", None)
     elif parameter == "Electricity Price ($/kWh)":
-        current_value = bev_results.get("weighted_electricity_price")
+        current_value = getattr(bev_results, "weighted_electricity_price", None)
 
     if current_value is not None and current_value in param_range:
         fig.add_vline(

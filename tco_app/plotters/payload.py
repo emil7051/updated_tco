@@ -10,10 +10,15 @@ from tco_app.src.config import UI_CONFIG
 def create_payload_comparison_chart(payload_metrics, bev_results, diesel_results):
     """Stacked bar chart showing the impact of payload penalty on TCO."""
     fig = go.Figure()
+    
+    # Get TCO values from DTOs
+    diesel_tco = getattr(diesel_results, "tco_total_lifetime", 0)
+    bev_tco = getattr(bev_results, "tco_total_lifetime", 0)
+    
     fig.add_trace(
         go.Bar(
             x=["Diesel"],
-            y=[diesel_results["tco"]["npv_total_cost"]],
+            y=[diesel_tco],
             name="Total TCO",
             marker_color="#ff7f0e",
         )
@@ -21,10 +26,7 @@ def create_payload_comparison_chart(payload_metrics, bev_results, diesel_results
     fig.add_trace(
         go.Bar(
             x=["BEV (Standard)", "BEV (Payload-Adjusted)"],
-            y=[
-                bev_results["tco"]["npv_total_cost"],
-                bev_results["tco"]["npv_total_cost"],
-            ],
+            y=[bev_tco, bev_tco],
             name="Base TCO",
             marker_color="#1f77b4",
         )
@@ -57,29 +59,47 @@ def create_payload_sensitivity_chart(
     """Show how payload penalty affects TCO ratio at different annual distances."""
     results = []
     for distance in distances:
-        bev_temp, diesel_temp = copy.deepcopy(bev_results), copy.deepcopy(
-            diesel_results
-        )
-        bev_temp["annual_kms"] = distance
-        diesel_temp["annual_kms"] = distance
+        # Create temporary dictionaries to work with the existing payload calculation
+        # Since calculate_payload_penalty_costs expects dictionaries, we'll create them
+        bev_temp = {
+            "annual_kms": distance,
+            "energy_cost_per_km": getattr(bev_results, "energy_cost_per_km", 0),
+            "annual_costs": getattr(bev_results, "annual_costs_breakdown", {}).copy(),
+            "tco": {
+                "npv_total_cost": getattr(bev_results, "tco_total_lifetime", 0),
+            },
+            "vehicle_data": getattr(bev_results, "vehicle_data", {}),
+        }
+        
+        diesel_temp = {
+            "annual_kms": distance,
+            "energy_cost_per_km": getattr(diesel_results, "energy_cost_per_km", 0),
+            "annual_costs": getattr(diesel_results, "annual_costs_breakdown", {}).copy(),
+            "tco": {
+                "npv_total_cost": getattr(diesel_results, "tco_total_lifetime", 0),
+            },
+            "vehicle_data": getattr(diesel_results, "vehicle_data", {}),
+        }
 
-        bev_annual_energy = bev_results["energy_cost_per_km"] * distance
-        diesel_annual_energy = diesel_results["energy_cost_per_km"] * distance
+        # Calculate annual energy costs
+        bev_annual_energy = bev_temp["energy_cost_per_km"] * distance
+        diesel_annual_energy = diesel_temp["energy_cost_per_km"] * distance
         bev_temp["annual_costs"]["annual_energy_cost"] = bev_annual_energy
         diesel_temp["annual_costs"]["annual_energy_cost"] = diesel_annual_energy
 
+        # Update annual operating costs
         bev_temp["annual_costs"]["annual_operating_cost"] = (
             bev_annual_energy
-            + bev_temp["annual_costs"]["annual_maintenance_cost"]
-            + bev_temp["annual_costs"]["insurance_annual"]
-            + bev_temp["annual_costs"]["registration_annual"]
+            + bev_temp["annual_costs"].get("annual_maintenance_cost", 0)
+            + bev_temp["annual_costs"].get("insurance_annual", 0)
+            + bev_temp["annual_costs"].get("registration_annual", 0)
         )
 
         diesel_temp["annual_costs"]["annual_operating_cost"] = (
             diesel_annual_energy
-            + diesel_temp["annual_costs"]["annual_maintenance_cost"]
-            + diesel_temp["annual_costs"]["insurance_annual"]
-            + diesel_temp["annual_costs"]["registration_annual"]
+            + diesel_temp["annual_costs"].get("annual_maintenance_cost", 0)
+            + diesel_temp["annual_costs"].get("insurance_annual", 0)
+            + diesel_temp["annual_costs"].get("registration_annual", 0)
         )
 
         payload_metrics = calculate_payload_penalty_costs(

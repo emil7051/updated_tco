@@ -18,7 +18,8 @@ class VehicleSelectionBuilder:
         vehicle_models = self.data_tables["vehicle_models"]
 
         self.vehicle_type = st.selectbox(
-            "Vehicle Type", ["Light Rigid", "Medium Rigid", "Articulated"]
+            "Vehicle Type", ["Light Rigid", "Medium Rigid", "Articulated"],
+            key="vehicle_type_selector",
         )
 
         # Filter vehicles by type
@@ -35,6 +36,7 @@ class VehicleSelectionBuilder:
             format_func=lambda x: vehicle_models[
                 vehicle_models[DataColumns.VEHICLE_ID] == x
             ].iloc[0][DataColumns.VEHICLE_MODEL],
+            key="bev_model_selector",
         )
 
         # Get comparison diesel

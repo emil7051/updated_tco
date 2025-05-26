@@ -1,7 +1,7 @@
-"""DTO accessor utilities for gradual migration from dictionaries to DTOs.
+"""DTO accessor utilities for safe data access.
 
-These utilities provide safe access to data that works with both DTO objects
-and dictionary structures during the migration period.
+These utilities provide safe access to data from DTOs with fallback handling
+for backwards compatibility with dictionary structures when needed.
 """
 
 from typing import Dict, Optional, Union
@@ -10,28 +10,28 @@ from tco_app.src.constants import Drivetrain, DataColumns
 
 
 def get_tco_per_km(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for TCO per km that works with both DTOs and dicts."""
+    """Safe accessor for TCO per km."""
     if isinstance(result, TCOResult):
         return result.tco_per_km
     return result.get("tco", {}).get("tco_per_km", 0.0)
 
 
 def get_tco_per_tonne_km(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for TCO per tonne-km that works with both DTOs and dicts."""
+    """Safe accessor for TCO per tonne-km."""
     if isinstance(result, TCOResult):
         return result.tco_per_tonne_km
     return result.get("tco", {}).get("tco_per_tonne_km", 0.0)
 
 
 def get_tco_lifetime(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for lifetime TCO that works with both DTOs and dicts."""
+    """Safe accessor for lifetime TCO."""
     if isinstance(result, TCOResult):
         return result.tco_total_lifetime
     return result.get("tco", {}).get("tco_lifetime", 0.0)
 
 
 def get_tco_annual(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for annual TCO that works with both DTOs and dicts."""
+    """Safe accessor for annual TCO."""
     if isinstance(result, TCOResult):
         # Calculate annual from lifetime if not directly available
         if hasattr(result, "tco_annual"):
@@ -43,84 +43,84 @@ def get_tco_annual(result: Union[TCOResult, Dict]) -> float:
 
 
 def get_acquisition_cost(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for acquisition cost that works with both DTOs and dicts."""
+    """Safe accessor for acquisition cost."""
     if isinstance(result, TCOResult):
         return result.acquisition_cost
     return result.get("acquisition_cost", 0.0)
 
 
 def get_energy_cost_per_km(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for energy cost per km that works with both DTOs and dicts."""
+    """Safe accessor for energy cost per km."""
     if isinstance(result, TCOResult):
         return result.energy_cost_per_km
     return result.get("energy_cost_per_km", 0.0)
 
 
 def get_annual_energy_cost(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for annual energy cost that works with both DTOs and dicts."""
+    """Safe accessor for annual energy cost."""
     if isinstance(result, TCOResult):
         return result.annual_costs_breakdown.get("annual_energy_cost", 0.0)
     return result.get("annual_costs", {}).get("annual_energy_cost", 0.0)
 
 
 def get_annual_maintenance_cost(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for annual maintenance cost that works with both DTOs and dicts."""
+    """Safe accessor for annual maintenance cost."""
     if isinstance(result, TCOResult):
         return result.annual_costs_breakdown.get("annual_maintenance_cost", 0.0)
     return result.get("annual_costs", {}).get("annual_maintenance_cost", 0.0)
 
 
 def get_annual_operating_cost(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for annual operating cost that works with both DTOs and dicts."""
+    """Safe accessor for annual operating cost."""
     if isinstance(result, TCOResult):
         return result.annual_operating_cost
     return result.get("annual_costs", {}).get("annual_operating_cost", 0.0)
 
 
 def get_battery_replacement_cost(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for battery replacement cost that works with both DTOs and dicts."""
+    """Safe accessor for battery replacement cost."""
     if isinstance(result, TCOResult):
         return result.npv_battery_replacement_cost
     return result.get("battery_replacement", 0.0)
 
 
 def get_residual_value(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for residual value that works with both DTOs and dicts."""
+    """Safe accessor for residual value."""
     if isinstance(result, TCOResult):
         return result.residual_value
     return result.get("residual_value", 0.0)
 
 
 def get_co2_per_km(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for CO2 per km that works with both DTOs and dicts."""
+    """Safe accessor for CO2 per km."""
     if isinstance(result, TCOResult):
         return result.emissions_breakdown.get("co2_per_km", 0.0)
     return result.get("emissions", {}).get("co2_per_km", 0.0)
 
 
 def get_annual_emissions(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for annual emissions that works with both DTOs and dicts."""
+    """Safe accessor for annual emissions."""
     if isinstance(result, TCOResult):
         return result.emissions_breakdown.get("annual_emissions", 0.0)
     return result.get("emissions", {}).get("annual_emissions", 0.0)
 
 
 def get_lifetime_emissions(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for lifetime emissions that works with both DTOs and dicts."""
+    """Safe accessor for lifetime emissions."""
     if isinstance(result, TCOResult):
         return result.emissions_breakdown.get("lifetime_emissions", 0.0)
     return result.get("emissions", {}).get("lifetime_emissions", 0.0)
 
 
 def get_social_tco_lifetime(result: Union[TCOResult, Dict]) -> float:
-    """Safe accessor for social TCO lifetime that works with both DTOs and dicts."""
+    """Safe accessor for social TCO lifetime."""
     if isinstance(result, TCOResult):
         return result.social_tco_total_lifetime
     return result.get("social_tco", {}).get("social_tco_lifetime", 0.0)
 
 
 def get_infrastructure_npv_per_vehicle(result: Union[TCOResult, Dict]) -> Optional[float]:
-    """Safe accessor for infrastructure NPV per vehicle that works with both DTOs and dicts."""
+    """Safe accessor for infrastructure NPV per vehicle."""
     if isinstance(result, TCOResult):
         if result.infrastructure_costs_breakdown:
             return result.infrastructure_costs_breakdown.get("npv_per_vehicle")
@@ -133,14 +133,14 @@ def get_infrastructure_npv_per_vehicle(result: Union[TCOResult, Dict]) -> Option
 
 
 def get_weighted_electricity_price(result: Union[TCOResult, Dict]) -> Optional[float]:
-    """Safe accessor for weighted electricity price that works with both DTOs and dicts."""
+    """Safe accessor for weighted electricity price."""
     if isinstance(result, TCOResult):
         return result.weighted_electricity_price
     return result.get("weighted_electricity_price")
 
 
 def get_vehicle_name(result: Union[TCOResult, Dict]) -> str:
-    """Safe accessor for vehicle name that works with both DTOs and dicts."""
+    """Safe accessor for vehicle name."""
     if isinstance(result, TCOResult):
         return result.vehicle_id
     
@@ -154,7 +154,7 @@ def get_vehicle_name(result: Union[TCOResult, Dict]) -> str:
 
 
 def get_drivetrain(result: Union[TCOResult, Dict]) -> str:
-    """Safe accessor for drivetrain that works with both DTOs and dicts."""
+    """Safe accessor for drivetrain."""
     if isinstance(result, TCOResult):
         # The orchestrator adds vehicle_data to the DTO dynamically
         if hasattr(result, 'vehicle_data') and result.vehicle_data is not None:
@@ -174,28 +174,28 @@ def get_drivetrain(result: Union[TCOResult, Dict]) -> str:
 
 # Comparison-specific accessors
 def get_tco_savings(comparison: Union[ComparisonResult, Dict]) -> float:
-    """Safe accessor for TCO savings that works with both DTOs and dicts."""
+    """Safe accessor for TCO savings."""
     if isinstance(comparison, ComparisonResult):
         return comparison.tco_savings_lifetime
     return comparison.get("comparison_metrics", {}).get("emission_savings_lifetime", 0.0)
 
 
 def get_emissions_reduction(comparison: Union[ComparisonResult, Dict]) -> float:
-    """Safe accessor for emissions reduction that works with both DTOs and dicts."""
+    """Safe accessor for emissions reduction."""
     if isinstance(comparison, ComparisonResult):
         return comparison.emissions_reduction_lifetime_co2e
     return comparison.get("comparison_metrics", {}).get("emission_savings_lifetime", 0.0)
 
 
 def get_payback_period(comparison: Union[ComparisonResult, Dict]) -> Optional[float]:
-    """Safe accessor for payback period that works with both DTOs and dicts."""
+    """Safe accessor for payback period."""
     if isinstance(comparison, ComparisonResult):
         return comparison.payback_period_years
     return comparison.get("comparison_metrics", {}).get("price_parity_year")
 
 
 def get_upfront_cost_difference(comparison: Union[ComparisonResult, Dict]) -> float:
-    """Safe accessor for upfront cost difference that works with both DTOs and dicts."""
+    """Safe accessor for upfront cost difference."""
     if isinstance(comparison, ComparisonResult):
         return comparison.upfront_cost_difference
     return comparison.get("comparison_metrics", {}).get("upfront_cost_difference", 0.0)
@@ -203,7 +203,7 @@ def get_upfront_cost_difference(comparison: Union[ComparisonResult, Dict]) -> fl
 
 # Infrastructure cost accessors
 def get_infrastructure_cost(result: Union[TCOResult, Dict], key: str, default: float = 0.0) -> float:
-    """Safe accessor for infrastructure cost fields that works with both DTOs and dicts."""
+    """Safe accessor for infrastructure cost fields."""
     if isinstance(result, TCOResult):
         if result.infrastructure_costs_breakdown:
             return result.infrastructure_costs_breakdown.get(key, default)
@@ -265,7 +265,7 @@ def get_infrastructure_subsidy_amount(result: Union[TCOResult, Dict]) -> float:
 
 # Charging requirement accessors
 def get_charging_requirement(result: Union[TCOResult, Dict], key: str, default: float = 0.0) -> float:
-    """Safe accessor for charging requirement fields that works with both DTOs and dicts."""
+    """Safe accessor for charging requirement fields."""
     if isinstance(result, TCOResult):
         if result.charging_requirements:
             return result.charging_requirements.get(key, default)

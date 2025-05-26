@@ -94,6 +94,7 @@ class ChargingConfigurationBuilder:
             .loc[:, [DataColumns.CHARGING_APPROACH, DataColumns.PER_KWH_PRICE]]
             .apply(lambda r: f"{r.iloc[0]} (${r.iloc[1]:.2f}/kWh)", axis=1)
             .iloc[0],
+            key="primary_charging_selector",
         )
 
     def build(self) -> Dict[str, Any]:
@@ -126,6 +127,7 @@ class InfrastructureBuilder:
             format_func=lambda x: infrastructure_options[
                 infrastructure_options[DataColumns.INFRASTRUCTURE_ID] == x
             ].iloc[0][DataColumns.INFRASTRUCTURE_DESCRIPTION],
+            key="infrastructure_selector",
         )
 
         self.fleet_size = st.number_input(
