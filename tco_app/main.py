@@ -11,8 +11,20 @@ from pathlib import Path
 # imported when this file is executed directly (e.g. ``streamlit run tco_app/main.py``)
 # This allows imports like `from tco_app.ui.pages import ...`
 _project_root = Path(__file__).resolve().parent.parent
+
+# Handle both local and containerised environments
+# In containerised environments, the path might be /mount/src/updated_tco
+# So we need to ensure both the actual root and potential mount points are in path
 if _project_root.as_posix() not in sys.path:
     sys.path.insert(0, _project_root.as_posix())
+
+# Also check if we're in a container environment and add appropriate paths
+current_file = Path(__file__).resolve()
+if '/mount/src/' in str(current_file):
+    # We're in a container, add the mount source directory
+    mount_root = Path('/mount/src/updated_tco')
+    if mount_root.exists() and mount_root.as_posix() not in sys.path:
+        sys.path.insert(0, mount_root.as_posix())
 
 from tco_app.src import UI_CONFIG, Dict, st
 
