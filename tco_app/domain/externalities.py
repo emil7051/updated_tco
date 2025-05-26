@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from tco_app.src.constants import DataColumns, Drivetrain
+from tco_app.src.constants import DataColumns, Drivetrain, FuelType
 from tco_app.src.utils.safe_operations import safe_division
 
 """Externalities domain – emissions & societal cost helpers."""
@@ -9,8 +9,9 @@ from typing import Any, Dict, Union
 
 from tco_app.domain.energy import calculate_emissions  # Reuse shared impl
 from tco_app.domain.finance import calculate_npv
-from tco_app.src import pd
+from tco_app.src import EXTERNALITY_CONSTANTS, pd
 from tco_app.src.utils.pandas_helpers import to_scalar
+from tco_app.src.config import UNIT_CONVERSIONS
 
 __all__ = [
     "calculate_emissions",
@@ -38,25 +39,25 @@ def _compute_detailed_externalities(
     drivetrain = vehicle_data[DataColumns.VEHICLE_DRIVETRAIN]
 
     vehicle_externalities = externalities_data[
-        (externalities_data["vehicle_class"] == vehicle_class)
-        & (externalities_data["drivetrain"] == drivetrain)
+        (externalities_data[DataColumns.VEHICLE_CLASS] == vehicle_class)
+        & (externalities_data[DataColumns.VEHICLE_DRIVETRAIN] == drivetrain)
     ]
 
     total_entry = vehicle_externalities[
-        vehicle_externalities["pollutant_type"] == "externalities_total"
+        vehicle_externalities[DataColumns.POLLUTANT_TYPE] == "externalities_total"
     ]
     total_externality_per_km = (
-        total_entry.iloc[0]["cost_per_km"]
+        total_entry.iloc[0][DataColumns.COST_PER_KM]
         if not total_entry.empty
-        else vehicle_externalities["cost_per_km"].sum()
+        else vehicle_externalities[DataColumns.COST_PER_KM].sum()
     )
 
     breakdown: Dict[str, Any] = {}
     for _, row in vehicle_externalities.iterrows():
-        if row["pollutant_type"] == "externalities_total":
+        if row[DataColumns.POLLUTANT_TYPE] == "externalities_total":
             continue
-        pollutant = row["pollutant_type"]
-        cost_per_km = row["cost_per_km"]
+        pollutant = row[DataColumns.POLLUTANT_TYPE]
+        cost_per_km = row[DataColumns.COST_PER_KM]
         annual_cost = cost_per_km * annual_kms
         lifetime_cost = annual_cost * truck_life_years
         npv_cost = calculate_npv(annual_cost, discount_rate, truck_life_years)
@@ -79,27 +80,38 @@ def _compute_co2_proxy(
 ) -> tuple[float, Dict[str, Any]]:
     """Fallback computation using CO₂ intensity as a proxy."""
 
-    SCC_AUD_PER_TONNE = 100.0
-
     fuel_type = (
-        "electricity"
+        FuelType.ELECTRICITY
         if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV
-        else "diesel"
+        else FuelType.DIESEL
     )
 
-    match = emission_factors[emission_factors["fuel_type"] == fuel_type]
-    if match.empty:
-        co2_per_unit = emission_factors["co2_per_unit"].mean()
-    else:
-        co2_per_unit = float(match.iloc[0]["co2_per_unit"])
+    # Check if we have the required columns for CO2 proxy calculation
+    has_fuel_type = DataColumns.FUEL_TYPE.value in emission_factors.columns or "fuel_type" in emission_factors.columns
+    has_co2_per_unit = DataColumns.CO2_PER_UNIT.value in emission_factors.columns or "co2_per_unit" in emission_factors.columns
+    
+    if not has_fuel_type or not has_co2_per_unit:
+        # If we don't have the required columns, return zero externality
+        return 0.0, {}
 
-    if fuel_type == "diesel":
+    # Try DataColumns enum first, then fall back to hardcoded strings for backward compatibility
+    fuel_type_col = DataColumns.FUEL_TYPE.value if DataColumns.FUEL_TYPE.value in emission_factors.columns else "fuel_type"
+    co2_per_unit_col = DataColumns.CO2_PER_UNIT.value if DataColumns.CO2_PER_UNIT.value in emission_factors.columns else "co2_per_unit"
+    
+    match = emission_factors[emission_factors[fuel_type_col] == fuel_type]
+    if match.empty:
+        co2_per_unit = emission_factors[co2_per_unit_col].mean()
+    else:
+        co2_per_unit = float(match.iloc[0][co2_per_unit_col])
+
+    if fuel_type == FuelType.DIESEL:
         consumption_per100 = vehicle_data.get(DataColumns.LITRES_PER100KM, 0)
     else:
         consumption_per100 = vehicle_data.get(DataColumns.KWH_PER100KM, 0)
 
     co2_per_km = (consumption_per100 / 100) * co2_per_unit
-    total_externality_per_km = (co2_per_km / 1000) * SCC_AUD_PER_TONNE
+    # Convert kg CO2 per km to tonnes and multiply by SCC
+    total_externality_per_km = (co2_per_km / UNIT_CONVERSIONS.KG_TO_TONNES) * EXTERNALITY_CONSTANTS.SCC_AUD_PER_TONNE
 
     breakdown = {
         "CO2e": {
@@ -138,7 +150,7 @@ def calculate_externalities(
       asserted in the test-suite).
     """
 
-    if {"vehicle_class", "drivetrain", "pollutant_type", "cost_per_km"}.issubset(
+    if {DataColumns.VEHICLE_CLASS.value, DataColumns.VEHICLE_DRIVETRAIN.value, DataColumns.POLLUTANT_TYPE.value, DataColumns.COST_PER_KM.value}.issubset(
         externalities_data.columns
     ):
         total_externality_per_km, externality_breakdown = (

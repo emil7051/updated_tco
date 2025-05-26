@@ -2,8 +2,8 @@
 
 from typing import Optional, Union
 
-from tco_app.src import CALC_DEFAULTS, EMISSION_CONSTANTS, Dict, pd
-from tco_app.src.constants import DataColumns, Drivetrain, ParameterKeys
+from tco_app.src import CALC_DEFAULTS, Dict, pd, np
+from tco_app.src.constants import DataColumns, Drivetrain, EmissionStandard, FuelType, ParameterKeys
 from tco_app.src.utils.energy import weighted_electricity_price
 from tco_app.src.utils.safe_operations import (
     safe_division,
@@ -11,6 +11,8 @@ from tco_app.src.utils.safe_operations import (
     safe_get_parameter,
     safe_iloc_zero,
 )
+from tco_app.src.config import UNIT_CONVERSIONS
+from tco_app.src.utils.pandas_helpers import safe_get_first, to_scalar
 
 __all__ = [
     "weighted_electricity_price",
@@ -40,7 +42,7 @@ def calculate_energy_costs(
             charging_option = safe_get_charging_option(charging_data, selected_charging)
             electricity_price = charging_option[DataColumns.PER_KWH_PRICE]
         energy_cost_per_km = (
-            vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_price
+            vehicle_data[DataColumns.KWH_PER100KM] / UNIT_CONVERSIONS.PERCENTAGE_TO_DECIMAL * electricity_price
         )
     elif vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.PHEV:
         # PHEV uses both electricity and diesel
@@ -59,27 +61,27 @@ def calculate_energy_costs(
             DataColumns.RANGE_KM, 50
         )  # Default 50km if not specified
         # Assume typical daily driving of 100km, so electric portion is electric_range/100
-        electric_ratio = min(electric_range / 100, 1.0)
+        electric_ratio = min(electric_range / UNIT_CONVERSIONS.PERCENTAGE_TO_DECIMAL, 1.0)
         diesel_ratio = 1.0 - electric_ratio
 
         # Calculate combined cost
         electric_cost = (
             vehicle_data[DataColumns.KWH_PER100KM]
-            / 100
+            / UNIT_CONVERSIONS.PERCENTAGE_TO_DECIMAL
             * electricity_price
             * electric_ratio
         )
         diesel_cost = (
             vehicle_data[DataColumns.LITRES_PER100KM]
-            / 100
+            / UNIT_CONVERSIONS.PERCENTAGE_TO_DECIMAL
             * diesel_price
-            * diesel_ratio
+            * (1 - electric_ratio)
         )
         energy_cost_per_km = electric_cost + diesel_cost
     else:
         diesel_price = safe_get_parameter(financial_params, ParameterKeys.DIESEL_PRICE)
         energy_cost_per_km = (
-            vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_price
+            vehicle_data[DataColumns.LITRES_PER100KM] / UNIT_CONVERSIONS.PERCENTAGE_TO_DECIMAL * diesel_price
         )
     return energy_cost_per_km
 
@@ -92,27 +94,27 @@ def calculate_emissions(
 ) -> Dict[str, float]:  # noqa: D401
     """Return per-km, annual and lifetime CO₂-equivalent emissions."""
     if vehicle_data[DataColumns.VEHICLE_DRIVETRAIN] == Drivetrain.BEV:
-        electricity_ef_condition = (emission_factors["fuel_type"] == "electricity") & (
-            emission_factors["emission_standard"]
-            == EMISSION_CONSTANTS.DEFAULT_ELECTRICITY_STANDARD
+        electricity_ef_condition = (emission_factors[DataColumns.FUEL_TYPE] == FuelType.ELECTRICITY) & (
+            emission_factors[DataColumns.EMISSION_STANDARD]
+            == EmissionStandard.GRID
         )
         electricity_ef_row = safe_iloc_zero(
             emission_factors,
             electricity_ef_condition,
             context="electricity emission factor",
         )
-        electricity_ef = electricity_ef_row["co2_per_unit"]
-        co2_per_km = vehicle_data[DataColumns.KWH_PER100KM] / 100 * electricity_ef
+        electricity_ef = electricity_ef_row[DataColumns.CO2_PER_UNIT]
+        co2_per_km = vehicle_data[DataColumns.KWH_PER100KM] / UNIT_CONVERSIONS.PERCENTAGE_TO_DECIMAL * electricity_ef
     else:
-        diesel_ef_condition = (emission_factors["fuel_type"] == "diesel") & (
-            emission_factors["emission_standard"]
-            == EMISSION_CONSTANTS.DEFAULT_DIESEL_STANDARD
+        diesel_ef_condition = (emission_factors[DataColumns.FUEL_TYPE] == FuelType.DIESEL) & (
+            emission_factors[DataColumns.EMISSION_STANDARD]
+            == EmissionStandard.EURO_IV_PLUS
         )
         diesel_ef_row = safe_iloc_zero(
             emission_factors, diesel_ef_condition, context="diesel emission factor"
         )
-        diesel_ef = diesel_ef_row["co2_per_unit"]
-        co2_per_km = vehicle_data[DataColumns.LITRES_PER100KM] / 100 * diesel_ef
+        diesel_ef = diesel_ef_row[DataColumns.CO2_PER_UNIT]
+        co2_per_km = vehicle_data[DataColumns.LITRES_PER100KM] / UNIT_CONVERSIONS.PERCENTAGE_TO_DECIMAL * diesel_ef
 
     annual_emissions = co2_per_km * annual_kms
     lifetime_emissions = annual_emissions * truck_life_years
@@ -139,7 +141,7 @@ def calculate_charging_requirements(
         }
 
     daily_distance = annual_kms / CALC_DEFAULTS.DAYS_PER_YEAR
-    daily_kwh_required = daily_distance * vehicle_data[DataColumns.KWH_PER100KM] / 100
+    daily_kwh_required = daily_distance * vehicle_data[DataColumns.KWH_PER100KM] / UNIT_CONVERSIONS.PERCENTAGE_TO_DECIMAL
 
     charger_power = CALC_DEFAULTS.DEFAULT_CHARGER_POWER_KW
     if infrastructure_option is not None:

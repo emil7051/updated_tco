@@ -9,19 +9,18 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class CalculationDefaults:
-    """Default values for financial and operational calculations."""
-
-    # Financial defaults
-    DEFAULT_DISCOUNT_RATE: float = 0.07  # 7%
-    DEFAULT_TRUCK_LIFE_YEARS: int = 10
-    DEFAULT_ANNUAL_KMS: int = 50000
+    """Default values for calculations not stored in data files."""
 
     # Time constants
     DAYS_PER_YEAR: int = 365
 
-    # Infrastructure defaults
-    DEFAULT_CHARGER_POWER_KW: float = 80.0  # DC fast charger
+    # Default values when CSV data is not available
+    DEFAULT_TRUCK_LIFE_YEARS: int = 10
+    DEFAULT_ANNUAL_KMS: int = 50000
     DEFAULT_FLEET_SIZE: int = 1
+    
+    # Infrastructure defaults not in CSV
+    DEFAULT_CHARGER_POWER_KW: float = 80.0  # DC fast charger
 
 
 @dataclass(frozen=True)
@@ -46,10 +45,19 @@ class ValidationLimits:
     # Financial limits
     MIN_DISCOUNT_RATE: float = 0.01  # 1%
     MAX_DISCOUNT_RATE: float = 0.20  # 20%
+    
+    # Price input limits and steps
+    MIN_DIESEL_PRICE: float = 0.5  # AUD/L
+    MAX_DIESEL_PRICE: float = 10.0  # AUD/L
+    DIESEL_PRICE_STEP: float = 0.05  # 5 cent increments
 
     # Sensitivity analysis
     SENSITIVITY_VARIANCE_FACTOR: float = 0.5  # ±50% from base value
     DEFAULT_SENSITIVITY_POINTS: int = 11
+    SENSITIVITY_MIN_FACTOR: float = 0.7  # 70% of base value for general parameters
+    SENSITIVITY_MIN_FACTOR_STRICT: float = 0.5  # 50% of base value for annual kms
+    SENSITIVITY_MAX_FACTOR: float = 1.3  # 130% of base value
+    SENSITIVITY_MIN_DISCOUNT_RATE: float = 0.05  # 5% minimum for discount rate
 
 
 @dataclass(frozen=True)
@@ -73,6 +81,9 @@ class UIConfig:
     # Percentage allocation for charging mix
     CHARGING_MIX_STEP: int = 5  # 5% increments
     CHARGING_MIX_TOTAL: int = 100  # Must sum to 100%
+    
+    # Plotting configuration
+    PLOT_TEXT_OFFSET_FACTOR: float = 0.05  # 5% offset for text positioning
 
 
 @dataclass(frozen=True)
@@ -81,6 +92,7 @@ class PerformanceConfig:
 
     # NPV optimization threshold
     NPV_OPTIMIZATION_THRESHOLD: int = 10  # Use fast calculation for > 10 years
+    NPV_MAX_YEARS_LIMIT: int = 1000  # Maximum years for NPV calculation
 
     # Cache configuration
     DEFAULT_CACHE_SIZE: int = 128
@@ -93,16 +105,23 @@ class PerformanceConfig:
 
 
 @dataclass(frozen=True)
-class EmissionConstants:
-    """Constants for emission calculations."""
+class UnitConversions:
+    """Constants for unit conversions."""
 
-    # Grid emission standards
-    DEFAULT_ELECTRICITY_STANDARD: str = "Grid"
-    DEFAULT_DIESEL_STANDARD: str = "Euro IV+"
-
-    # Unit conversions
+    # Mass conversions
     KG_TO_TONNES: float = 1000.0
+    
+    # Percentage conversions
     PERCENTAGE_TO_DECIMAL: float = 100.0
+
+
+@dataclass(frozen=True)
+class ExternalityConstants:
+    """Constants for externality calculations."""
+    
+    # Social cost of carbon (AUD per tonne CO2e)
+    # Note: This is a policy/research constant, not from operational data
+    SCC_AUD_PER_TONNE: float = 100.0
 
 
 # Create singleton instances for easy access
@@ -110,7 +129,8 @@ CALC_DEFAULTS = CalculationDefaults()
 VALIDATION_LIMITS = ValidationLimits()
 UI_CONFIG = UIConfig()
 PERFORMANCE_CONFIG = PerformanceConfig()
-EMISSION_CONSTANTS = EmissionConstants()
+UNIT_CONVERSIONS = UnitConversions()
+EXTERNALITY_CONSTANTS = ExternalityConstants()
 
 
 # Export all configuration instances
@@ -119,10 +139,12 @@ __all__ = [
     "ValidationLimits",
     "UIConfig",
     "PerformanceConfig",
-    "EmissionConstants",
+    "UnitConversions",
+    "ExternalityConstants",
     "CALC_DEFAULTS",
     "VALIDATION_LIMITS",
     "UI_CONFIG",
     "PERFORMANCE_CONFIG",
-    "EMISSION_CONSTANTS",
+    "UNIT_CONVERSIONS",
+    "EXTERNALITY_CONSTANTS",
 ]

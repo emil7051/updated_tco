@@ -7,9 +7,10 @@ from . import constants, exceptions, utils
 # Re-export configuration instances
 from .config import (
     CALC_DEFAULTS,
-    EMISSION_CONSTANTS,
+    EXTERNALITY_CONSTANTS,
     PERFORMANCE_CONFIG,
     UI_CONFIG,
+    UNIT_CONVERSIONS,
     VALIDATION_LIMITS,
 )
 from .imports import (
@@ -66,7 +67,8 @@ __all__ = [
     "VALIDATION_LIMITS",
     "UI_CONFIG",
     "PERFORMANCE_CONFIG",
-    "EMISSION_CONSTANTS",
+    "UNIT_CONVERSIONS",
+    "EXTERNALITY_CONSTANTS",
     # Modules
     "constants",
     "exceptions",

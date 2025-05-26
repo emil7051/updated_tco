@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from tco_app.src.constants import DataColumns
 from tco_app.src.utils.safe_operations import safe_division
+from tco_app.src.config import UNIT_CONVERSIONS
 
 """Comparative BEV-vs-Diesel KPI helper, extracted to its own file."""
 
@@ -123,7 +124,7 @@ def calculate_comparative_metrics(
     bev_npv = to_scalar(bev_results["tco"]["npv_total_cost"])
     diesel_npv = to_scalar(diesel_results["tco"]["npv_total_cost"])
     abatement_cost = (
-        ((bev_npv - diesel_npv) / (emission_savings / 1000))
+        ((bev_npv - diesel_npv) / (emission_savings / UNIT_CONVERSIONS.KG_TO_TONNES))
         if emission_savings > 0
         else float("inf")
     )

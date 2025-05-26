@@ -121,11 +121,11 @@ class IncentiveModifier(ModifierBase):
 
         incentive_type, incentive_field = mod.parameter_name.split(".", 1)
 
-        mask = table["incentive_type"] == incentive_type
+        mask = table[DataColumns.INCENTIVE_TYPE] == incentive_type
         if mod.vehicle_type != "All":
-            mask &= table["vehicle_type"] == mod.vehicle_type
+            mask &= table[DataColumns.VEHICLE_TYPE] == mod.vehicle_type
         if mod.vehicle_drivetrain != "All":
-            mask &= table["drivetrain"] == mod.vehicle_drivetrain
+            mask &= table[DataColumns.VEHICLE_DRIVETRAIN] == mod.vehicle_drivetrain
 
         if mask.any():
             for idx in table[mask].index:
@@ -170,8 +170,8 @@ class ScenarioApplicationService:
                 table_name=row["parameter_table"],
                 parameter_name=row["parameter_name"],
                 parameter_value=row["parameter_value"],
-                vehicle_type=row.get("vehicle_type", "All"),
-                vehicle_drivetrain=row.get("vehicle_drivetrain", "All"),
+                vehicle_type=row.get(DataColumns.VEHICLE_TYPE, "All"),
+                vehicle_drivetrain=row.get(DataColumns.VEHICLE_DRIVETRAIN, "All"),
             )
             modifications.append(mod)
 
@@ -241,7 +241,7 @@ class ScenarioApplicationService:
             return {name: df.copy() for name, df in data_tables.items()}
 
         # Filter scenario parameters by ID
-        selected_params = scenario_params[scenario_params["scenario_id"] == scenario_id]
+        selected_params = scenario_params[scenario_params[DataColumns.SCENARIO_ID] == scenario_id]
 
         if selected_params.empty:
             logger.info(f"No parameters found for scenario {scenario_id}")

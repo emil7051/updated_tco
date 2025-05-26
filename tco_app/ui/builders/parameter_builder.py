@@ -56,7 +56,11 @@ class ParameterInputBuilder:
         )
 
         self.parameters[ParameterKeys.DIESEL_PRICE] = st.number_input(
-            "Diesel Price (AUD/L)", 0.5, 10.0, float(fin_params.diesel_price), 0.05
+            "Diesel Price (AUD/L)", 
+            VALIDATION_LIMITS.MIN_DIESEL_PRICE, 
+            VALIDATION_LIMITS.MAX_DIESEL_PRICE, 
+            float(fin_params.diesel_price), 
+            VALIDATION_LIMITS.DIESEL_PRICE_STEP
         )
 
         self.parameters[ParameterKeys.CARBON_PRICE] = st.number_input(
@@ -95,3 +99,23 @@ class ParameterInputBuilder:
     def build(self) -> Dict[str, Any]:
         """Return parameters context."""
         return self.parameters
+
+
+def build_fuel_price_input(fin_params: FinancialParameters) -> float:
+    """Build diesel fuel price input.
+
+    Args:
+        fin_params: Financial parameters with default diesel price
+
+    Returns:
+        Selected diesel fuel price
+    """
+    from tco_app.src.config import VALIDATION_LIMITS
+    
+    return st.number_input(
+        "Diesel Price (AUD/L)", 
+        VALIDATION_LIMITS.MIN_DIESEL_PRICE, 
+        VALIDATION_LIMITS.MAX_DIESEL_PRICE, 
+        float(fin_params.diesel_price), 
+        VALIDATION_LIMITS.DIESEL_PRICE_STEP
+    )

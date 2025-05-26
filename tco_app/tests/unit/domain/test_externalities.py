@@ -20,10 +20,10 @@ class TestExternalitiesDomain:
         )
         ext_df = pd.DataFrame(
             {
-                "vehicle_class": ["Rigid", "Rigid", "Rigid"],
-                "drivetrain": [Drivetrain.BEV, Drivetrain.BEV, Drivetrain.BEV],
-                "pollutant_type": ["CO2e", "NOx", "externalities_total"],
-                "cost_per_km": [0.01, 0.02, 0.05],
+                DataColumns.VEHICLE_CLASS.value: ["Rigid", "Rigid", "Rigid"],
+                DataColumns.VEHICLE_DRIVETRAIN.value: [Drivetrain.BEV, Drivetrain.BEV, Drivetrain.BEV],
+                DataColumns.POLLUTANT_TYPE.value: ["CO2e", "NOx", "externalities_total"],
+                DataColumns.COST_PER_KM.value: [0.01, 0.02, 0.05],
             }
         )
 
@@ -89,10 +89,10 @@ class TestExternalitiesDomain:
         )
         ext_df = pd.DataFrame(
             {
-                "vehicle_class": ["Rigid"],
-                "drivetrain": [Drivetrain.BEV],
-                "pollutant_type": ["CO2e"],
-                "cost_per_km": [0.1],
+                DataColumns.VEHICLE_CLASS.value: ["Rigid"],
+                DataColumns.VEHICLE_DRIVETRAIN.value: [Drivetrain.BEV],
+                DataColumns.POLLUTANT_TYPE.value: ["CO2e"],
+                DataColumns.COST_PER_KM.value: [0.1],
             }
         )
 

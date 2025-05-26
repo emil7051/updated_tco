@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 
 from tco_app.domain.finance import calculate_payload_penalty_costs
 from tco_app.src import pd
+from tco_app.src.config import UI_CONFIG
 
 
 def create_payload_comparison_chart(payload_metrics, bev_results, diesel_results):
@@ -130,7 +131,7 @@ def create_payload_sensitivity_chart(
         line=dict(color="green", width=2, dash="dash"),
     )
     fig.add_annotation(
-        x=min(distances) + (max(distances) - min(distances)) * 0.05,
+        x=min(distances) + (max(distances) - min(distances)) * UI_CONFIG.PLOT_TEXT_OFFSET_FACTOR,
         y=1.02,
         text="Break-even point (BEV = Diesel)",
         showarrow=False,

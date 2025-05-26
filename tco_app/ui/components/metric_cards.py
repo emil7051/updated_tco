@@ -1,4 +1,4 @@
-from tco_app.src import st
+from tco_app.src import st, UNIT_CONVERSIONS
 from tco_app.src.utils.pandas_helpers import to_scalar
 
 
@@ -91,7 +91,7 @@ def display_comparison_metrics(comparative_metrics):
     with col1:
         display_metric_card(
             "Lifetime CO₂ Reduction",
-            comparative_metrics["emission_savings_lifetime"] / 1000,
+            comparative_metrics["emission_savings_lifetime"] / UNIT_CONVERSIONS.KG_TO_TONNES,
             "tonnes CO₂",
             "Total emissions avoided over vehicle lifetime",
             metric_type="positive",
@@ -128,5 +128,5 @@ def display_comparison_metrics(comparative_metrics):
     if percentage_savings > 0:
         st.success(
             f"**Investment Summary:** {percentage_savings:.1f}% lower total cost of ownership "
-            f"while reducing {comparative_metrics['emission_savings_lifetime'] / 1000:.1f} tonnes of CO₂"
+            f"while reducing {comparative_metrics['emission_savings_lifetime'] / UNIT_CONVERSIONS.KG_TO_TONNES:.1f} tonnes of CO₂"
         )

@@ -31,69 +31,55 @@ This report documents duplications and naming issues found in the TCO applicatio
   - `safe_get_parameter` now uses enhanced `get_parameter_value` internally
 - **Status**: Complete - All tests passing
 
-## Remaining Issues
+### 5. ✅ Constants Standardisation - RESOLVED
+- **Previous Issues**:
+  - Emission constants duplicated between `EmissionConstants` class and `EmissionStandard` enum
+  - Hardcoded column names instead of using `DataColumns` enum
+  - Hardcoded fuel types and emission standards
+  - `SCC_AUD_PER_TONNE` hardcoded in externalities.py
+- **Resolution**:
+  - Removed duplicate emission constants from config
+  - Updated all domain code to use appropriate enums
+  - Created `UnitConversions` and `ExternalityConstants` classes
+  - Moved all hardcoded constants to centralised configuration
+- **Status**: Complete - All production code now uses centralised constants
 
-### Import Structure Issues
+## Remaining Minor Issues
 
-#### 1. Circular Import Prevention
-- Late imports in some modules to avoid circularity
-- Indicates potential architectural issues
-- **Recommendation**: Review module dependencies
+### 1. Magic Numbers in Code
+- Some numeric constants still hardcoded (e.g., 0.05, 365)
+- **Priority**: Low - These are mostly in test files or less critical paths
+- **Recommendation**: Gradual replacement as code is modified
 
-#### 2. Re-exports (Acceptable Pattern)
-- `weighted_electricity_price` is defined in `src/utils/energy.py`
-- Re-exported from `domain/energy.py`
-- **Status**: This pattern is acceptable for API consistency
+### 2. Test File Constants
+- Test files still use hardcoded values
+- **Priority**: Very Low
+- **Recommendation**: Consider test independence vs DRY principles case by case
 
-### Constants Standardisation Issues
+## Architectural Patterns (Not Issues)
 
-#### 1. Emission Constants
-- Some modules use `EMISSION_CONSTANTS.DEFAULT_ELECTRICITY_STANDARD`
-- Others use `EmissionStandard.GRID.value`
-- **Recommendation**: Standardise on enum usage throughout
-
-## Next Steps (Priority Order)
-
-### 1. Constants Standardisation (High Priority)
-- Audit all uses of emission constants
-- Standardise on `EmissionStandard` enum usage
-- Remove redundant constant definitions
-- Update any remaining hardcoded values
-
-### 2. Architecture Review (Medium Priority)
-- Review module dependencies to identify circular import risks
-- Consider restructuring if necessary
-- Document any intentional late imports
-
-### 3. Documentation Updates (Low Priority)
-- Update docstrings for consolidated functions
-- Document the enhanced parameter handling in pandas_helpers
-- Update any developer guides that reference the old patterns
-
-## Testing Requirements After Each Change
-- Run full test suite
-- Pay special attention to:
-  - Parameter access functions
-  - Safe operations on DataFrames
-  - Any code using consolidated functions
-
-## Notes on Acceptable Patterns
-
-### Proxy Pattern (Not Duplication)
+### 1. Proxy Pattern (Acceptable)
 - `calculate_payload_penalty_costs` - finance.py proxies to finance_payload.py
 - This is intentional for providing a unified API
 - No action required
 
-### Re-export Pattern
+### 2. Re-export Pattern (Acceptable)
 - Functions defined in utils and re-exported from domain
 - This provides a clean API while maintaining implementation separation
 - Example: `weighted_electricity_price`
 
+### 3. Late Import Pattern (Acceptable)
+- Some modules use late imports to avoid circular dependencies
+- This is a valid pattern when necessary
+- Document these cases for clarity
+
 ## Conclusion
-Major code duplication issues have been resolved. The codebase now has:
+
+All major code duplication and constant standardisation issues have been resolved. The codebase now has:
 - Clear separation between domain logic and utilities
 - Consolidated safe operation functions with flexible error handling
 - Consistent repository naming conventions
+- Centralised constants with type-safe enum usage
 - Reduced redundancy while maintaining backward compatibility
 
-The remaining work focuses on standardising constants usage and reviewing architecture for potential improvements. 
+The remaining items are minor and can be addressed opportunistically. The code quality has significantly improved with better maintainability and reduced risk of bugs from duplicated or inconsistent code. 

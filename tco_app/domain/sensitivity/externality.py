@@ -6,6 +6,8 @@ from typing import Any, Dict, List
 
 from tco_app.domain.externalities import calculate_externalities, calculate_social_tco
 from tco_app.src import pd
+from tco_app.src.config import UNIT_CONVERSIONS
+import numpy as np
 
 __all__ = ["perform_externality_sensitivity"]
 
@@ -62,7 +64,7 @@ def perform_externality_sensitivity(
                     bev_social["social_tco_lifetime"]
                     - diesel_social["social_tco_lifetime"]
                 )
-                / (emission_savings / 1000)
+                / (emission_savings / UNIT_CONVERSIONS.KG_TO_TONNES)
             )
             if emission_savings > 0
             else float("inf")
