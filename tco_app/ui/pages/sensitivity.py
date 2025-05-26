@@ -1,49 +1,60 @@
 """Sensitivity analysis page module."""
-import sys
-from pathlib import Path
-
-# Ensure the project root is in the path for containerized environments
-_current_file = Path(__file__).resolve()
-_project_root = _current_file.parent.parent.parent.parent  # Navigate up to project root
-if _project_root.as_posix() not in sys.path:
-    sys.path.insert(0, _project_root.as_posix())
-
 import streamlit as st
 from typing import List
+import traceback
+import sys
 
-from tco_app.ui.context import get_context
-from tco_app.domain.sensitivity import (
-    perform_sensitivity_analysis, 
-    perform_sensitivity_analysis_with_dtos, 
-    create_sensitivity_adapter
-)
-from tco_app.plotters import create_payload_sensitivity_chart, create_sensitivity_chart
-from tco_app.ui.components import (
-    SensitivityContext,
-    ParameterRangeCalculator,
-)
-from tco_app.services.dtos import SensitivityRequest
+# Add debugging info for deployment environments
+if st.session_state.get("debug_mode", False):
+    st.sidebar.write("Debug Info:")
+    st.sidebar.write(f"Python version: {sys.version}")
+    st.sidebar.write(f"Python path: {sys.path[:3]}")
+
+try:
+    from tco_app.ui.context import get_context
+    from tco_app.domain.sensitivity import (
+        perform_sensitivity_analysis, 
+        perform_sensitivity_analysis_with_dtos, 
+        create_sensitivity_adapter
+    )
+    from tco_app.plotters import create_payload_sensitivity_chart, create_sensitivity_chart
+    from tco_app.ui.components import (
+        SensitivityContext,
+        ParameterRangeCalculator,
+    )
+    from tco_app.services.dtos import SensitivityRequest
+except ImportError as e:
+    st.error(f"Import Error: {str(e)}")
+    st.error("Full traceback:")
+    st.code(traceback.format_exc())
+    st.stop()
 
 
 def render():
     """Render sensitivity analysis page."""
-    # Step 1: Load and validate context
-    context = SensitivityContext.from_context(get_context())
+    try:
+        # Step 1: Load and validate context
+        context = SensitivityContext.from_context(get_context())
 
-    # Step 2: Display header and info
-    _display_header()
+        # Step 2: Display header and info
+        _display_header()
 
-    # Step 3: Get parameter selection
-    sensitivity_param = _get_parameter_selection()
+        # Step 3: Get parameter selection
+        sensitivity_param = _get_parameter_selection()
 
-    # Step 4: Initialize components
-    range_calculator = ParameterRangeCalculator(num_points=11)
+        # Step 4: Initialize components
+        range_calculator = ParameterRangeCalculator(num_points=11)
 
-    # Step 5: Perform analysis based on selection
-    if sensitivity_param == "Annual Distance (km) with Payload Effect":
-        _display_payload_sensitivity(context, range_calculator)
-    else:
-        _display_parameter_sensitivity(sensitivity_param, context, range_calculator)
+        # Step 5: Perform analysis based on selection
+        if sensitivity_param == "Annual Distance (km) with Payload Effect":
+            _display_payload_sensitivity(context, range_calculator)
+        else:
+            _display_parameter_sensitivity(sensitivity_param, context, range_calculator)
+            
+    except Exception as e:
+        st.error(f"Error rendering sensitivity page: {str(e)}")
+        st.error("Full traceback:")
+        st.code(traceback.format_exc())
 
 
 def _display_header():
@@ -204,10 +215,12 @@ def _perform_analysis_with_dtos(
         externalities_data = full_context.get('externalities_data', None)
         if externalities_data is None:
             # Create a fallback repository to get externalities
+            # Import here to avoid circular imports and containerisation issues
+            import tco_app.repositories as repos
             from tco_app.src.data_loading import load_data
-            from tco_app.repositories import ParametersRepository
+            
             data_tables = load_data()
-            params_repo = ParametersRepository(data_tables)
+            params_repo = repos.ParametersRepository(data_tables)
             externalities_data = params_repo.get_externalities_data()
     
     # Create calculation requests using adapter
@@ -234,13 +247,14 @@ def _perform_analysis_with_dtos(
     )
     
     # Create TCO service
+    # Import here to avoid circular imports and containerisation issues
+    import tco_app.repositories as repos
     from tco_app.src.data_loading import load_data
-    from tco_app.repositories import VehicleRepository, ParametersRepository
     from tco_app.services.tco_calculation_service import TCOCalculationService
     
     data_tables = load_data()
-    vehicle_repo = VehicleRepository(data_tables)
-    params_repo = ParametersRepository(data_tables)
+    vehicle_repo = repos.VehicleRepository(data_tables)
+    params_repo = repos.ParametersRepository(data_tables)
     tco_service = TCOCalculationService(vehicle_repo, params_repo)
     
     # Create sensitivity request
