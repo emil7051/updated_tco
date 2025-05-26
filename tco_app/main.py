@@ -35,6 +35,7 @@ PAGES: Dict[str, str] = {
     "Home": "tco_app.ui.pages.home",
     "Cost Breakdown": "tco_app.ui.pages.cost_breakdown",
     "Sensitivity": "tco_app.ui.pages.sensitivity",
+    "Debug Imports": "tco_app.ui.pages.debug_imports",  # Temporary debug page
 }
 
 # ------- Page config ------------------------------------------------------

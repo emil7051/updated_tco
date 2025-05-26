@@ -26,18 +26,44 @@ try:
     )
     from tco_app.plotters import create_payload_sensitivity_chart, create_sensitivity_chart
     
-    # Try different import approaches for components
+    # Import components with multiple fallback strategies
+    import_successful = False
+    
+    # Strategy 1: Try standard package import
     try:
         from tco_app.ui.components import (
             SensitivityContext,
             ParameterRangeCalculator,
         )
+        import_successful = True
     except ImportError:
-        # Fallback: try direct import
-        from tco_app.ui.components.sensitivity_components import (
-            SensitivityContext,
-            ParameterRangeCalculator,
-        )
+        pass
+    
+    # Strategy 2: Import the module directly and extract classes
+    if not import_successful:
+        try:
+            import tco_app.ui.components.sensitivity_components as sens_comp
+            SensitivityContext = sens_comp.SensitivityContext
+            ParameterRangeCalculator = sens_comp.ParameterRangeCalculator
+            import_successful = True
+        except ImportError:
+            pass
+    
+    # Strategy 3: Add components directory to path and import directly
+    if not import_successful:
+        try:
+            components_dir = os.path.join(project_root, 'tco_app', 'ui', 'components')
+            if components_dir not in sys.path:
+                sys.path.insert(0, components_dir)
+            import sensitivity_components
+            SensitivityContext = sensitivity_components.SensitivityContext
+            ParameterRangeCalculator = sensitivity_components.ParameterRangeCalculator
+            import_successful = True
+        except ImportError:
+            pass
+    
+    if not import_successful:
+        raise ImportError("Could not import SensitivityContext and ParameterRangeCalculator")
     
     from tco_app.services.dtos import SensitivityRequest
 except ImportError as e:
