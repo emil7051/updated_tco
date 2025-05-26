@@ -33,12 +33,44 @@ The TCO application is currently in a transitional state where modern DTOs (Data
    - Deleted `convert_tco_result_to_model_runner_dict` from helpers module
    - No longer imported anywhere in the codebase
 
+#### Phase 1.2: Update perform_sensitivity_analysis()
+**Status: COMPLETE**
+
+1. **Created new DTOs**:
+   - `SensitivityRequest` - Request parameters for sensitivity analysis
+   - `SensitivityResult` - Result structure for each parameter value
+
+2. **Created new DTO-based function**: `perform_sensitivity_analysis_with_dtos()`
+   - File: `tco_app/domain/sensitivity/single_param.py`
+   - Accepts `SensitivityRequest` DTO instead of 18+ individual parameters
+   - Returns list of `SensitivityResult` DTOs
+   - Uses TCOCalculationService for consistent calculations
+
+3. **Created adapter function**: `create_sensitivity_adapter()`
+   - Converts legacy parameters to CalculationRequest DTOs
+   - Enables gradual migration of UI components
+
+4. **Updated tornado chart calculation**:
+   - Created `calculate_tornado_data_with_dtos()` function
+   - Uses new DTO-based sensitivity analysis
+   - Maintains backward compatibility
+
+5. **Updated sensitivity page**:
+   - Added `_perform_analysis_with_dtos()` function
+   - Can switch between old and new implementation via session state
+   - Converts DTO results to legacy format for chart compatibility
+
+6. **Tested implementation**:
+   - Created and ran test script verifying functionality
+   - All sensitivity calculations produce correct results
+
 ### ⚠️ **Issues Discovered**
 
-1. **Battery Parameters Column Mismatch**:
-   - The application expects columns named `description` and `default_value`
-   - The actual CSV may have different column names (e.g., `battery_description`, `battery_default_value`)
-   - This causes warnings but doesn't break functionality
+1. **Battery Parameters Column Mismatch**: ✅ **RESOLVED**
+   - The application expected columns named `description` and `default_value`
+   - The actual CSV has columns named `battery_description` and `default_value`
+   - Fixed by updating the orchestrator to use the correct column name
+   - The DataColumns.BATTERY_DESCRIPTION constant already had the correct value
 
 2. **Extensive Dictionary Usage in UI**:
    - UI components and plotters extensively use dictionary access patterns
@@ -47,54 +79,15 @@ The TCO application is currently in a transitional state where modern DTOs (Data
 
 ## Remaining Work - Detailed Plan
 
-### **Phase 1.2: Update perform_sensitivity_analysis()**
-*Priority: High | Estimated Effort: 3-4 days*
+### **Phase 1.2: Update perform_sensitivity_analysis()** ✅
+*Status: COMPLETE | Completed: 26/05/2025*
 
-**Current Issues**:
-- Takes 18+ individual parameters
-- Returns legacy dictionary format
-- Duplicates calculation logic
-- Used by tornado charts and sensitivity page
-
-**Detailed Steps**:
-
-1. **Create SensitivityRequest DTO**:
-```python
-@dataclass
-class SensitivityRequest:
-    parameter_name: str
-    parameter_range: List[float]
-    base_calculation_request: CalculationRequest
-    comparison_calculation_request: CalculationRequest
-```
-
-2. **Create SensitivityResult DTO**:
-```python
-@dataclass
-class SensitivityResult:
-    parameter_value: float
-    base_tco_result: TCOResult
-    comparison_tco_result: TCOResult
-    tco_difference: float
-    percentage_difference: float
-```
-
-3. **Create new function alongside existing**:
-```python
-def perform_sensitivity_analysis_with_dtos(
-    sensitivity_request: SensitivityRequest,
-    tco_service: TCOCalculationService
-) -> List[SensitivityResult]:
-    """Modern sensitivity analysis using DTOs and service."""
-```
-
-4. **Update tornado chart calculation**:
-   - Modify `calculate_tornado_data()` to use new function
-   - Create adapter if needed for backward compatibility
-
-5. **Update sensitivity UI page**:
-   - Modify `_perform_analysis()` to use new function
-   - Update `SensitivityContext` to prepare proper DTOs
+The sensitivity analysis has been successfully modernised with:
+- New DTOs for type-safe parameter passing
+- Modern function using TCOCalculationService
+- Adapter for backward compatibility
+- Updated tornado chart calculations
+- Gradual migration path for UI
 
 ### **Phase 2.2: Remove UI Transformation Functions**
 *Priority: High | Estimated Effort: 4-5 days*
@@ -180,14 +173,14 @@ class BatteryReplacementResult:
 - [x] Day 2: Update `ComparisonResult` and `TCOResult` DTOs
 - [x] Day 3: Update `TCOCalculationService.compare_vehicles()`
 - [x] Day 4: Remove `convert_tco_result_to_model_runner_dict`
-- [ ] Day 5: Create sensitivity analysis DTOs
+- [x] Day 5: Create sensitivity analysis DTOs
 
 ### Week 2: Sensitivity Analysis
-- [ ] Day 1: Implement `perform_sensitivity_analysis_with_dtos()`
-- [ ] Day 2: Update tornado chart calculations
-- [ ] Day 3: Update sensitivity page
-- [ ] Day 4: Test sensitivity analysis thoroughly
-- [ ] Day 5: Fix battery parameters schema issue
+- [x] Day 1: Implement `perform_sensitivity_analysis_with_dtos()`
+- [x] Day 2: Update tornado chart calculations
+- [x] Day 3: Update sensitivity page
+- [x] Day 4: Test sensitivity analysis thoroughly
+- [x] Day 5: Fix battery parameters schema issue
 
 ### Week 3: UI Migration
 - [ ] Day 1: Create DTO accessor utilities

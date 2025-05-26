@@ -139,7 +139,7 @@ class CalculationOrchestrator:
         df_copy = battery_params_df.copy()
 
         # Ensure the required columns exist
-        description_col = "description"  # Based on data/dictionary/battery_params.csv
+        description_col = "battery_description"  # Match actual CSV column name
         value_col = "default_value"  # Based on data/dictionary/battery_params.csv
 
         if description_col not in df_copy.columns or value_col not in df_copy.columns:

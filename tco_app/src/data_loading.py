@@ -6,10 +6,6 @@ from typing import Dict, List, Protocol
 
 from tco_app.src import pd, st
 
-# --------------------------------------------------------------------------------------
-# Data-layer abstraction (step 8 of CODEBASE_IMPROVEMENTS.md)
-# --------------------------------------------------------------------------------------
-
 
 class TableRepository(Protocol):
     """Read-only repository abstraction for tabular CSV/Parquet assets."""

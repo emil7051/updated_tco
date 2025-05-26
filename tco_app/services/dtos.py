@@ -15,6 +15,8 @@ __all__ = [
     "CalculationRequest",
     "TCOResult",
     "ComparisonResult",
+    "SensitivityRequest",
+    "SensitivityResult",
 ]
 
 
@@ -139,3 +141,33 @@ class ComparisonResult:
     comparison_timestamp: str = field(
         default_factory=lambda: datetime.now().isoformat()
     )
+
+
+@dataclass
+class SensitivityRequest:
+    """Request for sensitivity analysis on a specific parameter."""
+    
+    parameter_name: str
+    parameter_range: list[float]
+    base_calculation_request: CalculationRequest
+    comparison_calculation_request: CalculationRequest
+    
+    # Optional - for caching/identification
+    analysis_id: Optional[str] = None
+
+
+@dataclass
+class SensitivityResult:
+    """Result for a single parameter value in sensitivity analysis."""
+    
+    parameter_value: float
+    base_tco_result: TCOResult
+    comparison_tco_result: TCOResult
+    tco_difference: float
+    percentage_difference: float
+    
+    # Additional metrics
+    base_tco_per_km: Optional[float] = None
+    comparison_tco_per_km: Optional[float] = None
+    base_annual_operating_cost: Optional[float] = None
+    comparison_annual_operating_cost: Optional[float] = None
