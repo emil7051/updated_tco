@@ -14,7 +14,6 @@ from tco_app.repositories import ParametersRepository, VehicleRepository  # Adde
 # NEW: centralised DTOs
 from tco_app.services.dtos import CalculationRequest, ComparisonResult, TCOResult
 from tco_app.services.helpers import (
-    convert_tco_result_to_model_runner_dict,
     get_residual_value_parameters,
 )
 from tco_app.src import Any, Dict, logging
@@ -393,56 +392,34 @@ class TCOCalculationService:
             comparison_vehicle_request
         )
 
-        # Convert TCOResult objects to the dictionary format expected by calculate_comparative_metrics
-        # Typically, 'base_vehicle' is BEV and 'comparison_vehicle' is Diesel for the domain function.
-        # The domain function calculate_comparative_metrics expects args: (bev_results, diesel_results, annual_kms, truck_life_years)
-
-        # Assuming base_vehicle_request is the 'challenger' (e.g., BEV)
-        # and comparison_vehicle_request is the 'incumbent' (e.g., Diesel)
-        # So, base_tco_result_dict is 'bev_results' and comparison_tco_result_dict is 'diesel_results'
-        base_tco_result_dict = convert_tco_result_to_model_runner_dict(
-            base_tco_result, base_vehicle_request
+        # Create ComparisonResult with basic data
+        tco_savings = (
+            comparison_tco_result.tco_total_lifetime
+            - base_tco_result.tco_total_lifetime
         )
-        comparison_tco_result_dict = convert_tco_result_to_model_runner_dict(
-            comparison_tco_result, comparison_vehicle_request
-        )
-
+        
         # Ensure annual_kms and truck_life_years are consistent for the comparison.
         # Using values from the base_vehicle_request as representative.
         annual_kms_for_comparison = base_vehicle_request.parameters.annual_kms
         truck_life_years_for_comparison = (
             base_vehicle_request.parameters.truck_life_years
         )
-
-        comparative_metrics_dict = sensitivity_metrics.calculate_comparative_metrics(
-            bev_results=base_tco_result_dict,  # base_vehicle is typically BEV
-            diesel_results=comparison_tco_result_dict,  # comparison_vehicle is typically Diesel
+        
+        # Create initial ComparisonResult
+        comparison_output = ComparisonResult(
+            base_vehicle_result=base_tco_result,
+            comparison_vehicle_result=comparison_tco_result,
+            tco_savings_lifetime=tco_savings,
             annual_kms=annual_kms_for_comparison,
             truck_life_years=truck_life_years_for_comparison,
         )
 
-        # Populate our ComparisonResult dataclass
-        # Note: calculate_comparative_metrics returns 'price_parity_year', 'emission_savings_lifetime', etc.
-        # Our previous manual calculation:
-        # tco_savings_lifetime = comparison_tco_result.tco_total_lifetime - base_tco_result.tco_total_lifetime
-        # This is equivalent to diesel_npv - bev_npv if base is BEV.
-        # comparative_metrics_dict['abatement_cost'] uses (bev_npv - diesel_npv) in numerator, so a positive abatement cost
-        # means BEV is more expensive.
-        # 'annual_operating_savings' = diesel_annual_op_cost - bev_annual_op_cost. Positive means BEV is cheaper annually.
-
-        # Let's align with the direct meaning of savings for the "base" vs "comparison"
-        # If base is BEV and comparison is Diesel:
-        # Positive TCO savings means BEV is cheaper than Diesel.
-        tco_savings = (
-            comparison_tco_result.tco_total_lifetime
-            - base_tco_result.tco_total_lifetime
+        # Calculate comparative metrics using the new DTO-based function
+        comparative_metrics_dict = sensitivity_metrics.calculate_comparative_metrics_from_dto(
+            comparison_output
         )
 
         # Populate ComparisonResult with all relevant metrics from the dictionary
-        # returned by sensitivity_metrics.calculate_comparative_metrics.
-        # The dictionary keys are: 'upfront_cost_difference', 'annual_operating_savings',
-        # 'price_parity_year', 'emission_savings_lifetime', 'abatement_cost', 'bev_to_diesel_tco_ratio'
-
         upfront_diff = comparative_metrics_dict.get("upfront_cost_difference")
         annual_op_savings = comparative_metrics_dict.get("annual_operating_savings")
         price_parity = comparative_metrics_dict.get("price_parity_year")
@@ -450,19 +427,15 @@ class TCOCalculationService:
         abatement = comparative_metrics_dict.get("abatement_cost")
         ratio = comparative_metrics_dict.get("bev_to_diesel_tco_ratio")
 
-        comparison_output = ComparisonResult(
-            base_vehicle_result=base_tco_result,
-            comparison_vehicle_result=comparison_tco_result,
-            tco_savings_lifetime=tco_savings,  # Positive means base (e.g. BEV) is cheaper
-            annual_operating_cost_savings=annual_op_savings,
-            emissions_reduction_lifetime_co2e=emission_savings,
-            payback_period_years=price_parity,
-            upfront_cost_difference=upfront_diff,  # BEV_acquisition - Diesel_acquisition
-            abatement_cost=abatement,
-            bev_to_diesel_tco_ratio=ratio,
-        )
+        # Update the ComparisonResult with calculated metrics
+        comparison_output.annual_operating_cost_savings = annual_op_savings
+        comparison_output.emissions_reduction_lifetime_co2e = emission_savings
+        comparison_output.payback_period_years = price_parity
+        comparison_output.upfront_cost_difference = upfront_diff
+        comparison_output.abatement_cost = abatement
+        comparison_output.bev_to_diesel_tco_ratio = ratio
 
         logger.info(
-            f"TCO comparison completed using domain.sensitivity.metrics.calculate_comparative_metrics. Lifetime TCO Savings ({base_tco_result.vehicle_id} vs {comparison_tco_result.vehicle_id}): {tco_savings:.2f}"
+            f"TCO comparison completed using domain.sensitivity.metrics.calculate_comparative_metrics_from_dto. Lifetime TCO Savings ({base_tco_result.vehicle_id} vs {comparison_tco_result.vehicle_id}): {tco_savings:.2f}"
         )
         return comparison_output

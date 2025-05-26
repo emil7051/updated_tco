@@ -104,6 +104,8 @@ class TCOResult:
     charging_requirements: Optional[Dict[str, Any]] = None
     infrastructure_costs_breakdown: Optional[Dict[str, Any]] = None
     weighted_electricity_price: Optional[float] = None
+    battery_replacement_year: Optional[int] = None
+    battery_replacement_cost: Optional[float] = None
 
     # Meta
     calculation_timestamp: str = field(
@@ -128,6 +130,10 @@ class ComparisonResult:
     upfront_cost_difference: Optional[float] = None
     abatement_cost: Optional[float] = None
     bev_to_diesel_tco_ratio: Optional[float] = None
+    
+    # Parameters needed for calculations
+    annual_kms: Optional[int] = None
+    truck_life_years: Optional[int] = None
 
     # Meta
     comparison_timestamp: str = field(

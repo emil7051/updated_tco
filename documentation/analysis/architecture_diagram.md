@@ -6,102 +6,99 @@ The Total Cost of Ownership (TCO) application is a Streamlit-based web applicati
 ## Architecture Diagram
 
 ```mermaid
-flowchart TB
-    %% User Interface Layer
-    subgraph UI["🖥️ UI Layer (Streamlit)"]
-        Main[main.py<br/>Router]
-        Pages[Pages<br/>- Home<br/>- Cost Breakdown<br/>- Sensitivity]
-        Sidebar[Sidebar Renderer<br/>Input Collection]
-        Components[UI Components<br/>- Metric Cards<br/>- Summary Displays<br/>- Sensitivity Components]
+flowchart LR
+    %% INPUTS SECTION
+    subgraph Inputs["📥 INPUTS"]
+        direction TB
+        User([👤 User])
+        
+        subgraph UserInputs["User Interface"]
+            Sidebar[Sidebar Controls<br/>• Vehicle Selection<br/>• Parameters<br/>• Scenarios]
+            Pages[Navigation Pages<br/>• Home<br/>• Cost Breakdown<br/>• Sensitivity]
+        end
+        
+        subgraph DataSources["Data Sources"]
+            CSVFiles[CSV Data<br/>• Vehicle Models<br/>• Financial Params<br/>• Battery Specs<br/>• Charging Options<br/>• Infrastructure<br/>• Incentives]
+        end
     end
 
-    %% Context Management
-    subgraph Context["🔄 Context Management"]
-        GetContext[get_context<br/>Cache Management]
-        ContextBuilder[Context Builder<br/>UI Context Assembly]
-        InputHash[Input Hash<br/>Change Detection]
+    %% CALCULATIONS SECTION  
+    subgraph Calculations["⚙️ CALCULATIONS"]
+        direction TB
+        
+        subgraph Processing["Processing Layer"]
+            Context[Context Management<br/>• Input Validation<br/>• Cache Management<br/>• Change Detection]
+            Orchestrator[Calculation Orchestrator<br/>• Coordinates Flow<br/>• Applies Overrides]
+        end
+        
+        subgraph CoreCalcs["Core Calculations"]
+            TCOService[TCO Calculation Service]
+            
+            subgraph Domains["Domain Logic"]
+                Finance[Finance<br/>• TCO & NPV<br/>• Acquisition Cost]
+                Energy[Energy<br/>• Costs & Emissions<br/>• Charging Mix]
+                Externalities[Externalities<br/>• Carbon Pricing<br/>• Social Costs]
+                Sensitivity[Sensitivity<br/>• Parameter Analysis<br/>• Tornado Charts]
+            end
+        end
+        
+        subgraph DataAccess["Data Access"]
+            Repositories[Repositories<br/>• Vehicle Data<br/>• Parameters<br/>• Scenarios]
+        end
     end
 
-    %% Orchestration Layer
-    subgraph Orchestration["⚙️ Orchestration"]
-        CalcOrch[Calculation Orchestrator<br/>Coordinates Calculations]
+    %% OUTPUTS SECTION
+    subgraph Outputs["📤 OUTPUTS"]
+        direction TB
+        
+        subgraph Results["Results"]
+            Metrics[Key Metrics<br/>• TCO Comparison<br/>• Payback Period<br/>• Emissions Savings<br/>• Abatement Cost]
+        end
+        
+        subgraph Visualisation["Visualisation"]
+            Charts[Interactive Charts<br/>• Cost Breakdown<br/>• Sensitivity Analysis<br/>• Tornado Diagrams<br/>• Emissions Comparison]
+        end
+        
+        subgraph Display["Display Components"]
+            Components[UI Components<br/>• Metric Cards<br/>• Summary Tables<br/>• Interactive Controls]
+        end
     end
 
-    %% Service Layer
-    subgraph Services["📊 Service Layer"]
-        TCOService[TCO Calculation Service<br/>Core Calculation Logic]
-        ScenarioService[Scenario Service<br/>Parameter Application]
-        DataCache[Data Cache Service<br/>Performance Optimisation]
-    end
-
-    %% Domain Layer
-    subgraph Domain["💼 Domain Logic"]
-        Finance[Finance Module<br/>- TCO Calculation<br/>- NPV<br/>- Acquisition Cost]
-        Energy[Energy Module<br/>- Energy Costs<br/>- Emissions<br/>- Charging]
-        Externalities[Externalities<br/>- Social Costs<br/>- Carbon Pricing]
-        Sensitivity[Sensitivity Analysis<br/>- Single Parameter<br/>- Tornado<br/>- Metrics]
-    end
-
-    %% Data Access Layer
-    subgraph DataAccess["💾 Data Access"]
-        Repositories[Repositories<br/>- Vehicle Repository<br/>- Parameters Repository]
-        DataLoading[Data Loading<br/>CSV Table Loading]
-    end
-
-    %% Data Storage
-    subgraph Storage["📁 Data Storage"]
-        CSVFiles[CSV Files<br/>- Vehicle Models<br/>- Financial Params<br/>- Battery Params<br/>- Charging Options<br/>- Infrastructure<br/>- Incentives]
-    end
-
-    %% Visualisation
-    subgraph Plotters["📈 Visualisation"]
-        Charts[Chart Builders<br/>- Cost Breakdown<br/>- Emissions<br/>- Sensitivity<br/>- Tornado<br/>- Key Metrics]
-    end
-
-    %% Data Flow
-    User([👤 User]) --> Main
-    Main --> Pages
-    Pages --> GetContext
-    
+    %% MAIN FLOW
     User --> Sidebar
-    Sidebar --> ContextBuilder
-    ContextBuilder --> InputHash
-    InputHash --> GetContext
+    User --> Pages
     
-    GetContext --> CalcOrch
-    CalcOrch --> TCOService
+    Sidebar --> Context
+    CSVFiles --> Repositories
     
+    Context --> Orchestrator
+    Repositories --> Orchestrator
+    
+    Orchestrator --> TCOService
     TCOService --> Finance
-    TCOService --> Energy
+    TCOService --> Energy  
     TCOService --> Externalities
     TCOService --> Sensitivity
     
-    CalcOrch --> Repositories
-    Repositories --> DataLoading
-    DataLoading --> CSVFiles
+    Finance --> Metrics
+    Energy --> Metrics
+    Externalities --> Metrics
+    Sensitivity --> Charts
     
-    Sidebar --> ScenarioService
-    ScenarioService --> DataCache
-    
-    Pages --> Components
-    Pages --> Charts
-    Charts --> Pages
-    
-    GetContext -.->|Cached Results| Pages
+    Metrics --> Components
+    Charts --> Components
+    Components --> Pages
 
     %% Styling
-    classDef ui fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px
-    classDef service fill:#E3F2FD,stroke:#2196F3,stroke-width:2px
-    classDef domain fill:#FFF3E0,stroke:#FF9800,stroke-width:2px
-    classDef data fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
-    classDef viz fill:#FFE0E0,stroke:#F44336,stroke-width:2px
+    classDef inputStyle fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px
+    classDef calcStyle fill:#E3F2FD,stroke:#2196F3,stroke-width:2px  
+    classDef outputStyle fill:#FFF3E0,stroke:#FF9800,stroke-width:2px
+    classDef domainStyle fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
     
-    class Main,Pages,Sidebar,Components ui
-    class GetContext,ContextBuilder,InputHash,CalcOrch service
-    class TCOService,ScenarioService,DataCache service
-    class Finance,Energy,Externalities,Sensitivity domain
-    class Repositories,DataLoading,CSVFiles data
-    class Charts viz
+    class Inputs,UserInputs,DataSources,User,Sidebar,CSVFiles inputStyle
+    class Calculations,Processing,CoreCalcs,DataAccess,Context,Orchestrator,TCOService,Repositories calcStyle
+    class Outputs,Results,Visualisation,Display,Metrics,Charts,Components outputStyle
+    class Domains,Finance,Energy,Externalities,Sensitivity domainStyle
 ```
 
 ## Data Flow Description
@@ -223,3 +220,215 @@ Results are displayed through:
 - Custom exceptions (CalculationError, VehicleNotFoundError)
 - Logging at each calculation step
 - Graceful degradation for missing data 
+
+## Data Workflow Diagram
+
+```mermaid
+flowchart TB
+    %% DATA SOURCES LAYER
+    subgraph Layer1["📁 DATA SOURCES"]
+        CSVTables["CSV Tables
+        • vehicle_models.csv
+        • financial_params.csv
+        • battery_params.csv
+        • charging_options.csv
+        • infrastructure_options.csv
+        • incentives.csv
+        • scenarios.csv
+        • scenario_params.csv
+        • externalities.csv
+        • emission_factors.csv"]
+        EnvConfig["Environment Config
+        TCO_DATA_DIR"]
+    end
+
+    %% DATA LOADING LAYER
+    subgraph Layer2["🔄 DATA LOADING"]
+        TableRepo["TableRepository
+        Protocol Interface"]
+        CSVRepo["CSVRepository
+        Filesystem Implementation"]
+        DefaultRepo["_default_repository
+        Factory Function"]
+        LoadData["load_data
+        @st.cache_data"]
+    end
+
+    %% DATA ACCESS LAYER  
+    subgraph Layer3["🗃️ DATA ACCESS"]
+        VehicleRepo["VehicleRepository
+        • get_vehicle_by_id
+        • get_fees_by_vehicle_id"]
+        ParamsRepo["ParametersRepository
+        • get_financial_params
+        • get_battery_params
+        • get_charging_options
+        • get_infrastructure_options
+        • get_incentives
+        • get_externalities_data"]
+        FinancialParams["FinancialParameters
+        • diesel_price
+        • discount_rate
+        • carbon_price"]
+        BatteryParams["BatteryParameters
+        • replacement_cost_per_kwh
+        • degradation_rate
+        • minimum_capacity"]
+    end
+
+    %% SCENARIO PROCESSING LAYER
+    subgraph Layer4["🎭 SCENARIO PROCESSING"]
+        ScenarioService["Scenario Service
+        apply_scenario_parameters"]
+        ScenarioAppService["ScenarioApplicationService
+        • parse_scenario_params
+        • apply_modifications"]
+        ModifiedTables["Modified Tables
+        Scenario-Applied DataFrames"]
+    end
+
+    %% DATA TRANSFER OBJECTS LAYER
+    subgraph Layer5["📦 DATA TRANSFER OBJECTS"]
+        CalcParams["CalculationParameters
+        • annual_kms
+        • truck_life_years
+        • discount_rate
+        • charging_profile_id
+        • infrastructure_id
+        • fleet_size
+        • UI overrides"]
+        CalcRequest["CalculationRequest
+        • vehicle_data
+        • fees_data
+        • parameters
+        • all data tables"]
+    end
+
+    %% BUSINESS LOGIC LAYER
+    subgraph Layer6["💼 BUSINESS LOGIC"]
+        TCOService["TCO Calculation Service"]
+        DomainModules["Domain Modules
+        • Finance
+        • Energy
+        • Externalities
+        • Sensitivity"]
+    end
+
+    %% RESULTS LAYER
+    subgraph Layer7["📊 RESULTS"]
+        TCOResult["TCOResult
+        • tco_total_lifetime
+        • cost breakdowns
+        • emissions data
+        • detailed breakdowns"]
+        ComparisonResult["ComparisonResult
+        • base_vehicle_result
+        • comparison_vehicle_result
+        • tco_savings
+        • payback_period"]
+    end
+
+    %% VERTICAL DATA FLOW
+    
+    %% Layer 1 to Layer 2
+    CSVTables --> CSVRepo
+    EnvConfig --> DefaultRepo
+    DefaultRepo --> CSVRepo
+    CSVRepo --> TableRepo
+    TableRepo --> LoadData
+    
+    %% Layer 2 to Layer 3
+    LoadData --> VehicleRepo
+    LoadData --> ParamsRepo
+    LoadData --> FinancialParams
+    LoadData --> BatteryParams
+    
+    %% Layer 3 to Layer 4
+    LoadData --> ScenarioService
+    ScenarioService --> ScenarioAppService
+    ScenarioAppService --> ModifiedTables
+    ModifiedTables --> VehicleRepo
+    ModifiedTables --> ParamsRepo
+    
+    %% Layer 4 to Layer 5
+    VehicleRepo --> CalcRequest
+    ParamsRepo --> CalcRequest
+    CalcParams --> CalcRequest
+    
+    %% Layer 5 to Layer 6
+    CalcRequest --> TCOService
+    TCOService --> DomainModules
+    
+    %% Layer 6 to Layer 7
+    TCOService --> TCOResult
+    DomainModules --> TCOResult
+    TCOResult --> ComparisonResult
+
+    %% STYLING
+    classDef sourceStyle fill:#F0F9FF,stroke:#0EA5E9,stroke-width:2px
+    classDef loadingStyle fill:#F0FDF4,stroke:#22C55E,stroke-width:2px
+    classDef accessStyle fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    classDef scenarioStyle fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    classDef dtoStyle fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
+    classDef businessStyle fill:#EFF6FF,stroke:#3B82F6,stroke-width:2px
+    classDef resultsStyle fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
+    
+    class Layer1,CSVTables,EnvConfig sourceStyle
+    class Layer2,TableRepo,CSVRepo,DefaultRepo,LoadData loadingStyle
+    class Layer3,VehicleRepo,ParamsRepo,FinancialParams,BatteryParams accessStyle
+    class Layer4,ScenarioService,ScenarioAppService,ModifiedTables scenarioStyle
+    class Layer5,CalcParams,CalcRequest dtoStyle
+    class Layer6,TCOService,DomainModules businessStyle
+    class Layer7,TCOResult,ComparisonResult resultsStyle
+```
+
+## Data Workflow Description
+
+### 1. **Data Sources (Blue)**
+- **CSV Tables**: All reference data stored as CSV files in `tco_app/data/tables/`
+- **Environment Config**: `TCO_DATA_DIR` environment variable for flexible data location
+
+### 2. **Data Loading (Green)**
+- **Repository Pattern**: `TableRepository` protocol with `CSVRepository` implementation
+- **Factory Function**: `_default_repository()` creates repository with environment/default paths
+- **Cached Loading**: `load_data()` with `@st.cache_data` loads all tables once per session
+
+### 3. **Data Access (Yellow)**
+- **Repository Layer**: `VehicleRepository` and `ParametersRepository` provide structured access
+- **Specialised Access**: `FinancialParameters` and `BatteryParameters` with business-specific properties
+- **Type Safety**: Strongly typed access to DataFrame data with defaults
+
+### 4. **Scenario Processing (Light Green)**
+- **Scenario Service**: Applies scenario parameter overrides
+- **ScenarioApplicationService**: Parses and applies modifications to data tables
+- **Modified Tables**: Scenario-adjusted DataFrames for calculations
+
+### 5. **Business Logic (Light Blue)**
+- **TCO Calculation Service**: Core calculation orchestration
+- **Domain Modules**: Finance, Energy, Externalities, Sensitivity calculations
+
+### 6. **Results (Red)**
+- **TCOResult**: Single vehicle calculation results
+- **ComparisonResult**: BEV vs diesel comparison metrics
+
+## Key Data Flow Patterns
+
+### **Caching Strategy**
+- **Multi-level caching**: Streamlit, DataCache, Session State, Parameter repositories
+- **Cache invalidation**: Input hash-based for context, LRU for DataCache
+- **Performance optimisation**: Avoids repeated CSV loading and DataFrame operations
+
+### **Repository Pattern**
+- **Abstraction**: Clean interface over raw DataFrames
+- **Flexibility**: Can swap CSV for database/API without changing business logic
+- **Type Safety**: Structured access with defaults and validation
+
+### **DTO Pattern**
+- **Data bundling**: Clean interfaces between layers
+- **Type safety**: Structured data with validation
+- **Immutability**: Dataclasses prevent accidental modification
+
+### **Scenario Override**
+- **Non-destructive**: Original data preserved, modifications applied to copies
+- **Targeted**: Vehicle type and drivetrain-specific overrides
+- **Traceable**: Applied modifications tracked for debugging 
