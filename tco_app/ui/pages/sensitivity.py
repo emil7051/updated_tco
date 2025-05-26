@@ -3,14 +3,21 @@ import streamlit as st
 from typing import List
 import traceback
 import sys
+import os
 
 # Add debugging info for deployment environments
 if st.session_state.get("debug_mode", False):
     st.sidebar.write("Debug Info:")
     st.sidebar.write(f"Python version: {sys.version}")
     st.sidebar.write(f"Python path: {sys.path[:3]}")
+    st.sidebar.write(f"Current working directory: {os.getcwd()}")
 
 try:
+    # Add the project root to the Python path if needed
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    
     from tco_app.ui.context import get_context
     from tco_app.domain.sensitivity import (
         perform_sensitivity_analysis, 
@@ -18,10 +25,20 @@ try:
         create_sensitivity_adapter
     )
     from tco_app.plotters import create_payload_sensitivity_chart, create_sensitivity_chart
-    from tco_app.ui.components import (
-        SensitivityContext,
-        ParameterRangeCalculator,
-    )
+    
+    # Try different import approaches for components
+    try:
+        from tco_app.ui.components import (
+            SensitivityContext,
+            ParameterRangeCalculator,
+        )
+    except ImportError:
+        # Fallback: try direct import
+        from tco_app.ui.components.sensitivity_components import (
+            SensitivityContext,
+            ParameterRangeCalculator,
+        )
+    
     from tco_app.services.dtos import SensitivityRequest
 except ImportError as e:
     st.error(f"Import Error: {str(e)}")
