@@ -4,6 +4,7 @@ from typing import List
 import traceback
 import sys
 import os
+import importlib.util
 
 # Add debugging info for deployment environments
 if st.session_state.get("debug_mode", False):
@@ -26,44 +27,25 @@ try:
     )
     from tco_app.plotters import create_payload_sensitivity_chart, create_sensitivity_chart
     
-    # Import components with multiple fallback strategies
-    import_successful = False
+    # Import sensitivity components using the method that works in Streamlit Cloud
+    # Based on debug output, method 3 (path manipulation) works reliably
+    components_dir = os.path.join(project_root, 'tco_app', 'ui', 'components')
+    if components_dir not in sys.path:
+        sys.path.insert(0, components_dir)
     
-    # Strategy 1: Try standard package import
     try:
-        from tco_app.ui.components import (
-            SensitivityContext,
-            ParameterRangeCalculator,
-        )
-        import_successful = True
+        # Try direct import first (Method 3 from debug)
+        import sensitivity_components
+        SensitivityContext = sensitivity_components.SensitivityContext
+        ParameterRangeCalculator = sensitivity_components.ParameterRangeCalculator
     except ImportError:
-        pass
-    
-    # Strategy 2: Import the module directly and extract classes
-    if not import_successful:
-        try:
-            import tco_app.ui.components.sensitivity_components as sens_comp
-            SensitivityContext = sens_comp.SensitivityContext
-            ParameterRangeCalculator = sens_comp.ParameterRangeCalculator
-            import_successful = True
-        except ImportError:
-            pass
-    
-    # Strategy 3: Add components directory to path and import directly
-    if not import_successful:
-        try:
-            components_dir = os.path.join(project_root, 'tco_app', 'ui', 'components')
-            if components_dir not in sys.path:
-                sys.path.insert(0, components_dir)
-            import sensitivity_components
-            SensitivityContext = sensitivity_components.SensitivityContext
-            ParameterRangeCalculator = sensitivity_components.ParameterRangeCalculator
-            import_successful = True
-        except ImportError:
-            pass
-    
-    if not import_successful:
-        raise ImportError("Could not import SensitivityContext and ParameterRangeCalculator")
+        # Fallback to importlib (Method 4 from debug)
+        sensitivity_file = os.path.join(components_dir, 'sensitivity_components.py')
+        spec = importlib.util.spec_from_file_location("sensitivity_components", sensitivity_file)
+        sensitivity_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sensitivity_module)
+        SensitivityContext = sensitivity_module.SensitivityContext
+        ParameterRangeCalculator = sensitivity_module.ParameterRangeCalculator
     
     from tco_app.services.dtos import SensitivityRequest
 except ImportError as e:
