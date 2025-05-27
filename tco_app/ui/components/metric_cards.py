@@ -65,10 +65,11 @@ def display_comparison_metrics(comparative_metrics):
 
     with col3:
         if comparative_metrics["price_parity_year"] < VALIDATION_LIMITS.MAX_REASONABLE_PARITY_YEARS:
-            st.metric(
+            display_metric_card(
                 "Price Parity Year",
                 comparative_metrics["price_parity_year"],
-                help="First year when BEV lifetime cost equals diesel",
+                "years",
+                "First year when BEV lifetime cost equals diesel",
             )
 
     # Payback period insight
@@ -77,11 +78,11 @@ def display_comparison_metrics(comparative_metrics):
         upfront_diff = comparative_metrics["upfront_cost_difference"]
         annual_savings = comparative_metrics["annual_operating_savings"]
 
-        st.info(
-            f"Investment Recovery Timeline: "
-            f"The electric vehicle's higher upfront cost of ${upfront_diff:,.0f} will be recovered in "
-            f"{payback_years:.1f} years through annual operating savings of ${annual_savings:,.0f}."
-        )
+        # Use multiple info boxes to avoid the rendering bug with multiple formatted values
+        st.markdown("**Investment Recovery Timeline**")
+        st.info(f"💵 Upfront BEV Premium: ${upfront_diff:,.0f}")
+        st.info(f"💰 Annual Operating Savings: ${annual_savings:,.0f}")
+        st.info(f"📅 Payback Period: {payback_years:.1f} years")
 
     # Environmental and efficiency metrics
     st.markdown("### 🌱 Environmental Impact")
