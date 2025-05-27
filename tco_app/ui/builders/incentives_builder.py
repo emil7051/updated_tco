@@ -50,23 +50,29 @@ class IncentivesBuilder:
         # Get default active incentives (where incentive_flag = 1)
         default_active = set(incentives_df[incentives_df["incentive_flag"] == 1]["incentive_type"].values)
         
-        # Quick select options at the top
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("Select All", key="select_all_incentives"):
-                st.session_state.incentive_select_all = True
-                st.session_state.incentive_clear_all = False
-        with col2:
-            if st.button("Clear All", key="clear_all_incentives"):
-                st.session_state.incentive_clear_all = True
-                st.session_state.incentive_select_all = False
-        with col3:
-            # This will be updated after collecting selections
-            selected_count_placeholder = st.empty()
-        
-        st.markdown("---")
+        # Header with title
         st.markdown("**Available Policies & Incentives**")
         st.info("💡 Select which government policies and incentives to include in the analysis")
+        
+        # Better layout for quick actions - using columns for buttons only
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Select All button with icon
+            if st.button("✅ Select All", key="select_all_incentives", use_container_width=True, 
+                        help="Enable all available incentives"):
+                st.session_state.incentive_select_all = True
+                st.session_state.incentive_clear_all = False
+        
+        with col2:
+            # Clear All button with icon
+            if st.button("❌ Clear All", key="clear_all_incentives", use_container_width=True,
+                        help="Disable all incentives"):
+                st.session_state.incentive_clear_all = True
+                st.session_state.incentive_select_all = False
+        
+        # Add some spacing
+        st.markdown("")
         
         # Determine checkbox values based on button clicks
         def get_checkbox_value(incentive: str) -> bool:
@@ -83,7 +89,7 @@ class IncentivesBuilder:
         
         # BEV Incentives
         if len(bev_incentives) > 0:
-            st.markdown("**🔋 Battery Electric Vehicle Incentives**")
+            st.markdown("### 🔋 Battery Electric Vehicle Incentives")
             
             # Group related incentives
             purchase_incentives = ["stamp_duty_exemption", "registration_exemption", "purchase_rebate_aud"]
@@ -94,7 +100,7 @@ class IncentivesBuilder:
             
             # Purchase incentives
             with st.container():
-                st.markdown("*Purchase Support*")
+                st.markdown("**Purchase Support**")
                 for incentive in purchase_incentives:
                     if incentive in bev_incentives:
                         desc = self.incentive_descriptions.get(incentive, incentive)
@@ -104,7 +110,7 @@ class IncentivesBuilder:
             
             # Operational incentives
             with st.container():
-                st.markdown("*Operational Benefits*")
+                st.markdown("**Operational Benefits**")
                 for incentive in operational_incentives:
                     if incentive in bev_incentives:
                         desc = self.incentive_descriptions.get(incentive, incentive)
@@ -114,7 +120,7 @@ class IncentivesBuilder:
             
             # Tax incentives
             with st.container():
-                st.markdown("*Tax Benefits*")
+                st.markdown("**Tax Benefits**")
                 for incentive in tax_incentives:
                     if incentive in bev_incentives:
                         desc = self.incentive_descriptions.get(incentive, incentive)
@@ -124,7 +130,7 @@ class IncentivesBuilder:
             
             # Sustainability incentives
             with st.container():
-                st.markdown("*Sustainability Support*")
+                st.markdown("**Sustainability Support**")
                 for incentive in sustainability_incentives:
                     if incentive in bev_incentives:
                         desc = self.incentive_descriptions.get(incentive, incentive)
@@ -134,7 +140,7 @@ class IncentivesBuilder:
             
             # Infrastructure incentives
             with st.container():
-                st.markdown("*Infrastructure Support*")
+                st.markdown("**Infrastructure Support**")
                 for incentive in infrastructure_incentives:
                     if incentive in bev_incentives:
                         desc = self.incentive_descriptions.get(incentive, incentive)
@@ -144,16 +150,24 @@ class IncentivesBuilder:
         
         # Diesel Incentives
         if len(diesel_incentives) > 0:
-            st.markdown("---")
-            st.markdown("**⛽ Diesel Vehicle Incentives**")
+            st.markdown("### ⛽ Diesel Vehicle Incentives")
             for incentive in diesel_incentives:
                 desc = self.incentive_descriptions.get(incentive, incentive)
                 checkbox_value = get_checkbox_value(incentive)
                 if st.checkbox(desc, value=checkbox_value, key=f"incentive_{incentive}"):
                     self.selected_incentives.add(incentive)
         
-        # Update selected count
-        selected_count_placeholder.metric("Selected", len(self.selected_incentives))
+        # Show selection count at the bottom with better formatting
+        total_available = len(all_incentives)
+        selected_count = len(self.selected_incentives)
+        
+        st.markdown("---")
+        if selected_count == 0:
+            st.caption(f"No incentives selected (0/{total_available} available)")
+        elif selected_count == total_available:
+            st.success(f"✅ All incentives selected ({selected_count}/{total_available})")
+        else:
+            st.info(f"📊 {selected_count} of {total_available} incentives selected")
         
         # Reset the button states after processing
         if st.session_state.incentive_select_all or st.session_state.incentive_clear_all:
