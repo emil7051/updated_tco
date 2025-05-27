@@ -1,6 +1,6 @@
-financial_id,finance_description,default_value
+﻿financial_id,finance_description,default_value
 FP001,discount_rate_percent,0.05
-FP002,financing_term_years,5.0
+FP002,financing_term_years,5
 FP003,interest_rate_percent,0.055
 FP004,down_payment_percent,0.2
 FP005,initial_depreciation_percent,0.2
@@ -8,9 +8,10 @@ FP006,annual_depreciation_percent,0.1
 FP007,insurance_percent,0.03
 FP008,diesel_price,2.03
 FP009,inflation_rate,0.025
-FP010,carbon_price,0.0
-FP011,freight_value_per_tonne,120.0
-FP012,driver_cost_hourly,35.0
-FP013,avg_trip_distance,100.0
-FP014,avg_loadunload_time,1.0
-FP015,avg_speed_kmh,60.0
+FP010,carbon_price,0
+FP011,freight_value_per_tonne,120
+FP012,driver_cost_hourly,35
+FP013,avg_trip_distance,100
+FP014,avg_loadunload_time,1
+FP015,avg_speed_kmh,60
+FP015,payload_penalty,0.12

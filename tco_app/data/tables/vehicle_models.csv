@@ -1,25 +1,25 @@
 vehicle_id,vehicle_type,vehicle_drivetrain,vehicle_model,payload_t,msrp_price,range_km,battery_capacity_kwh,kwh_per100km,litres_per100km,comparison_pair_id
-BEV001,Light Rigid,BEV,Jac N55,2.5,140000,200,97.0,48.5,,DSL001
-BEV002,Light Rigid,BEV,Foton T5,3.5,150000,180,81.14,45.08,,DSL002
-BEV003,Light Rigid,BEV,Hyundai Mighty Electric,4.0,150000,200,97.0,48.5,,DSL003
-BEV004,Light Rigid,BEV,Jac N90,5.0,150000,180,107.0,59.44,,DSL004
-BEV005,Medium Rigid,BEV,Volvo FL,6.0,200000,300,264.0,88.0,,DSL005
-BEV006,Medium Rigid,BEV,Scania 25P,7.0,300000,250,300.0,120.0,,DSL006
-BEV007,Medium Rigid,BEV,MB eActros 300,10.0,400000,220,336.0,152.73,,DSL007
-BEV008,Medium Rigid,BEV,Volvo FE,12.0,300000,200,375.0,187.5,,DSL008
-BEV009,Articulated,BEV,MB eActros 600,22.0,700000,500,621.0,124.2,,DSL009
-BEV010,Articulated,BEV,Volvo FH,24.0,450000,300,540.0,180.0,,DSL010
-BEV011,Articulated,BEV,Volvo FM,30.0,450000,300,540.0,180.0,,DSL011
-BEV012,Articulated,BEV,Scania 45R,40.0,600000,390,624.0,160.0,,DSL012
-DSL001,Light Rigid,Diesel,Hino 300,4.5,80000,600,,,20.0,BEV001
-DSL002,Light Rigid,Diesel,Isuzu N Series,4.8,85000,700,,,20.0,BEV002
-DSL003,Light Rigid,Diesel,Hyundai Mighty,4.0,75000,600,,,20.0,BEV003
-DSL004,Light Rigid,Diesel,Hino 500,6.0,130000,600,,,20.0,BEV004
-DSL005,Medium Rigid,Diesel,Hino 500,6.0,130000,600,,,28.0,BEV005
-DSL006,Medium Rigid,Diesel,Scania P 280,12.0,250000,400,,,28.0,BEV006
-DSL007,Medium Rigid,Diesel,MB Actros,25.0,270000,1400,,,28.0,BEV007
-DSL008,Medium Rigid,Diesel,Volvo FE,12.0,220000,600,,,28.0,BEV008
-DSL009,Articulated,Diesel,MB Actros,50.0,270000,1400,,,50.0,BEV009
-DSL010,Articulated,Diesel,Volvo FH,50.0,280000,2000,,,50.0,BEV010
-DSL011,Articulated,Diesel,Volvo FM,50.0,250000,1500,,,50.0,BEV011
-DSL012,Articulated,Diesel,Scania R560,50.0,300000,1500,,,50.0,BEV012
+BEV001,Light Rigid,BEV,Jac N75,4,176500,220,100,48,,DSL001
+BEV002,Light Rigid,BEV,Foton T5,3.5,150000,180,81.14,48,,DSL002
+BEV003,Light Rigid,BEV,Hyundai Mighty Electric,4,150000,200,97,48,,DSL003
+BEV004,Light Rigid,BEV,Jac N90,5,150000,180,107,60.5,,DSL004
+BEV005,Medium Rigid,BEV,Scania 25P,5,300000,250,300,60.5,,DSL005
+BEV006,Medium Rigid,BEV,Volvo FL,10.5,200000,300,264,108.5,,DSL006
+BEV007,Medium Rigid,BEV,MB eActros 300,22,400000,300,336,108.5,,DSL007
+BEV008,Medium Rigid,BEV,Volvo FE,10.5,300000,275,375,108.5,,DSL008
+BEV009,Articulated,BEV,MB eActros 600,42,600000,500,621,120,,DSL009
+BEV010,Articulated,BEV,Volvo FH,42,450000,300,540,120,,DSL010
+BEV011,Articulated,BEV,Volvo FM,42,450000,300,540,120,,DSL011
+BEV012,Articulated,BEV,Scania 45R,42,320000,390,624,120,,DSL012
+DSL001,Light Rigid,Diesel,Hino 300,4.5,80000,600,,,28,BEV001
+DSL002,Light Rigid,Diesel,Hyundai Mighty,4,75000,600,,,28,BEV002
+DSL003,Light Rigid,Diesel,Hyundai Mighty,4,75000,600,,,28,BEV003
+DSL004,Light Rigid,Diesel,Hino 500,6,130000,600,,,28,BEV004
+DSL005,Medium Rigid,Diesel,Hino 500,6,130000,600,,,32,BEV005
+DSL006,Medium Rigid,Diesel,Scania P 280,12,250000,400,,,32,BEV006
+DSL007,Medium Rigid,Diesel,MB Actros,25,270000,1400,,,32,BEV007
+DSL008,Medium Rigid,Diesel,Volvo FE,12,220000,600,,,32,BEV008
+DSL009,Articulated,Diesel,MB Actros,50,270000,1400,,,35,BEV009
+DSL010,Articulated,Diesel,Volvo FH,50,280000,2000,,,35,BEV010
+DSL011,Articulated,Diesel,Volvo FM,50,250000,1500,,,35,BEV011
+DSL012,Articulated,Diesel,Scania R560,50,300000,1500,,,35,BEV012
