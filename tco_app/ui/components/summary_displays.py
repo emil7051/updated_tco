@@ -42,8 +42,12 @@ def display_summary_metrics(bev_results, diesel_results):
             # Handle both DTO and dict cases for vehicle data access
             if hasattr(bev_results, 'vehicle_id'):
                 # DTO case
-                vehicle_name = bev_results.vehicle_id
                 vehicle_data = bev_results.vehicle_data if hasattr(bev_results, 'vehicle_data') else {}
+                # Get vehicle model name from vehicle_data
+                if hasattr(vehicle_data, 'get'):
+                    vehicle_name = vehicle_data.get(DataColumns.VEHICLE_MODEL, bev_results.vehicle_id)
+                else:
+                    vehicle_name = bev_results.vehicle_id
             else:
                 # Dict case
                 vehicle_data = bev_results.get('vehicle_data', {})
@@ -75,8 +79,12 @@ def display_summary_metrics(bev_results, diesel_results):
             # Handle both DTO and dict cases for vehicle data access
             if hasattr(diesel_results, 'vehicle_id'):
                 # DTO case
-                vehicle_name = diesel_results.vehicle_id
                 vehicle_data = diesel_results.vehicle_data if hasattr(diesel_results, 'vehicle_data') else {}
+                # Get vehicle model name from vehicle_data
+                if hasattr(vehicle_data, 'get'):
+                    vehicle_name = vehicle_data.get(DataColumns.VEHICLE_MODEL, diesel_results.vehicle_id)
+                else:
+                    vehicle_name = diesel_results.vehicle_id
             else:
                 # Dict case
                 vehicle_data = diesel_results.get('vehicle_data', {})

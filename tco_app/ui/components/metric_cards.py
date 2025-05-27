@@ -78,9 +78,9 @@ def display_comparison_metrics(comparative_metrics):
         annual_savings = comparative_metrics["annual_operating_savings"]
 
         st.info(
-            f"**Investment Recovery Timeline:** "
-            f"The electric vehicle's higher upfront cost of **${upfront_diff:,.0f}** will be recovered in "
-            f"**{payback_years:.1f} years** through annual operating savings of **${annual_savings:,.0f}**."
+            f"Investment Recovery Timeline: "
+            f"The electric vehicle's higher upfront cost of ${upfront_diff:,.0f} will be recovered in "
+            f"{payback_years:.1f} years through annual operating savings of ${annual_savings:,.0f}."
         )
 
     # Environmental and efficiency metrics
